@@ -53,5 +53,6 @@ def get_ini_config():
     make_abs_paths(merged_with_defaults, [['plugins', 'plugins_dir'], ])
     return merged_with_defaults
 
+
 ini_config = get_ini_config()
 

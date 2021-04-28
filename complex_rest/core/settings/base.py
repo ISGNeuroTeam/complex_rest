@@ -51,7 +51,6 @@ PLUGINS = [full_plugin_path.name for full_plugin_path in Path(ini_config['plugin
 INSTALLED_APPS = INSTALLED_APPS + PLUGINS
 
 
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -89,36 +88,56 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": 'django.db.backends.postgresql',
-        "NAME": ini_config['db_conf']['database'],
-        "USER": ini_config['db_conf']['user'],
-        "PASSWORD": ini_config['db_conf']['password'],
-        "HOST": ini_config['db_conf']['host'],
-        "PORT": ini_config['db_conf']['port']
+        "NAME": ini_config['default_db']['database'],
+        "USER": ini_config['default_db']['user'],
+        "PASSWORD": ini_config['default_db']['password'],
+        "HOST": ini_config['default_db']['host'],
+        "PORT": ini_config['default_db']['port']
     },
     'auth_db': {
-        'NAME': 'auth',
-        'ENGINE': 'django.db.backends.postgresql',
-        'USER': 'complex_rest_auth',
-        'PASSWORD': 'complex_rest_auth'
+        "ENGINE": 'django.db.backends.postgresql',
+        "NAME": ini_config['auth_db']['database'],
+        "USER": ini_config['auth_db']['user'],
+        "PASSWORD": ini_config['auth_db']['password'],
+        "HOST": ini_config['auth_db']['host'],
+        "PORT": ini_config['auth_db']['port']
     }
 }
 
 DATABASE_ROUTERS = ['core.db_routers.AuthRouter', ]
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://localhost:6379",
-        "OPTIONS": {
-            "DB": 0,
-            "PASSWORD": "",
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
+
+redis_cache_config_dict = {
+    'BACKEND': 'cache.RedisCache',
+    'LOCATION': f'redis://{ini_config["redis"]["host"]}:{ini_config["redis"]["port"]}',
+    'OPTIONS': {
+        'DB': ini_config['redis']['DB'],
+        'PASSWORD': ini_config['redis']['password'],
+        'CLIENT_CLASS': "django_redis.client.DefaultClient",
     },
-    'file': {
-    'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-    'LOCATION': '/tmp/djangocache',
-  },
+    'TIMEOUT': ini_config['caches']['default_timeout'],
+    'MAX_ENTRIES': ini_config['caches']['default_max_entries'],
+}
+CACHES = {
+    'default': redis_cache_config_dict,
+    'RedisCache': redis_cache_config_dict,
+    'FileCache': {
+        'BACKEND': 'cache.FileCache',
+        'LOCATION': ini_config['caches']['file_cache_dir'],
+        'TIMEOUT': ini_config['caches']['default_timeout'],
+        'MAX_ENTRIES': ini_config['caches']['default_max_entries'],
+    },
+    'LocMemCache': {
+        'BACKEND': 'cache.LocMemCache',
+        'TIMEOUT': ini_config['caches']['default_timeout'],
+        'MAX_ENTRIES': ini_config['caches']['default_max_entries'],
+    },
+    'DatabaseCache': {
+        'BACKEND': 'cache.DatabaseCache',
+        'LOCATION': 'complex_rest_cache_table',
+        'TIMEOUT': ini_config['caches']['default_timeout'],
+        'MAX_ENTRIES': ini_config['caches']['default_max_entries'],
+    }
 }
 
 
