@@ -30,7 +30,6 @@ class ReadOnlyModelAdmin(admin.ModelAdmin):
         return False
 
 
-admin.site.register(Permission)
 admin.site.register(LogEntry, ReadOnlyModelAdmin)
 
 

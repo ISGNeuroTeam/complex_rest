@@ -4,14 +4,16 @@ from rest_framework import permissions
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import serializers
 
-
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 
 @api_view(['GET', ])
 @permission_classes((permissions.AllowAny,))
 def hello(request):
     return Response({'msg': 'Hello world'})
+
+
+User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):

@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'core'
+    'core',
+    'rest_auth',
 ]
 
 # Add plugins to INSTALLED_APPS
@@ -81,6 +82,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
+AUTH_USER_MODEL = 'rest_auth.User'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
