@@ -139,7 +139,13 @@ CACHES = {
         'LOCATION': 'complex_rest_cache_table',
         'TIMEOUT': ini_config['caches']['default_timeout'],
         'MAX_ENTRIES': ini_config['caches']['default_max_entries'],
-    }
+    },
+    'AuthDatabaseCache': {
+        'BACKEND': 'cache.AuthDatabaseCache',
+        'LOCATION': 'auth_cache_table',
+        'TIMEOUT': ini_config['caches']['default_timeout'],
+        'MAX_ENTRIES': ini_config['caches']['default_max_entries'],
+    },
 }
 
 
@@ -214,7 +220,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-SIMPLE_JWT = {
+TOKEN_SETTINGS = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,

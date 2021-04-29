@@ -28,6 +28,18 @@ class DatabaseCache(DjangoDatabaseCache):
     pass
 
 
+class AuthDatabaseCache(DjangoDatabaseCache):
+    """
+    Database cache for auth_db
+    """
+    def __init__(self,  *args, **kwargs):
+        """
+        Specify app_label for database router
+        """
+        super().__init__(*args, **kwargs)
+        self.cache_model_class._meta.app_label = 'auth'
+
+
 redis_cache = ConnectionProxy(caches, 'RedisCache')
 file_cache = ConnectionProxy(caches, 'FileCache')
 loc_mem_cache = ConnectionProxy(caches, 'LocMemCache')
