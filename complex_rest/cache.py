@@ -62,9 +62,6 @@ def get_cache(base_cache, namespace=None, timeout=None, max_entries=None):
     if namespace is None:
         return caches[base_cache]
 
-    if not namespace.isalpha():
-        raise ValueError(f'Only ASCII letters allowed in namespace, {namespace}')
-
     namespace = namespace.lower()
     cache_name = f'{namespace}_{base_cache}'
 

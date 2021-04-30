@@ -13,7 +13,6 @@ default_config = {
         'password': 'complex_rest_auth',
         'port': '5432'
     },
-
     'plugins': {
         'plugins_dir': './plugins'
     },
@@ -27,6 +26,9 @@ default_config = {
         'port': '6379',
         'DB': '0',
         'password': '',
+    },
+    'auth': {
+        'period': '24',
     }
-
 }
+

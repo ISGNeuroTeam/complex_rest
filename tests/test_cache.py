@@ -6,6 +6,8 @@ from cache import get_cache
 
 
 class TestCache(TestCase):
+    databases = {'default', 'auth_db'}
+
     def setUp(self):
         self.base_caches = settings.CACHES
 
