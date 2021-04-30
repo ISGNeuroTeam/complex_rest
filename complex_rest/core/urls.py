@@ -16,22 +16,14 @@ Including another URLconf
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
 
-from rest_auth.views import Login
-
-from .api import hello, UserViewSet
-
-router = DefaultRouter()
-router.register(r'users', UserViewSet, basename='user')
+from .api import hello
 
 urlpatterns = [
-    path('api/login/', Login.as_view(), name='login'),
     path('admin/', admin.site.urls),
+    path('auth/', include(('rest_auth.urls', 'rest_auth'), namespace='auth')),
     path('hello/', hello)
 ]
-
-urlpatterns += router.urls
 
 # add plugins urls
 urlpatterns += [

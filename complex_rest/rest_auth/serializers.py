@@ -76,3 +76,9 @@ class AccessTokenSerializer(TokenSerializer):
             update_last_login(None, self.user)
 
         return data
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
