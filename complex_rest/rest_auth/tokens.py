@@ -173,6 +173,7 @@ class Token:
 
         token = cls()
         token[api_settings.USER_ID_CLAIM] = user_id
+        token['login'] = user.username
 
         return token
 
