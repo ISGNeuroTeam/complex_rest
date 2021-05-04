@@ -1,7 +1,6 @@
-from django.urls import path
-from .api import hello, simple_hello
+from rest.urls import path
+from .views import hello
 
 urlpatterns = [
     path('hello/', hello),
-    path('simple_hello', simple_hello)
 ]
