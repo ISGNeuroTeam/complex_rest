@@ -25,30 +25,23 @@ class PasswordField(serializers.CharField):
 
 
 class TokenSerializer(serializers.Serializer):
-    username_field = User.USERNAME_FIELD
+    login = serializers.CharField()
+    password = PasswordField()
 
     default_error_messages = {
         'no_active_account': _('No active account found with the given credentials')
     }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.fields[self.username_field] = serializers.CharField()
-        self.fields['password'] = PasswordField()
-
     def validate(self, attrs):
         authenticate_kwargs = {
-            self.username_field: attrs[self.username_field],
+            User.USERNAME_FIELD: attrs['login'],
             'password': attrs['password'],
         }
         try:
             authenticate_kwargs['request'] = self.context['request']
         except KeyError:
             pass
-
         self.user = authenticate(**authenticate_kwargs)
-
         if not getattr(login_rule, user_eligible_for_login)(self.user):
             raise exceptions.AuthenticationFailed(
                 self.error_messages['no_active_account'],
