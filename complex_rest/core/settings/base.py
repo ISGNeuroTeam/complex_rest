@@ -227,4 +227,7 @@ TOKEN_SETTINGS = {
     'SIGNING_KEY_LIFETIME': timedelta(hours=period),
     'USER_ID_FIELD': 'guid',
     'USER_ID_CLAIM': 'guid',
+    'USER_TOKEN_PAYLOAD': [
+        ('login', 'username'),
+    ],
 }

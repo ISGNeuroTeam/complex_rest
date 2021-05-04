@@ -173,7 +173,10 @@ class Token:
 
         token = cls()
         token[api_settings.USER_ID_CLAIM] = user_id
-        token['login'] = user.username
+
+        # adding additional user payload
+        for token_claim, user_attr in api_settings.USER_TOKEN_PAYLOAD:
+            token[token_claim] = getattr(user, user_attr)
 
         return token
 

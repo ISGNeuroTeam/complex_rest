@@ -24,6 +24,9 @@ DEFAULTS = {
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
+    'USER_TOKEN_PAYLOAD': [
+        ('username', 'username'),
+    ],
     'USER_AUTHENTICATION_RULE': 'rest_auth.authentication.default_user_authentication_rule',
 
     'AUTH_TOKEN_CLASSES': ('rest_auth.tokens.AccessToken',),
@@ -42,7 +45,6 @@ DEFAULTS.update(
 
 IMPORT_STRINGS = (
     'AUTH_TOKEN_CLASSES',
-    'TOKEN_USER_CLASS',
 )
 
 
