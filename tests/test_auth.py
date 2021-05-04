@@ -2,10 +2,10 @@ import time
 
 from datetime import timedelta
 from django.test import TestCase, override_settings
+from rest_framework.test import APIClient
 
 from cache import get_cache
 from rest_auth.models import User
-
 from rest_auth.exceptions import TokenError
 
 test_token_settings = {
@@ -23,10 +23,11 @@ with override_settings(TOKEN_SETTINGS=test_token_settings):
         databases = {'default', 'auth_db'}
 
         def setUp(self):
-
-            self.admin_user = User(username='admin', password='admin1q2w3e4r5t')
+            self.admin_user = User(username='admin', is_staff=True, is_active=True)
+            self.admin_user.set_password('admin')
             self.admin_user.save()
-            self.test_user1 = User(username='test_user1', password='test_user11q2w3e4r5t')
+            self.test_user1 = User(username='test_user1')
+            self.test_user1.set_password('user11q2w3e4r5t')
             self.test_user1.save()
 
         def test_access_token(self):
@@ -45,7 +46,7 @@ with override_settings(TOKEN_SETTINGS=test_token_settings):
             encoded_token1 = str(token1)
 
             first_signing_key = auth_cache.get('signing_key')
-
+            self.assertIsNotNone(first_signing_key, 'Signing key must be generated')
             time.sleep(6)
 
             token2 = AccessToken()
@@ -65,5 +66,39 @@ with override_settings(TOKEN_SETTINGS=test_token_settings):
             # first token must expire
             with self.assertRaises(TokenError):
                 AccessToken(encoded_token1)
+
+
+class TestAuthentication(TestCase):
+    databases = {'default', 'auth_db'}
+
+    def setUp(self):
+        self.admin_user = User(username='admin', is_staff=True, is_active=True)
+        self.admin_user.set_password('admin')
+        self.admin_user.save()
+        self.test_user1 = User(username='test_user1')
+        self.test_user1.set_password('user11q2w3e4r5t')
+        self.test_user1.save()
+
+    def test_admin_token_required(self):
+        client = APIClient()
+        response = client.post('/auth/login/', data={'login': 'test_user1', 'password': 'user11q2w3e4r5t'})
+        ordinary_user_token = response.data['token']
+
+        client.credentials(HTTP_AUTHORIZATION='Bearer ' + str(ordinary_user_token))
+        response = client.get('/auth/users/')
+        self.assertEqual(response.status_code, 403, 'Access for ordinary user is forbidden')
+
+        client.credentials()
+
+        response = client.post('/auth/login/', data={'login': 'admin', 'password': 'admin'})
+        admin_token = response.data['token']
+
+        client.credentials(HTTP_AUTHORIZATION='Bearer ' + str(admin_token))
+        response = client.get('/auth/users/')
+        self.assertEqual(response.status_code, 200, 'Access for admin')
+
+
+
+
 
 
