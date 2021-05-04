@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 from datetime import timedelta
 
+from core import load_plugins
 from .ini_config import ini_config
 
 
@@ -46,10 +47,17 @@ INSTALLED_APPS = [
     'rest_auth',
 ]
 
+PLUGINS_DIR = str(ini_config['plugins']['plugins_dir'])
+
+
+sys.path.append(PLUGINS_DIR)
+PLUGINS = load_plugins.get_plugins_names(ini_config['plugins']['plugins_dir'])
+
 # Add plugins to INSTALLED_APPS
-sys.path.append(str(ini_config['plugins']['plugins_dir']))
-PLUGINS = [full_plugin_path.name for full_plugin_path in Path(ini_config['plugins']['plugins_dir']).iterdir()]
 INSTALLED_APPS = INSTALLED_APPS + PLUGINS
+
+# Add plugins virtual environment to sys path
+load_plugins.add_plugins_env_dirs_to_sys_path(PLUGINS_DIR, PLUGINS)
 
 
 MIDDLEWARE = [

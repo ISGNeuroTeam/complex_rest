@@ -17,12 +17,10 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 
-from .api import hello
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include(('rest_auth.urls', 'rest_auth'), namespace='auth')),
-    path('hello/', hello)
 ]
 
 # add plugins urls
