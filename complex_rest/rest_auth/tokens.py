@@ -156,8 +156,6 @@ class Token:
 
         claim_time = datetime_from_epoch(claim_value)
 
-        print(claim_time)
-        print(current_time)
         if claim_time <= current_time:
             raise TokenError(format_lazy(_("Token '{}' claim has expired"), claim))
 
@@ -193,14 +191,18 @@ class Token:
 
         key_cache = api_settings.SIGNING_KEY_CACHE
         signing_key = key_cache.get('signing_key')
+        old_signing_key = key_cache.get('old_signing_key')
         if signing_key is None:
             signing_key = Token.generate_secret_key()
             key_cache.set('signing_key', signing_key, timeout=api_settings.SIGNING_KEY_LIFETIME.total_seconds())
 
-        if 'old_signing_key' not in key_cache:
+        if old_signing_key is None or signing_key == old_signing_key:
             # assumption that token lifetime two times smaller than signing key lifetime
+            # this ensures that key will be available for token
+            # if old_signing_key alive and not equal current signing key means that
+            # signing key in first half of his life and token will have expired before key
             key_cache.set(
-                'old_signing_key', key_cache.get('signing_key'),
+                'old_signing_key', signing_key,
                 timeout=api_settings.SIGNING_KEY_LIFETIME.total_seconds()//2
             )
         return signing_key
