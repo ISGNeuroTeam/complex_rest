@@ -114,7 +114,17 @@ DATABASES = {
     }
 }
 
-DATABASE_ROUTERS = ['core.db_routers.AuthRouter', ]
+# Add plugin databases
+plugin_databases = load_plugins.get_plugins_databases(PLUGINS)
+
+PLUGINS_WITH_DATABASES = set(plugin_databases.keys())
+
+DATABASES.update(
+    plugin_databases
+)
+
+
+DATABASE_ROUTERS = ['core.db_routers.AuthRouter', 'core.db_routers.PluginRouter', ]
 
 
 redis_cache_config_dict = {

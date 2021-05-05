@@ -97,6 +97,7 @@ GitHub.sublime-settings
 
 # Ignore the default SQLite database.
 *.sqlite3
+*.db
 
 # redis dump
 *.rdb
@@ -106,5 +107,5 @@ start.sh
 stop.sh
 complex_rest-*.tar.gz
 rest.conf
-ot_simple_rest/venv
+
 nginx/
