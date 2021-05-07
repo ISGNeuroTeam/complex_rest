@@ -29,6 +29,14 @@ default_config = {
     },
     'auth': {
         'period': '24',
+    },
+    'logging': {
+        'active': 'True',
+        'log_dir': './logs',
+        'level': 'INFO',
+        'rotate': 'True',
+        'rotation_size': '10',
+        'keep_files': '10'
     }
 }
 

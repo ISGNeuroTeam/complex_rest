@@ -43,9 +43,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'core',
-    'rest_auth',
 ]
+
+LOCAL_APPS = [
+    'core',
+    'rest_auth'
+]
+
+INSTALLED_APPS = INSTALLED_APPS + LOCAL_APPS
 
 PLUGINS_DIR = str(ini_config['plugins']['plugins_dir'])
 
@@ -212,19 +217,101 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+LOG_DIR = Path(ini_config['logging']['log_dir'])
+LOG_DIR.mkdir(exist_ok=True)
+
+LOG_LEVEL = ini_config['logging']['level']
+
+LOG_ROTATION = ini_config['logging']['rotate'] == 'True'
+
+
+"""
+For every plugin will be generated handler config and logger config. Example:
+'handlers': {
+                'plugin_example1_handler': {
+                    'class': 'logging.handlers.RotatingFileHandler',
+                    'maxBytes': 10485760,
+                    'backupCount': 5,
+                    'level': 'INFO',
+                    'formatter': 'default',
+                    'filename': '/complex_rest/logs/plugin_example1/plugin_example1.log'
+                }
+}
+'loggers': {
+    'plugin_example1': {
+        'propagate': False,
+        'level': 'INFO',
+        'handlers': ['plugin_example1_handler'],
+    }
+}
+"""
+
+if LOG_ROTATION:
+    plugin_log_handler_config = {
+        'class': 'logging.handlers.RotatingFileHandler',
+        'maxBytes': 1024 * 1024 * int(ini_config['logging']['rotation_size']),
+        'backupCount': int(ini_config['logging']['keep_files']),
+    }
+else:
+    plugin_log_handler_config = {
+        'class': 'logging.FileHandler',
+}
+
+plugin_log_handler_config.update(
+    {
+        'level': LOG_LEVEL,
+        'formatter': 'default',
+    }
+)
+
+plugin_logger_config = {
+    'propagate': False,
+    'level': LOG_LEVEL,
+}
+
+# construct handlers config and loggers config for every plugin
+plugins_log_handlers = load_plugins.get_plugins_handlers_config(PLUGINS, LOG_DIR, plugin_log_handler_config)
+plugins_loggers = load_plugins.get_plugins_loggers(PLUGINS, plugin_logger_config)
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'default': {
+            'format': '%(asctime)s %(levelname)s %(name)s %(message)s'
+        },
+        'simple': {
+            'format': '%(message)s'
+        }
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'level': LOG_LEVEL
         },
+        'file': {
+            'class': 'logging.FileHandler',
+            'level': LOG_LEVEL,
+            'filename': str(LOG_DIR / 'rest.log')
+
+        },
+        'rotate': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': LOG_LEVEL,
+            'filename': str(LOG_DIR / 'rest.log'),
+            'maxBytes': 1024 * 1024 * int(ini_config['logging']['rotation_size']),
+            'backupCount': int(ini_config['logging']['keep_files']),
+        },
+        **plugins_log_handlers,
     },
     'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
+        'handlers': ['rotate', ] if LOG_ROTATION else ['file', ],
+        'level': LOG_LEVEL,
     },
     'loggers': {
+        **plugins_loggers,
     },
 }
 

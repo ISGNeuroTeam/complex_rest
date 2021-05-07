@@ -56,4 +56,34 @@ def get_plugins_databases(plugins_names):
     return plugin_db_settings
 
 
+def get_plugins_handlers_config(plugins_names, log_dir, handler_base_config):
+    """
+    Creates log handler config with name {plugin_name}_handler for every plugin name
+    """
+    handlers_config = dict()
+    for plugin_name in plugins_names:
+        plugin_log_dir = Path(log_dir) / plugin_name
+        plugin_log_dir.mkdir(exist_ok=True)
+        plugin_main_log = plugin_log_dir / f'{plugin_name}.log'
+        handlers_config.update({
+            f'{plugin_name}_handler': {
+                **handler_base_config,
+                'filename': str(plugin_main_log)
+            }
+        })
+    return handlers_config
 
+
+def get_plugins_loggers(plugins_names, logger_config):
+    """
+    Creates logger for every plugin name with logger config and {plugin_name}_handler handler
+    """
+    loggers_config = dict()
+    for plugin_name in plugins_names:
+        loggers_config.update({
+            f'{plugin_name}': {
+                **logger_config,
+                'handlers': [f'{plugin_name}_handler', ]
+            }
+        })
+    return loggers_config
