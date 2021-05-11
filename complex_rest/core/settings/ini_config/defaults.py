@@ -14,7 +14,8 @@ default_config = {
         'port': '5432'
     },
     'plugins': {
-        'plugins_dir': './plugins'
+        'plugins_dir': './plugins',
+        'plugin_dev_dir': '../plugin_dev',
     },
     'caches': {
         'default_timeout': '300',

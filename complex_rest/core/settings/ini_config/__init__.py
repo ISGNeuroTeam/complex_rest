@@ -1,16 +1,17 @@
 import configparser
 
 from pathlib import Path
-from .defaults import default_config
+from .defaults import default_config as defaults
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
 
-def merge_ini_config_with_defaults(config):
+def merge_ini_config_with_defaults(config, default_config):
     """
     Merge ini config with default config
     :param config: config
+    :param default_config: dict with default config
     :return:
     Merged dictionary config
     """
@@ -48,9 +49,11 @@ def get_ini_config():
     config.read(BASE_DIR / 'rest.conf')
 
     merged_with_defaults = merge_ini_config_with_defaults(
-        config
+        config, defaults
     )
-    make_abs_paths(merged_with_defaults, [['plugins', 'plugins_dir'], ['logging', 'log_dir']])
+    make_abs_paths(
+        merged_with_defaults, [['plugins', 'plugins_dir'], ['plugins', 'plugin_dev_dir'], ['logging', 'log_dir']]
+    )
     return merged_with_defaults
 
 

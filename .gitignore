@@ -102,6 +102,8 @@ GitHub.sublime-settings
 # redis dump
 *.rdb
 
+# plugin develop directory
+plugin_dev/
 
 start.sh
 stop.sh

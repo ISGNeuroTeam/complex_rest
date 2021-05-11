@@ -25,6 +25,7 @@ password =
 
 [plugins]
 plugins_dir = ./plugins
+plugin_dev_dir = ../plugin_dev
 
 [auth]
 period = 24

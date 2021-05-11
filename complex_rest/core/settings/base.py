@@ -18,7 +18,7 @@ from .ini_config import ini_config
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -53,7 +53,7 @@ LOCAL_APPS = [
 INSTALLED_APPS = INSTALLED_APPS + LOCAL_APPS
 
 PLUGINS_DIR = str(ini_config['plugins']['plugins_dir'])
-
+PLUGIN_DEV_DIR = str(ini_config['plugins']['plugin_dev_dir'])
 
 sys.path.append(PLUGINS_DIR)
 PLUGINS = load_plugins.get_plugins_names(ini_config['plugins']['plugins_dir'])
