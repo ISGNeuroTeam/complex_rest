@@ -60,6 +60,7 @@ class Command(BaseCommand):
         plugins_dir = Path(settings.PLUGINS_DIR)
         self.render_dir(plugin_template_dir, plugin_dev_dir / plugin_name, context)
 
+        # symlink to plugins dir
         os.symlink(plugin_dev_dir / plugin_name / plugin_name, plugins_dir / plugin_name)
 
         print(f'Plugin with name {plugin_name} created')

@@ -5,11 +5,12 @@ from django.core.cache.backends.locmem import LocMemCache as DjangoLocMemCache
 from django.core.cache.backends.db import DatabaseCache as DjangoDatabaseCache
 from django.core.cache.backends.base import InvalidCacheBackendError
 from django.core.cache import caches
+from django.views.decorators.cache import cache_page
 from django.conf import settings
 from django.utils.module_loading import import_string
 
 
-__all__ = ['redis_cache', 'file_cache', 'loc_mem_cache', 'db_cache', 'caches', 'get_cache']
+__all__ = ['redis_cache', 'file_cache', 'loc_mem_cache', 'db_cache', 'caches', 'get_cache', 'cache_page']
 
 
 class RedisCache(DjangoRedisCache):
