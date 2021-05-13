@@ -8,29 +8,12 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
+Deploy [complex rest](https://github.com/ISGNeuroTeam/complex_rest/tree/develop)
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
+* Make symlink for ./{{plugin_name}}/{{plugin_name}} in plugins directory
+* Run complex rest server
 
 ## Running the tests
 

@@ -30,8 +30,35 @@ print(c.get('var_name'))
 
 
 class ExampleView(APIView):
+    # add permission classes AllowAny, IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly
     permission_classes = (AllowAny, )
 
+    # choose http methods you need
+    http_method_names = ['get', 'post', 'put', 'patch', 'delete']
+
     def get(self, request):
-        log.info('Request to {{plugin_name}}')
-        return Response({'message': 'plugin with name {{plugin_name}} created successfully'})
+        # To get url params use request.GET dictionary
+        # Example: request.GET.get('some param', None)
+
+        log.info('Get request to {{plugin_name}}')
+        return Response(
+            {
+                'message': 'plugin with name {{plugin_name}} created successfully. This is get request',
+                'url_params': request.GET
+            }
+        )
+
+    def post(self, request):
+        # To get body fields use request.data dictionary
+        # request.data.get('some_field', None)
+
+        log.info('Post request to {{plugin_name}}')
+        return Response(
+            {
+                'message': 'plugin with name {{plugin_name}} created successfully. This is post request',
+                'body_params': request.data
+            }
+        )
+
+
+
