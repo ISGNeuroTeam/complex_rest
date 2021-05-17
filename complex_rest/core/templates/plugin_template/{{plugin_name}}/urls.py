@@ -1,6 +1,7 @@
 from rest.urls import path
 from cache import cache_page
-from .views import ExampleView
+from .views.example import ExampleView
+from .views.hello import HelloView
 
 
 # Use cache_page decorator for caching view
@@ -11,4 +12,5 @@ from .views import ExampleView
 
 urlpatterns = [
     path('example/', ExampleView.as_view()),
+    path('hello/', HelloView.as_view())
 ]

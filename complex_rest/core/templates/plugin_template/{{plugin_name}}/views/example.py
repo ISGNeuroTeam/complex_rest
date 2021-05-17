@@ -6,7 +6,7 @@ from rest.views import APIView
 from rest.response import Response
 from rest.permissions import IsAuthenticated, AllowAny
 
-from .settings import ini_config
+from {{plugin_name}}.settings import ini_config
 
 # you can use default logger for plugin
 log = logging.getLogger('{{plugin_name}}')
