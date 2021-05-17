@@ -107,5 +107,6 @@ start.sh
 stop.sh
 {{plugin_name}}-*.tar.gz
 {{plugin_name}}.conf
+venv.tar.gz
 
 nginx/
