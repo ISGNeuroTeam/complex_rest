@@ -43,6 +43,7 @@ make_build: venv
 	rm make_build/{{plugin_name}}/{{plugin_name}}.conf
 	mv make_build/{{plugin_name}}/{{plugin_name}}.conf.example make_build/{{plugin_name}}/{{plugin_name}}.conf
 	cp *.md make_build/{{plugin_name}}/
+	cp *.py make_build/{{plugin_name}}/
 	mkdir make_build/{{plugin_name}}/venv
 	tar -xzf ./venv.tar.gz -C make_build/{{plugin_name}}/venv
 

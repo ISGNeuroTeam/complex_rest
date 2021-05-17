@@ -17,6 +17,8 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 
+from core.load_plugins import get_api_version
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,5 +27,5 @@ urlpatterns = [
 
 # add plugins urls
 urlpatterns += [
-    path(plugin+'/', include(plugin + '.urls')) for plugin in settings.PLUGINS
+    path(f'{plugin}/v{get_api_version(plugin)}/', include(plugin + '.urls')) for plugin in settings.PLUGINS
 ]

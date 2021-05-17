@@ -87,3 +87,12 @@ def get_plugins_loggers(plugins_names, logger_config):
             }
         })
     return loggers_config
+
+
+def get_api_version(plugin_name):
+    try:
+        return import_string(f'{plugin_name}.setup.__api_version__')
+    except ImportError:
+        return '1'
+
+

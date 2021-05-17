@@ -59,7 +59,7 @@ def get_cache(base_cache, namespace=None, timeout=None, max_entries=None):
     cache instance
     """
     if base_cache not in settings.CACHES:
-        raise ValueError(f'Cache with name {base_cache} not found CACHES settings')
+        raise ValueError(f'Cache with name {base_cache} not found in CACHES settings')
     if namespace is None:
         return caches[base_cache]
 

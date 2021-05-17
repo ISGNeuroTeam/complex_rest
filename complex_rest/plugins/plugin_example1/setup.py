@@ -1,0 +1,9 @@
+__author__ = "Artem Zenkov"
+__copyright__ = "Copyright 2021, ISGNeuro"
+__credits__ = []
+__license__ = ""
+__version__ = "1.0.0"
+__api_version__ = "2"
+__maintainer__ = "Artem Zenkov"
+__email__ = "azenkov@isgneuro.com"
+__status__ = "Develop"
