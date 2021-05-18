@@ -65,7 +65,8 @@ You must see:
 
 ```bash
 source ./venv/bin/activate
-python ./complex_rest/manage.py test ./tests/
+python ./complex_rest/manage.py test ./tests/ --settings=core.settings.test
+
 ```
 
 ## Deployment
@@ -84,9 +85,6 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
 ## License
 
