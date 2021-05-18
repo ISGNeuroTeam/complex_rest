@@ -26,6 +26,13 @@ urlpatterns = [
 ]
 
 # add plugins urls
-urlpatterns += [
-    path(f'{plugin}/v{get_api_version(plugin)}/', include(plugin + '.urls')) for plugin in settings.PLUGINS
-]
+if settings.DEBUG:
+    urlpatterns += [
+        path(f'{plugin}/v{get_api_version(plugin)}/', include(plugin + '.urls')) for plugin in settings.PLUGINS
+    ]
+else:
+    # remove plugin examples from urls if not debug mode
+    urlpatterns += [
+        path(f'{plugin}/v{get_api_version(plugin)}/', include(plugin + '.urls'))
+        for plugin in settings.PLUGINS if 'plugin_example' not in plugin
+    ]
