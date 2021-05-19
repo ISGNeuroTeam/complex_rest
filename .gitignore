@@ -109,5 +109,6 @@ start.sh
 stop.sh
 complex_rest-*.tar.gz
 rest.conf
+make_build
 
 nginx/
