@@ -30,11 +30,11 @@ clean_pack:
 
 
 {{plugin_name}}.tar.gz: build
-	cd build; tar czf ../{{plugin_name}}.tar.gz {{plugin_name}} && rm -rf ../make_build
+	cd make_build; tar czf ../{{plugin_name}}.tar.gz {{plugin_name}} && rm -rf ../make_build
 
 build: make_build
 
-make_build: venv
+make_build: venv venv_pack
 	# required section
 	echo make_build
 	mkdir make_build
@@ -55,6 +55,8 @@ venv: clean_venv
 	conda create --copy -p ./venv -y
 	conda install -p ./venv python==3.8.5 -y
 	./venv/bin/pip install --no-input  -r requirements.txt
+
+venv_pack: venv
 	conda pack -p ./venv -o ./venv.tar.gz
 
 clean_venv:
@@ -62,14 +64,24 @@ clean_venv:
 	rm -f ./venv.tar.gz
 
 
+complex_rest:
+	git clone git@github.com:ISGNeuroTeam/complex_rest.git
+	{ cd ./complex_rest; git checkout develop; make venv; make redis; }
+	ln -s ../../../../{{plugin_name}}/{{plugin_name}} ./complex_rest/complex_rest/plugins/{{plugin_name}}
 
-clean: clean_build clean_venv clean_pack clean_test
+clean_complex_rest:
+	{ cd ./complex_rest; make clean;}
+	rm -f ./complex_rest/plugins/{{plugin_name}}
+	rm -rf ./complex_rest
 
-test: venv
-	echo "Testing..."
+clean: clean_build clean_venv clean_pack clean_test clean_complex_rest
 
-clean_test:
-	echo "Clean tests"
+test: venv complex_rest
+	@echo "Testing..."
+	./complex_rest/venv/bin/python ./complex_rest/complex_rest/manage.py test ./tests --settings=core.settings.test
+
+clean_test: clean_complex_rest
+	@echo "Clean tests"
 
 
 
