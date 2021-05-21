@@ -38,7 +38,7 @@ complex_rest.tar.gz: build
 build: make_build
 
 
-make_build: venv
+make_build: venv venv_pack
 	# required section
 	echo make_build
 	mkdir make_build
@@ -63,6 +63,8 @@ venv: clean_venv
 	conda install -p ./venv redis -y
 	conda install -p ./venv python==3.8.5 -y
 	./venv/bin/pip install --no-input  -r requirements.txt
+
+venv_pack:
 	conda pack -p ./venv -o ./venv.tar.gz
 
 
@@ -88,10 +90,8 @@ else
 endif
 
 
-test: export SECRET_KEY = $(shell ./venv/bin/python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())")
 test: venv redis
 	@echo "Testing..."
-	@echo $$SECRET_KEY
 	./venv/bin/python ./complex_rest/manage.py test ./tests --settings=core.settings.test
 
 
