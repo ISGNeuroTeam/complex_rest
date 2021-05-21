@@ -47,6 +47,7 @@ make_build: venv
 	cp make_build/complex_rest/rest.conf.example make_build/complex_rest/rest.conf
 	cp *.md make_build/complex_rest/
 	cp *.py make_build/complex_rest/
+	rm -rf make_build/complex_rest/plugins/plugin_example*
 	cp ./docs/django_settings/production.py make_build/complex_rest/core/settings/production.py
 	mkdir make_build/complex_rest/venv
 	tar -xzf ./venv.tar.gz -C make_build/complex_rest/venv
