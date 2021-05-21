@@ -1,0 +1,26 @@
+{
+    "listeners": {
+        "*:50000": {
+            "pass": "applications/complex_rest"
+        }
+    },
+
+    "applications": {
+        "complex_rest": {
+            "user": "complex_rest",
+            "group": "complex_rest",
+            "type": "python 3.8",
+            "home": "/opt/otp/complex_rest/venv/",
+            "path": "/opt/otp/complex_rest",
+            "working_directory": "/opt/otp/complex_rest",
+            "module": "core.wsgi",
+            "environment": {
+                "DJANGO_SETTINGS_MODULE": "core.settings"
+            },
+            "limits": {
+                "timeout": 60
+            },
+            "processes": 10
+        }
+    }
+}
