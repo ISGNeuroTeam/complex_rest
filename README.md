@@ -60,6 +60,7 @@ You must see:
     "message": "plugin with name <plugin_name> created successfully"
 }
 ```
+See [creating plugin](docs/creating_plugin.md)
 
 ## Running the tests
 
