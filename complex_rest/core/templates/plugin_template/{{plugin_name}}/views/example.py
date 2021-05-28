@@ -3,7 +3,7 @@ import logging
 from cache import get_cache, cache_page
 
 from rest.views import APIView
-from rest.response import Response
+from rest.response import Response, status
 from rest.permissions import IsAuthenticated, AllowAny
 
 from {{plugin_name}}.settings import ini_config
@@ -44,8 +44,9 @@ class ExampleView(APIView):
         return Response(
             {
                 'message': 'plugin with name {{plugin_name}} created successfully. This is get request',
-                'url_params': request.GET
-            }
+                'url_params': dict(request.GET)
+            },
+            status.HTTP_200_OK
         )
 
     def post(self, request):
@@ -57,7 +58,8 @@ class ExampleView(APIView):
             {
                 'message': 'plugin with name {{plugin_name}} created successfully. This is post request',
                 'body_params': request.data
-            }
+            },
+            status.HTTP_200_OK
         )
 
 

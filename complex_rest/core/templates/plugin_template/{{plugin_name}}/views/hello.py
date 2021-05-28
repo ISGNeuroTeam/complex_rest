@@ -1,6 +1,6 @@
 from rest.views import APIView
-from rest.response import Response
-from rest.permissions import  AllowAny
+from rest.response import Response, status
+from rest.permissions import AllowAny
 
 
 class HelloView(APIView):
@@ -10,7 +10,8 @@ class HelloView(APIView):
         return Response(
             {
                 'message': 'Hello',
-            }
+            },
+            status.HTTP_200_OK
         )
 
 
