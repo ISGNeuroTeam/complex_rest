@@ -83,6 +83,35 @@ class ExampleView(APIView):
             status.HTTP_200_OK
         )
 ```
+### urls.py
+In `urls.py` define `urlpatterns` variable as list of `path` objects. Path objects maps url patterns to views.
+```python
+from rest.urls import path
+from .views.example import ExampleView
+from .views.hello import HelloView
+from .views.int_path_ex import NumberPath
+
+urlpatterns = [
+    path('example/', ExampleView.as_view()),
+    path('hello/', HelloView.as_view()),
+    path('num/<int:number>/test/<path:some_p>/', NumberPath.as_view())
+]
+```
+The url string may contain angle brackets (like `<number>` above) to capture part of the URL and send it as a keyword argument to the view.
+```python
+    def get(self, request, number, path):
+        return Response(
+            {
+                'number': number,
+                'number_type': str(type(number)),
+                'path': str(path),
+                'path_type': str(type(path))
+            },
+            status.HTTP_200_OK
+        )
+```
+Captured values can optionally include a converter type. For example, use `<int:name>` to capture an integer parameter. If a converter isn’t included, any string, excluding a / character, is matched.  
+For more information see [django urls](https://docs.djangoproject.com/en/3.2/topics/http/urls/)
 
 ### Setup.py
 In setup.py define author name, email, plugin api version and other variables. Example:  

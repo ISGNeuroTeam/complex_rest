@@ -70,9 +70,11 @@ complex_rest:
 	ln -s ../../../../{{plugin_name}}/{{plugin_name}} ./complex_rest/complex_rest/plugins/{{plugin_name}}
 
 clean_complex_rest:
+ifneq (,$(wildcard ./complex_rest))
 	{ cd ./complex_rest; make clean;}
 	rm -f ./complex_rest/plugins/{{plugin_name}}
 	rm -rf ./complex_rest
+endif
 
 clean: clean_build clean_venv clean_pack clean_test clean_complex_rest
 
