@@ -1,4 +1,6 @@
 import configparser
+
+from pathlib import Path
 from core.settings.ini_config import merge_ini_config_with_defaults
 
 default_ini_config = {
@@ -16,7 +18,7 @@ default_ini_config = {
 
 config_parser = configparser.ConfigParser()
 
-config_parser.read('{{plugin_name}}.conf')
+config_parser.read(Path(__file__).parent / '{{plugin_name}}.conf')
 
 ini_config = merge_ini_config_with_defaults(config_parser, default_ini_config)
 
