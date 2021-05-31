@@ -294,7 +294,8 @@ LOGGING = {
         'file': {
             'class': 'logging.FileHandler',
             'level': LOG_LEVEL,
-            'filename': str(LOG_DIR / 'rest.log')
+            'filename': str(LOG_DIR / 'rest.log'),
+            'formatter': 'default',
 
         },
         'rotate': {
@@ -303,6 +304,7 @@ LOGGING = {
             'filename': str(LOG_DIR / 'rest.log'),
             'maxBytes': 1024 * 1024 * int(ini_config['logging']['rotation_size']),
             'backupCount': int(ini_config['logging']['keep_files']),
+            'formatter': 'default',
         },
         **plugins_log_handlers,
     },
