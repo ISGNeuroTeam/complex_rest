@@ -1,3 +1,4 @@
+import json
 from rest.test import TestCase, APIClient
 
 
@@ -24,14 +25,18 @@ class TestExample(TestCase):
         # How to make post requests
         client = APIClient()
         # post request with body: {'param1': 42, 'param2': 69}
-        response = client.post('/{{plugin_name}}/v1/example/', data={'param1': 42, 'param2': 69})
+        response = client.post(
+            '/{{plugin_name}}/v1/example/',
+            json.dumps({'param1': 42, 'param2': 69}),
+            content_type='application/json'
+        )
 
         self.assertEqual(response.status_code, 200)
         message = response.data['message']
         self.assertIn('created successfully', message)
         body_params = response.data['body_params']
-        self.assertEqual(body_params['param1'], '42')
-        self.assertEqual(body_params['param2'], '69')
+        self.assertEqual(body_params['param1'], 42)
+        self.assertEqual(body_params['param2'], 69)
 
     def test_not_pass(self):
         self.assertEqual(1, 2, "Please, make some tests :)")
