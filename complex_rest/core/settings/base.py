@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_celery_beat',
 ]
 
 LOCAL_APPS = [
@@ -131,10 +132,11 @@ DATABASES.update(
 
 DATABASE_ROUTERS = ['core.db_routers.AuthRouter', 'core.db_routers.PluginRouter', ]
 
+redis_connection_string = f'redis://{ini_config["redis"]["host"]}:{ini_config["redis"]["port"]}'
 
 redis_cache_config_dict = {
     'BACKEND': 'cache.RedisCache',
-    'LOCATION': f'redis://{ini_config["redis"]["host"]}:{ini_config["redis"]["port"]}',
+    'LOCATION': redis_connection_string,
     'OPTIONS': {
         'DB': ini_config['redis']['DB'],
         'PASSWORD': ini_config['redis']['password'],
@@ -198,11 +200,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
-USE_L10N = True
+USE_L10N = False
 
 USE_TZ = True
 
@@ -342,3 +344,8 @@ TOKEN_SETTINGS = {
         ('login', 'username'),
     ],
 }
+
+# Celery Configuration Options
+CELERY_TIMEZONE = 'Europe/Moscow'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
