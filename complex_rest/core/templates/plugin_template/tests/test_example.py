@@ -12,7 +12,7 @@ class TestExample(TestCase):
     def test_hello(self):
         # How to make get requests
         client = APIClient()
-        response = client.get('/{{plugin_name}}/v1/hello/')
+        response = client.get('/{{plugin_name}}/v1/hello/'.lower())
 
         # checking status code
         self.assertEqual(response.status_code, 200)
@@ -26,7 +26,7 @@ class TestExample(TestCase):
         client = APIClient()
         # post request with body: {'param1': 42, 'param2': 69}
         response = client.post(
-            '/{{plugin_name}}/v1/example/',
+            '/{{plugin_name}}/v1/example/'.lower(),
             json.dumps({'param1': 42, 'param2': 69}),
             content_type='application/json'
         )
