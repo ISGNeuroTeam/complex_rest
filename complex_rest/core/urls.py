@@ -13,10 +13,10 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from pathlib import Path
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
-
 from core.load_plugins import get_api_version
 
 
@@ -25,14 +25,10 @@ urlpatterns = [
     path('auth/', include(('rest_auth.urls', 'rest_auth'), namespace='auth')),
 ]
 
-# add plugins urls
-if settings.DEBUG:
-    urlpatterns += [
-        path(f'{plugin.lower()}/v{get_api_version(plugin)}/', include(plugin + '.urls')) for plugin in settings.PLUGINS
-    ]
-else:
-    # remove plugin examples from urls if not debug mode
-    urlpatterns += [
-        path(f'{plugin.lower()}/v{get_api_version(plugin)}/', include(plugin + '.urls'))
-        for plugin in settings.PLUGINS if 'plugin_example' not in plugin
-    ]
+# add plugins urls if they exist except plugin examples when not debug
+urlpatterns += [
+    path(f'{plugin.lower()}/v{get_api_version(plugin)}/', include(plugin + '.urls'))
+    for plugin in settings.PLUGINS
+    if (Path(settings.PLUGINS_DIR) / plugin / 'urls.py').exists()
+    if settings.DEBUG or 'plugin_example' not in plugin
+]
