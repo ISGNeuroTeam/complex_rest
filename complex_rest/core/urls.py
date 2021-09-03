@@ -17,7 +17,7 @@ from pathlib import Path
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
-from core.load_plugins import get_api_version
+from core.load_plugins import get_plugin_base_url
 
 
 urlpatterns = [
@@ -27,7 +27,7 @@ urlpatterns = [
 
 # add plugins urls if they exist except plugin examples when not debug
 urlpatterns += [
-    path(f'{plugin.lower()}/v{get_api_version(plugin)}/', include(plugin + '.urls'))
+    path(get_plugin_base_url(plugin), include(plugin + '.urls'))
     for plugin in settings.PLUGINS
     if (Path(settings.PLUGINS_DIR) / plugin / 'urls.py').exists()
     if settings.DEBUG or 'plugin_example' not in plugin

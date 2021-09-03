@@ -26,7 +26,7 @@ c = get_cache('RedisCache', namespace='{{plugin_name}}', timeout=300, max_entrie
 
 # Cache using example:
 c.set('var_name', 'Some value', timeout=200)
-print(c.get('var_name'))
+# print(c.get('var_name'))
 
 
 class ExampleView(APIView):

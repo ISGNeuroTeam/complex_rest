@@ -1,4 +1,5 @@
 import sys
+import re
 
 from pathlib import Path
 from django.utils.module_loading import import_string
@@ -89,10 +90,48 @@ def get_plugins_loggers(plugins_names, logger_config):
     return loggers_config
 
 
-def get_api_version(plugin_name):
+def get_plugin_api_version(plugin_name):
+    """
+    Returns plugin version from plugin name or from setup.py
+    """
+    # try to get plugin version from name
+    # plugin name may include version <some_name~2.3>
+    version = get_plugin_version_from_full_plugin_name(plugin_name)
+    print(version)
+    if version:
+        return version
+    # try to get version from setup.py
     try:
         return import_string(f'{plugin_name}.setup.__api_version__')
     except ImportError:
         return '1'
+
+
+PLUGIN_VERSION_PATTERN = re.compile(r'_v(\d+(\.\d)*)$')
+
+
+def get_plugin_version_from_full_plugin_name(plugin_name):
+    match_obj = PLUGIN_VERSION_PATTERN.search(plugin_name)
+    if match_obj:
+        version = match_obj.group(1)
+        return version
+    return ''
+
+
+def get_plugin_name_from_full_plugin_name(plugin_name):
+    """
+    Discard PLUGIN_VERSION_PATTERN
+    Returns only plugin name
+    """
+    match_obj = PLUGIN_VERSION_PATTERN.search(plugin_name)
+    if match_obj:
+        version_suffix = match_obj.group(0)
+        return re.sub(version_suffix, '', plugin_name)
+    else:
+        return plugin_name
+
+
+def get_plugin_base_url(plugin_name):
+    return f'{get_plugin_name_from_full_plugin_name(plugin_name).lower()}/v{get_plugin_api_version(plugin_name)}/'
 
 
