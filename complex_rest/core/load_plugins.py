@@ -95,9 +95,8 @@ def get_plugin_api_version(plugin_name):
     Returns plugin version from plugin name or from setup.py
     """
     # try to get plugin version from name
-    # plugin name may include version <some_name~2.3>
+    # plugin name may include version <some_name_v2.3>
     version = get_plugin_version_from_full_plugin_name(plugin_name)
-    print(version)
     if version:
         return version
     # try to get version from setup.py

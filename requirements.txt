@@ -6,5 +6,8 @@ djangorestframework==3.12.4
 PyJWT==2.0.1
 celery==5.1.2
 django-celery-beat==2.2.0
+aiokafka==0.7.2
+kafka-python==2.0.2
+
 
 
