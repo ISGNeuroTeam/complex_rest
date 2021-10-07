@@ -2,7 +2,7 @@ import time
 
 from django.test import TestCase
 from django.conf import settings
-from cache import get_cache
+from cache import get_cache, CacheForFunctionDecorator
 
 
 class TestCache(TestCase):
@@ -46,4 +46,52 @@ class TestCache(TestCase):
     def test_cache_identity(self):
         for base_cache in self.base_caches.keys():
             self._test_cache_identity(base_cache)
+
+
+class TestCacheFunction(TestCase):
+    def test_same_args(self):
+        decor = CacheForFunctionDecorator()
+        print(callable(decor))
+        was_first_call = False
+
+        @decor
+        def func1(*args, **kwargs):
+            nonlocal was_first_call
+            if was_first_call:
+                raise Exception
+            was_first_call = True
+            return list(args) + list(kwargs.items())
+
+        result1 = func1(12, 3, 4, 'asdfasdf', hello=True)
+        result2 = func1(12, 3, 4, 'asdfasdf', hello=True)
+        self.assertListEqual(result1, result2)
+
+    def test_different_args(self):
+        counter = 0
+
+        decor = CacheForFunctionDecorator()
+
+        @decor
+        def func(a):
+            nonlocal counter
+            counter += 1
+            return a
+
+        func(1)
+        func(1)
+        self.assertEqual(counter, 1)
+        func(2)
+        self.assertEqual(counter, 2)
+        decor.clear_cache()
+        func(1)
+        self.assertEqual(counter, 3)
+
+
+
+
+
+
+
+
+
 

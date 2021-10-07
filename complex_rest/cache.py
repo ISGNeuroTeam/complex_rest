@@ -94,6 +94,61 @@ def get_cache(base_cache, namespace=None, timeout=None, max_entries=None):
     return caches[cache_name]
 
 
+class CacheForFunctionDecorator:
+    """
+    Decorator for function cache
+    All function arguments must be hashable objects
+    """
+    def __init__(self, cache=None):
+        if cache is None:
+            cache = get_cache('RedisCache')
+        self.cache = cache
+        self.func_keys = set()
+
+    def __call__(self, func):
+
+        def wrap(*args, **kwargs):
+            nonlocal self
+            key = self._make_key_for_func_and_args(
+                func, args, kwargs
+            )
+            if key in self.func_keys:
+                return self.cache.get(key)
+            else:
+                result = func(*args, **kwargs)
+                self.cache.set(key, result)
+                self.func_keys.add(key)
+                return result
+        return wrap
+
+    def _make_key_for_func_and_args(self, func, args, kwargs):
+        """
+        makes uknique key for function and args
+        :param func: function
+        :param args: funcion args as tuple
+        :param kwargs: funcgion kwargs as dictionary
+        :return:
+        unique key
+        """
+        func_key = str(hash(func))
+        arg_key = str(
+            hash(
+                tuple(
+                    list(args) + sorted(kwargs.items())
+                )
+            )
+        )
+        return f'_func_cache_{func_key}_{arg_key}'
+
+    def clear_cache(self):
+        """
+        Removes all function values from cache
+        :return:
+        """
+        for key in self.func_keys:
+            self.cache.delete(key)
+        self.func_keys.clear()
+
 
 
 
