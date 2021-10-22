@@ -8,6 +8,8 @@ celery==5.1.2
 django-celery-beat==2.2.0
 aiokafka==0.7.2
 kafka-python==2.0.2
+supervisor==4.2.2
+
 
 
 

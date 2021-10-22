@@ -7,8 +7,6 @@
 
     "applications": {
         "complex_rest": {
-            "user": "complex_rest",
-            "group": "complex_rest",
             "type": "python 3.8",
             "home": "/opt/otp/complex_rest/venv/",
             "path": "/opt/otp/complex_rest",

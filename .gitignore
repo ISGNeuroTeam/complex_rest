@@ -111,5 +111,6 @@ complex_rest-*.tar.gz
 rest.conf
 make_build
 secret_key
+complex_rest/supervisord*
 
 nginx/
