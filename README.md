@@ -31,22 +31,49 @@ pip install -r ./requirements.txt
 ./docs/scripts/create_db_users.sh
 ./docs/scripts/create_db.sh
 ```
-4. Launch redis server:  
-```bash
-redis-server --daemonize yes
-```
-5. Make migrations:  
+3. Make migrations:  
 ```bash
 ./docs/scripts/migrations.sh
 ```
-6. Launch complex rest server:  
+4. Create admin user:  
+```bash
+python ./complex_rest/manage.py createsuperuser --database=auth_db
+```
+5. Launch redis server:  
+```bash
+redis-server --daemonize yes
+```
+6. Launch celery workers:  
+```bash
+./docs/scripts/start_celery.sh
+```
+7. Launch complex rest server:  
 ```bash
 source ./venv/bin/activate
 python ./complex_rest/manage.py runserver [::]:8080
 ```
-7. Create admin user:  
+### Launching services  with supervisor
+1. Copy `start.sh`, `stop.sh` and `supervisord_base_dev.conf` in `./complex_rest` directory:  
 ```bash
-python ./complex_rest/manage.py createsuperuser --database=auth_db
+cp ./docs/deploy/start.sh ./complex_rest/start.sh
+cp ./docs/deploy/stop.sh ./complex_rest/stop.sh
+cp ./docs/deploy/supervisord_base_dev.conf ./complex_rest/supervisord_base.conf
+```
+2. Activate virtual environment:  
+```bash
+source ./venv/bin/activate
+```
+3. Launch services:  
+```bash
+./complex_rest/start.sh
+```
+4. Use `supervisorctl`  from `complex_rest` directory to manage services:  
+```bash
+supervisorctl status
+celery-beat                      RUNNING   pid 24391, uptime 0:00:12
+celery-worker                    RUNNING   pid 24392, uptime 0:00:12
+complex_rest                     RUNNING   pid 24393, uptime 0:00:12
+redis                            RUNNING   pid 24390, uptime 0:00:12
 ```
 ### Create your plugin
 ```bash
