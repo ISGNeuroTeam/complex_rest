@@ -7,7 +7,14 @@ class AbstractConsumer(ABC):
     """
 
     @abstractmethod
-    def __init__(self, topic, config):
+    def __init__(self, topic, binary=False, key_deserializer=None, value_deserializer=None, config=None):
+        """
+        :param topic: topic to consume messages
+        :param binary: if binary=True then no deserialization and Message.value and Message.key will be binary
+        :param key_deserializer:  callable, key desirializer
+        :param value_deserializer:  callable, value desirilizer
+        :param config: configuration dictionary for message broker adapter
+        """
         raise NotImplementedError
 
     @abstractmethod
@@ -17,7 +24,8 @@ class AbstractConsumer(ABC):
     @abstractmethod
     def __next__(self):
         """
-        Returns next Message object
+        :return:
+        next Message object
         """
         raise NotImplementedError
 
@@ -42,7 +50,14 @@ class AbstractAsyncConsumer(ABC):
     Abstract consumer. Asynchronous iterator through messages. May be used as context manager
     """
     @abstractmethod
-    def __init__(self, topic, config):
+    def __init__(self, topic, binary=False, key_deserializer=None, value_deserializer=None, config=None):
+        """
+        :param topic: topic to consume messages
+        :param binary: if binary=True then no deserialization and Message.value and Message.key will be binary
+        :param key_deserializer:  callable, key desirializer
+        :param value_deserializer:  callable, value desirilizer
+        :param config: configuration dictionary for message broker adapter
+        """
         raise NotImplementedError
 
     @abstractmethod
@@ -52,7 +67,8 @@ class AbstractAsyncConsumer(ABC):
     @abstractmethod
     async def __anext__(self):
         """
-        Returns next Message object
+        :return:
+        next Message object
         """
         raise NotImplementedError
 

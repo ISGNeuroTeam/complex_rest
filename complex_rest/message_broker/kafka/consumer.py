@@ -4,8 +4,44 @@ from ..abstract_consumer import  AbstractConsumer, AbstractAsyncConsumer
 from ..message import Message
 
 
-class Consumer(AbstractConsumer):
-    def __init__(self, topic, config):
+class BaseKafkaConsumer:
+    def __init__(self, binary=False, key_deserializer=None, value_deserializer=None):
+        self.key_deserializer=key_deserializer
+        self.binary = binary
+        self.value_deserializer=value_deserializer
+
+    def get_message_obj(self, kafka_message_obj):
+        """
+        Creates Message object based on parameters: binary, key_deserializer, value_deserializer
+        :param kafka_message_obj: message object from kafka
+        :return: Message object
+        """
+        if self.binary:
+            message_value = kafka_message_obj.value
+        elif self.value_deserializer:
+            message_value = self.value_deserializer(kafka_message_obj.value)
+        else:
+            message_value = kafka_message_obj.value.decode()
+
+
+        if kafka_message_obj.key is None or self.binary is True:
+            message_key = kafka_message_obj.key
+        elif self.key_deserializer:
+            message_key = self.key_deserializer(kafka_message_obj.key)
+        else:
+            message_key = kafka_message_obj.key.decode()
+
+        return Message(
+            value=message_value,
+            key=message_key
+        )
+
+
+class Consumer(AbstractConsumer, BaseKafkaConsumer):
+    def __init__(self, topic, binary=False, key_deserializer=None, value_deserializer=None, config=None):
+        BaseKafkaConsumer.__init__(self, binary, key_deserializer, value_deserializer)
+
+        config = config or {}
         self.kafka_consumer = KafkaConsumer(
             topic,
             **config,
@@ -16,7 +52,7 @@ class Consumer(AbstractConsumer):
 
     def __next__(self):
         kafka_message_obj = next(self.kafka_consumer)
-        return Message(kafka_message_obj.value.decode(), key=kafka_message_obj.key.decode())
+        return self.get_message_obj(kafka_message_obj)
 
     def start(self):
         pass
@@ -25,8 +61,11 @@ class Consumer(AbstractConsumer):
         pass
 
 
-class AsyncConsumer(AbstractAsyncConsumer):
-    def __init__(self, topic, config):
+class AsyncConsumer(AbstractAsyncConsumer, BaseKafkaConsumer):
+    def __init__(self, topic, binary=False, key_deserializer=None, value_deserializer=None, config=None):
+        BaseKafkaConsumer.__init__(self, binary, key_deserializer, value_deserializer)
+
+        config = config or {}
         self.kafka_consumer = AIOKafkaConsumer(
             topic,
             **config,
@@ -37,7 +76,7 @@ class AsyncConsumer(AbstractAsyncConsumer):
 
     async def __anext__(self):
         kafka_message_obj = await self.kafka_consumer.getone()
-        return Message(kafka_message_obj.value.decode(), key=kafka_message_obj.key.decode())
+        return self.get_message_obj(kafka_message_obj)
 
     async def start(self):
         await self.kafka_consumer.start()

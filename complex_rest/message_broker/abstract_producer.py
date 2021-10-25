@@ -7,16 +7,21 @@ class AbstractProducer(ABC):
     """
 
     @abstractmethod
-    def __init__(self, config):
+    def __init__(self, key_serializer=None, value_serializer=None, config=None):
+        """
+        :param key_serializer: callable, serializer for key
+        :param value_serializer:  callable, serializer for value
+        :param config: dict configuration for concreate message broker
+        """
         raise NotImplementedError
 
     @abstractmethod
     def send(self, topic, message, key=None):
         """
         Put message in message queue
-        :param message: message string
+        :param message: message
         :param topic: topic, queue name, channel, etc...
-        :param key: optional message key string
+        :param key: optional message key
         :return:
         unique message id
         """
@@ -44,16 +49,21 @@ class AbstractAsyncProducer(ABC):
     """
 
     @abstractmethod
-    def __init__(self, config):
+    def __init__(self, key_serializer=None, value_serializer=None, config=None):
+        """
+        :param key_serializer: callable, serializer for key
+        :param value_serializer:  callable, serializer for value
+        :param config: dict configuration for concreate message broker
         raise NotImplementedError
+        """
 
     @abstractmethod
     async def send(self, topic, message, key=None):
         """
         Put message in message queue
-        :param message: message string
+        :param message: message
         :param topic: topic, queue name, channel, etc...
-        :param key: optional message key string
+        :param key: optional message key
         :return:
         unique message id
         """

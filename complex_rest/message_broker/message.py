@@ -1,13 +1,10 @@
-class Message(str):
-    def __new__(cls, *args, **kwargs):
-        # add key property
-        key = None
-        if 'key' in kwargs:
-            key = kwargs['key']
-            del kwargs['key']
-        message = str.__new__(cls, *args, **kwargs)
-        message.key = key
-        return message
+class Message:
+    def __init__(self, value, key=None):
+        self.key = key
+        self.value = value
+
+
+
 
 
 
