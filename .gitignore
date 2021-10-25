@@ -105,12 +105,13 @@ GitHub.sublime-settings
 # plugin develop directory
 plugin_dev/
 
-start.sh
-stop.sh
+complex_rest/start.sh
+complex_rest/stop.sh
 complex_rest-*.tar.gz
 rest.conf
 make_build
 secret_key
 complex_rest/supervisord*
+deploy_state/
 
 nginx/

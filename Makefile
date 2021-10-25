@@ -51,10 +51,10 @@ make_build: venv venv_pack
 	cp ./docs/deploy/django_settings/production.py make_build/complex_rest/core/settings/production.py
 	mkdir make_build/complex_rest/venv
 	mkdir -p make_build/complex_rest/logs
-	mkdir make_build/complex_rest/logs/redis
-	mkdir make_build/complex_rest/logs/nginx-unit
-	mkdir make_build/complex_rest/logs/celery
-	mkdir make_build/complex_rest/deploy_state
+	mkdir -p make_build/complex_rest/logs/redis
+	mkdir -p make_build/complex_rest/logs/nginx-unit
+	mkdir -p make_build/complex_rest/logs/celery
+	mkdir -p make_build/complex_rest/deploy_state
 	cp ./docs/deploy/nginx-unit.json make_build/complex_rest/deploy_state/conf.json
 	touch make_build/complex_rest/deploy_state/supervisord-control.sock
 	cp ./docs/deploy/*.sh make_build/complex_rest/
