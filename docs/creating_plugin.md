@@ -235,15 +235,17 @@ To migrate run from complex_rest root directory:
 If you need to launch additional processes configure `proc.conf` file for supervisor with section `[program]`. Use `%(here)s` string for current directory (where `proc.conf` located). Example:  
 ```ini
 [program: dispatcher]
-command=python %(here)s/dispatcher/main.py
+command=python -u %(here)s/dispatcher/main.py
 startsecs=3
 autorestart=True
 autostart=True
-priority = 100
-stdout_logfile = ./logs/otl_interpreter/dispatcher_stdout.log
-stderr_logfile = ./logs/otl_interpreter/dispatcher_stderr.log
-
 ```
+`startsecs` - the total number of seconds which the program needs to stay running after a startup to consider the start successful   
+`autostart`- If true, this program will start automatically when supervisord is started.  
+`autorestart` - specifies if supervisord should automatically restart a process if it exits   
+process stdout you wil find in `<logging directory>/<plugin name>/<program name>_stdout.log`  
+process stderr in `<logging directory>/<plugin name>/<process name>_stderr.log`  
+
 ### Make tests
 Make tests for your plugin in tests directory. Define subclass of `TestCase` and use `APIClient` to test api. Example:  
 ```python
