@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'mptt',
     'rest_framework',
     'django_celery_beat',
 ]
@@ -331,6 +332,7 @@ REST_FRAMEWORK = {
         'rest_auth.authentication.JWTAuthentication',
     ],
     'DEFAULT_RENDERER_CLASSES': DEFAULT_RENDERER_CLASSES,
+    'EXCEPTION_HANDLER': 'rest.exception_handler.custom_exception_handler'
 }
 
 
