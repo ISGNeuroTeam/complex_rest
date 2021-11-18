@@ -44,20 +44,26 @@ make_build: venv venv_pack
 	mv make_build/{{plugin_name}}/{{plugin_name}}.conf.example make_build/{{plugin_name}}/{{plugin_name}}.conf
 	cp *.md make_build/{{plugin_name}}/
 	cp *.py make_build/{{plugin_name}}/
-	mkdir make_build/{{plugin_name}}/venv
-	tar -xzf ./venv.tar.gz -C make_build/{{plugin_name}}/venv
+	if [ -s requirements.txt ]; then \
+		mkdir make_build/{{plugin_name}}/venv;\
+		tar -xzf ./venv.tar.gz -C make_build/{{plugin_name}}/venv; \
+	fi
 
 clean_build:
 	rm -rf make_build
 
 venv: clean_venv
-	echo Create venv
-	conda create --copy -p ./venv -y
-	conda install -p ./venv python==3.8.5 -y
-	./venv/bin/pip install --no-input  -r requirements.txt
+	if [ -s requirements.txt ]; then \
+		echo Create venv; \
+		conda create --copy -p ./venv -y; \
+		conda install -p ./venv python==3.8.5 -y; \
+		./venv/bin/pip install --no-input  -r requirements.txt; \
+	fi
 
 venv_pack: venv
-	conda pack -p ./venv -o ./venv.tar.gz
+	if [ -s requirements.txt ]; then \
+		conda pack -p ./venv -o ./venv.tar.gz; \
+	fi
 
 clean_venv:
 	rm -rf venv
