@@ -11,6 +11,7 @@ Configure database, launch redis-server, make migrations
 You need:  
 * [postgresql server](https://www.postgresql.org/download/linux/)
 * [redis-server](https://redis.io/download)
+* [kafka](https://kafka.apache.org/quickstart)
 * postgresql libraries and headers for C language backend development
 ```bash
 yum install postgresql-server, postgresql-devel
@@ -47,12 +48,13 @@ redis-server --daemonize yes
 ```bash
 ./docs/scripts/start_celery.sh
 ```
-7. Launch complex rest server:  
+7. Launch kafka.  
+8. Launch complex rest server:  
 ```bash
 source ./venv/bin/activate
 python ./complex_rest/manage.py runserver [::]:8080
 ```
-### Launching services  with supervisor
+### Launching complex rest services (web server, celery, celery-beat and plugin processes)  with supervisor
 1. Copy `start.sh`, `stop.sh` and `supervisord_base_dev.conf` in `./complex_rest` directory:  
 ```bash
 cp ./docs/deploy/start.sh ./complex_rest/start.sh
@@ -131,69 +133,33 @@ port = 5432
 ```bash
 redis-server --daemonize yes
 ```
-6. Configure section `[redis]` in `rest.conf` for redis usage. Example:  
+6. Run kafka.
+7. Configure section `[redis]` in `rest.conf` for redis usage. Example:  
 ```ini
 host = localhost
 port = 6379
 DB = 0
 password =
 ```
-7. Make migrations (create all necessary tables):  
+8. Make migrations (create all necessary tables):  
 ```bash
 ./venv/bin/python ./manage.py migrate --database=auth_db --settings=core.settings.base
 ```
 ```bash
 ./venv/bin/python ./manage.py migrate --settings=core.settings.base
 ```
-8. Create cache tables in databases:  
+9. Create cache tables in databases:  
 ```bash
 ./venv/bin/python ./manage.py createcachetable --database=auth_db --settings=core.settings.base
 ```
 ```bash
 ./venv/bin/python ./manage.py createcachetable --settings=core.settings.base
 ```
-9. Create admin user:  
+10. Create admin user:  
 ```bash
 ./venv/bin/python ./manage.py createsuperuser --database=auth_db
 ```
-10. Create user for launching server. Make sure he has access  to application directory, logging directory and plugin directory. Example:  
-```bash
-useradd complex_rest
-chown -R complex_rest:complex_rest /opt/otp/complex_rest
-```
-11. Create json config for nginx-unit. Example:  
-```json
-{
-    "listeners": {
-        "*:50000": {
-            "pass": "applications/complex_rest"
-        }
-    },
-
-    "applications": {
-        "complex_rest": {
-            "user": "complex_rest",
-            "group": "complex_rest",
-            "type": "python 3.8",
-            "home": "/opt/otp/complex_rest/venv/",
-            "path": "/opt/otp/complex_rest",
-            "working_directory": "/opt/otp/complex_rest",
-            "module": "core.wsgi",
-            "environment": {
-                "DJANGO_SETTINGS_MODULE": "core.settings"
-            },
-            "limits": {
-                "timeout": 60
-            },
-            "processes": 10
-        }
-    }
-}
-```
-11. Configure nginx-unit. Example:  
-```bash
-curl -X PUT --data-binary @nginx-unit.json --unix-socket /run/control.unit.sock http://localhost/config/
-```
+11. Run `start.sh`
 
 
 ## Built With
