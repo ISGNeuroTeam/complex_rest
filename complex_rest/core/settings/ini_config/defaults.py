@@ -38,6 +38,16 @@ default_config = {
         'rotate': 'True',
         'rotation_size': '10',
         'keep_files': '10'
+    },
+    'message_broker': {
+        'backend': 'kafka'
+    },
+    'message_broker_producer': {
+        'bootstrap_servers': 'localhost:9092',
+        'acks': 'all',
+    },
+    'message_broker_consumer': {
+        'bootstrap_servers': 'localhost:9092'
     }
 }
 

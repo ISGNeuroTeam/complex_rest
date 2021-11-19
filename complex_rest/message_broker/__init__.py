@@ -1,7 +1,12 @@
+import enum
 import importlib
 
+from core.settings.ini_config import ini_config, merge_ini_config_with_defaults
 
-class MessageBrokerBackends:
+from .message import Message
+
+
+class MessageBrokerBackends(enum.Enum):
     KAFKA = 'kafka'
     
     
@@ -14,11 +19,25 @@ MESSAGE_BROKER_DEFAULT_CONFIG = {
         'consumer': {
             'bootstrap_servers': 'localhost:9092',
         }
-    }
+    },
 }
 
+MESSAGE_BROKER_BACKEND = MessageBrokerBackends(ini_config['message_broker']['backend'])
 
-def import_message_broker_module(module, backend=MessageBrokerBackends.KAFKA):
+
+PRODUCER_CONFIG = merge_ini_config_with_defaults(
+    ini_config['message_broker_producer'],
+    MESSAGE_BROKER_DEFAULT_CONFIG[MESSAGE_BROKER_BACKEND]['producer'],
+)
+
+
+CONSUMER_CONFIG = merge_ini_config_with_defaults(
+    ini_config['message_broker_consumer'],
+    MESSAGE_BROKER_DEFAULT_CONFIG[MESSAGE_BROKER_BACKEND]['consumer'],
+)
+
+
+def import_message_broker_module(module):
     """
     Import module for message broker backend
     :param backend: message broker name, kafka by default
@@ -27,7 +46,7 @@ def import_message_broker_module(module, backend=MessageBrokerBackends.KAFKA):
     producer or consumer module
     """
     assert module == 'producer' or module == 'consumer'
-    module_name = f'message_broker.{backend}.{module}'
+    module_name = f'message_broker.{MESSAGE_BROKER_BACKEND.value}.{module}'
     try:
         module = importlib.import_module(module_name)
     except ImportError as err:
@@ -37,30 +56,25 @@ def import_message_broker_module(module, backend=MessageBrokerBackends.KAFKA):
 
 def Consumer(
         topic, binary=False, key_deserializer=None, value_deserializer=None,
-        config=None, backend=MessageBrokerBackends.KAFKA
 ):
     """
     fabric method for consumer
 
     :param topic: topic to consume messages
     :param binary: if binary=True then no deserialization and Message.value and Message.key will be binary
-    :param key_deserializer:  callable, key desirializer
-    :param value_deserializer:  callable, value desirilizer
-    :param backend: which backend to use, default is kafka
-    :param config: config dictionary for connection
+    :param key_deserializer:  callable, key deserializer
+    :param value_deserializer:  callable, value deserializer
     :return:
     Message broker consumer instance
     """
-    if config is None:
-        config = MESSAGE_BROKER_DEFAULT_CONFIG[backend]['consumer']
-    module = import_message_broker_module('consumer', backend)
-    consumer = module.Consumer(topic, binary, key_deserializer, value_deserializer, config)
+
+    module = import_message_broker_module('consumer')
+    consumer = module.Consumer(topic, binary, key_deserializer, value_deserializer, CONSUMER_CONFIG)
     return consumer
 
 
 def AsyncConsumer(
         topic, binary=False, key_deserializer=None, value_deserializer=None,
-        config=None, backend=MessageBrokerBackends.KAFKA
 ):
     """
     fabric method for asynchronous consumer
@@ -69,21 +83,16 @@ def AsyncConsumer(
     :param binary: if binary=True then no deserialization and Message.value and Message.key will be binary
     :param key_deserializer:  callable, key desirializer
     :param value_deserializer:  callable, value desirilizer
-    :param backend: which backend to use, default is kafka
-    :param config: config dictionary for connection
     :return:
     Message broker consumer instance
     """
-    if config is None:
-        config = MESSAGE_BROKER_DEFAULT_CONFIG[backend]['consumer']
-    module = import_message_broker_module('consumer', backend)
-    consumer = module.AsyncConsumer(topic, binary, key_deserializer, value_deserializer, config)
+    module = import_message_broker_module('consumer')
+    consumer = module.AsyncConsumer(topic, binary, key_deserializer, value_deserializer, CONSUMER_CONFIG)
     return consumer
 
 
 def Producer(
         key_serializer=None, value_serializer=None,
-        backend=MessageBrokerBackends.KAFKA, config=None
 ):
     """
     fabric method for producer
@@ -91,40 +100,25 @@ def Producer(
 
     :param key_serializer: callable, serializer for key
     :param value_serializer:  callable, serializer for value
-    :param backend: which backend to use, default is kafka
-    :param config: config dictionary for connection
     :return:
     Message broker producer instance
     """
-    if config is None:
-        config = MESSAGE_BROKER_DEFAULT_CONFIG[backend]['producer']
-
-    module = import_message_broker_module('producer', backend)
-    producer = module.Producer(key_serializer, value_serializer, config)
+    module = import_message_broker_module('producer')
+    producer = module.Producer(key_serializer, value_serializer, PRODUCER_CONFIG)
     return producer
 
 
 def AsyncProducer(
         key_serializer=None, value_serializer=None,
-        backend=MessageBrokerBackends.KAFKA, config=None
 ):
     """
     fabric method for asynchronous producer
 
     :param key_serializer: callable, serializer for key
     :param value_serializer:  callable, serializer for value
-    :param backend: which backend to use, default is kafka
-    :param config: config dictionary for connection
     :return:
     Message broker producer instance
     """
-    if config is None:
-        config = MESSAGE_BROKER_DEFAULT_CONFIG[backend]['producer']
-
-    module = import_message_broker_module('producer', backend)
-    producer = module.AsyncProducer(key_serializer, value_serializer, config)
+    module = import_message_broker_module('producer')
+    producer = module.AsyncProducer(key_serializer, value_serializer, PRODUCER_CONFIG)
     return producer
-
-
-
-
