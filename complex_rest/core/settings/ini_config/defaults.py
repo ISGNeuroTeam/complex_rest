@@ -25,7 +25,7 @@ default_config = {
     'redis': {
         'host': 'localhost',
         'port': '6379',
-        'DB': '0',
+        'db': '0',
         'password': '',
     },
     'auth': {

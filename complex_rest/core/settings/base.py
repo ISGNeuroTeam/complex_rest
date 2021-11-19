@@ -139,7 +139,7 @@ redis_cache_config_dict = {
     'BACKEND': 'cache.RedisCache',
     'LOCATION': redis_connection_string,
     'OPTIONS': {
-        'DB': ini_config['redis']['DB'],
+        'DB': ini_config['redis']['db'],
         'PASSWORD': ini_config['redis']['password'],
         'CLIENT_CLASS': "django_redis.client.DefaultClient",
     },
