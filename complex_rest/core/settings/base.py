@@ -133,14 +133,17 @@ DATABASES.update(
 
 DATABASE_ROUTERS = ['core.db_routers.AuthRouter', 'core.db_routers.PluginRouter', ]
 
-redis_connection_string = f'redis://{ini_config["redis"]["host"]}:{ini_config["redis"]["port"]}'
+# redis connection parameters
+REDIS_CONFIG = ini_config['redis']
+
+redis_connection_string = f"redis://{REDIS_CONFIG['host']}:{REDIS_CONFIG['port']}"
 
 redis_cache_config_dict = {
     'BACKEND': 'cache.RedisCache',
     'LOCATION': redis_connection_string,
     'OPTIONS': {
-        'DB': ini_config['redis']['db'],
-        'PASSWORD': ini_config['redis']['password'],
+        'DB': REDIS_CONFIG['db'],
+        'PASSWORD': REDIS_CONFIG['password'],
         'CLIENT_CLASS': "django_redis.client.DefaultClient",
     },
     'TIMEOUT': ini_config['caches']['default_timeout'],
