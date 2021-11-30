@@ -7,11 +7,12 @@ class AbstractProducer(ABC):
     """
 
     @abstractmethod
-    def __init__(self, key_serializer=None, value_serializer=None, config=None):
+    def __init__(self, key_serializer=None, value_serializer=None, config=None, extra_config=None):
         """
         :param key_serializer: callable, serializer for key
         :param value_serializer:  callable, serializer for value
-        :param config: dict configuration for concreate message broker
+        :param config: dict configuration for concreate message broker (config for kafka library or another one)
+        :param extra_config: additional config for message broker adapter
         """
         raise NotImplementedError
 
@@ -49,11 +50,12 @@ class AbstractAsyncProducer(ABC):
     """
 
     @abstractmethod
-    def __init__(self, key_serializer=None, value_serializer=None, config=None):
+    def __init__(self, key_serializer=None, value_serializer=None, config=None, extra_config=None):
         """
         :param key_serializer: callable, serializer for key
         :param value_serializer:  callable, serializer for value
         :param config: dict configuration for concreate message broker
+        :param extra_config: additional config for message broker adapter
         raise NotImplementedError
         """
 

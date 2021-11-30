@@ -18,6 +18,8 @@ MESSAGE_BROKER_DEFAULT_CONFIG = {
         },
         'consumer': {
             'bootstrap_servers': 'localhost:9092',
+            'auto_offset_reset': 'earliest',
+            'group_id': 'complex_rest'
         }
     },
 }
@@ -55,7 +57,7 @@ def import_message_broker_module(module):
 
 
 def Consumer(
-        topic, binary=False, key_deserializer=None, value_deserializer=None,
+        topic, binary=False, key_deserializer=None, value_deserializer=None, extra_config=None
 ):
     """
     fabric method for consumer
@@ -64,17 +66,18 @@ def Consumer(
     :param binary: if binary=True then no deserialization and Message.value and Message.key will be binary
     :param key_deserializer:  callable, key deserializer
     :param value_deserializer:  callable, value deserializer
+    :param extra_config: dict, additional config for message broker adapter, example: number of partition for kafka
     :return:
     Message broker consumer instance
     """
 
     module = import_message_broker_module('consumer')
-    consumer = module.Consumer(topic, binary, key_deserializer, value_deserializer, CONSUMER_CONFIG)
+    consumer = module.Consumer(topic, binary, key_deserializer, value_deserializer, CONSUMER_CONFIG, extra_config)
     return consumer
 
 
 def AsyncConsumer(
-        topic, binary=False, key_deserializer=None, value_deserializer=None,
+        topic, binary=False, key_deserializer=None, value_deserializer=None, extra_config=None
 ):
     """
     fabric method for asynchronous consumer
@@ -83,16 +86,17 @@ def AsyncConsumer(
     :param binary: if binary=True then no deserialization and Message.value and Message.key will be binary
     :param key_deserializer:  callable, key desirializer
     :param value_deserializer:  callable, value desirilizer
+    :param extra_config: dict, additional config for message broker adapter, example: number of partition for kafka
     :return:
     Message broker consumer instance
     """
     module = import_message_broker_module('consumer')
-    consumer = module.AsyncConsumer(topic, binary, key_deserializer, value_deserializer, CONSUMER_CONFIG)
+    consumer = module.AsyncConsumer(topic, binary, key_deserializer, value_deserializer, CONSUMER_CONFIG, extra_config)
     return consumer
 
 
 def Producer(
-        key_serializer=None, value_serializer=None,
+        key_serializer=None, value_serializer=None, extra_config=None
 ):
     """
     fabric method for producer
@@ -100,25 +104,27 @@ def Producer(
 
     :param key_serializer: callable, serializer for key
     :param value_serializer:  callable, serializer for value
+    :param extra_config: dict, additional config for message broker adapter
     :return:
     Message broker producer instance
     """
     module = import_message_broker_module('producer')
-    producer = module.Producer(key_serializer, value_serializer, PRODUCER_CONFIG)
+    producer = module.Producer(key_serializer, value_serializer, PRODUCER_CONFIG, extra_config)
     return producer
 
 
 def AsyncProducer(
-        key_serializer=None, value_serializer=None,
+        key_serializer=None, value_serializer=None, extra_config=None
 ):
     """
     fabric method for asynchronous producer
 
     :param key_serializer: callable, serializer for key
     :param value_serializer:  callable, serializer for value
+    :param extra_config: dict, additional config for message broker adapter
     :return:
     Message broker producer instance
     """
     module = import_message_broker_module('producer')
-    producer = module.AsyncProducer(key_serializer, value_serializer, PRODUCER_CONFIG)
+    producer = module.AsyncProducer(key_serializer, value_serializer, PRODUCER_CONFIG, extra_config)
     return producer

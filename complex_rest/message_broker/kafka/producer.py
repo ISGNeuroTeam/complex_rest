@@ -1,5 +1,7 @@
 from kafka import KafkaProducer
+
 from aiokafka import AIOKafkaProducer
+
 from ..abstract_producer import  AbstractAsyncProducer, AbstractProducer
 
 
@@ -11,6 +13,8 @@ class BaseKafkaProducer:
     def get_kafka_message(self, value, key=None):
         if self.value_serializer:
             message_value = self.value_serializer(value)
+            if type(message_value) == str:
+                message_value = message_value.encode()
         elif isinstance(value, str):
             message_value = value.encode()
         elif type(value) in (bytes, bytearray, memoryview, type(None)):
@@ -20,6 +24,8 @@ class BaseKafkaProducer:
 
         if self.key_serializer:
             message_key = self.key_serializer(key)
+            if type(message_key) == str:
+                message_key = message_key.encode()
         elif type(key) in (bytes, bytearray, memoryview, type(None)):
             message_key = key
         elif isinstance(key, str):
@@ -31,11 +37,19 @@ class BaseKafkaProducer:
 
 
 class Producer(AbstractProducer, BaseKafkaProducer):
-    def __init__(self, key_serializer=None, value_serializer=None, config=None):
+    def __init__(self, key_serializer=None, value_serializer=None, kafka_producer_config=None, extra_config=None):
+        """
+        :param key_serializer: callable, serializer for key
+        :param value_serializer:
+        :param kafka_producer_config:
+        :param extra_config:
+        """
         BaseKafkaProducer.__init__(self, key_serializer, value_serializer)
-        config = config or {}
+        kafka_producer_config = kafka_producer_config or {}
+        self.extra_config = extra_config or {}
+
         self.kafka_producer = KafkaProducer(
-            **config
+            **kafka_producer_config
         )
 
     def send(self, topic, message, key=None):
@@ -53,9 +67,11 @@ class Producer(AbstractProducer, BaseKafkaProducer):
 
 
 class AsyncProducer(AbstractAsyncProducer, BaseKafkaProducer):
-    def __init__(self, key_serializer=None, value_serializer=None, config=None):
+    def __init__(self, key_serializer=None, value_serializer=None, config=None, extra_config=None):
         BaseKafkaProducer.__init__(self, key_serializer, value_serializer)
         config = config or {}
+        self.extra_config = extra_config or {}
+
         self.kafka_producer = AIOKafkaProducer(
             **config
         )

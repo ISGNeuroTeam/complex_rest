@@ -7,13 +7,17 @@ class AbstractConsumer(ABC):
     """
 
     @abstractmethod
-    def __init__(self, topic, binary=False, key_deserializer=None, value_deserializer=None, config=None):
+    def __init__(
+            self, topic, binary=False, key_deserializer=None, value_deserializer=None,
+            config=None, extra_config=None
+    ):
         """
         :param topic: topic to consume messages
         :param binary: if binary=True then no deserialization and Message.value and Message.key will be binary
         :param key_deserializer:  callable, key desirializer
         :param value_deserializer:  callable, value desirilizer
         :param config: configuration dictionary for message broker adapter
+        :param extra_config: dict, additional config for message broker adapter
         """
         raise NotImplementedError
 
@@ -50,13 +54,17 @@ class AbstractAsyncConsumer(ABC):
     Abstract consumer. Asynchronous iterator through messages. May be used as context manager
     """
     @abstractmethod
-    def __init__(self, topic, binary=False, key_deserializer=None, value_deserializer=None, config=None):
+    def __init__(
+            self, topic, binary=False, key_deserializer=None, value_deserializer=None,
+            config=None, extra_config=None
+    ):
         """
         :param topic: topic to consume messages
         :param binary: if binary=True then no deserialization and Message.value and Message.key will be binary
         :param key_deserializer:  callable, key desirializer
         :param value_deserializer:  callable, value desirilizer
         :param config: configuration dictionary for message broker adapter
+        :param extra_config: dict, additional config for message broker adapter
         """
         raise NotImplementedError
 
