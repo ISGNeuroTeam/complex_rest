@@ -6,8 +6,9 @@ import json
 
 
 from pathlib import Path
-from rest.test import TestCase
-from message_broker import Producer, AsyncProducer, Consumer
+from unittest import TestCase
+from message_broker import Producer, AsyncProducer, Consumer, AsyncConsumer
+from message_broker.kafka.consumer import get_kafka_client_admin
 
 cur_dir = Path(__file__).parent.resolve()
 
@@ -20,7 +21,26 @@ producer_async_script = str(cur_dir / 'producer_async.py')
 consumer_async_script = str(cur_dir / 'consumer_async.py')
 
 
+def delete_all_topics():
+    client = get_kafka_client_admin({
+        'bootstrap_servers': 'localhost:9092'
+    })
+    try:
+        client.delete_topics(['test_topic', 'test_topic_4part', 'test_topic_broadcast'])
+    except:
+        pass
+    try:
+        client.delete_consumer_groups(['complex_rest'])
+    except:
+        pass
+    time.sleep(3)
+
+
 class TestMessageSend(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        delete_all_topics()
+
     def setUp(self) -> None:
         self.consumer_proc = subprocess.Popen(
             [sys.executable, consumer_script, 'test_topic', str(1)],
@@ -88,6 +108,10 @@ class TestMessageSend(TestCase):
 
 
 class TestMessageConsume(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        delete_all_topics()
+
     def test_consume_message_before_consumer_start(self):
         with Producer() as producer:
             producer.send('test_topic', 'unprocessed_message')
@@ -135,13 +159,19 @@ class TestMessageConsume(TestCase):
             self.assertDictEqual(message.key, test_key)
 
     def test_several_consumers_roundrobin(self):
+        self._several_consumers_roundrobin(consumer_script)
+
+    def test_several_consumers_roundrobin_async(self):
+        self._several_consumers_roundrobin(consumer_async_script)
+
+    def _several_consumers_roundrobin(self, script):
         consumers_procs = list()
         message_count = 8
         consumer_count = 4
         # create four consumers must be created 4 partitions in topic
         for i in range(consumer_count):
             consumer_proc = subprocess.Popen(
-                [sys.executable, consumer_script, 'test_topic_4part', str(2), str(consumer_count), 'false'],
+                [sys.executable, script, 'test_topic_4part', str(2), str(consumer_count), 'false'],
                 env={
                     'PYTHONPATH': f'{base_rest_dir}'
                 },
@@ -154,7 +184,7 @@ class TestMessageConsume(TestCase):
             for i in range(message_count):
                 producer.send('test_topic_4part', f'message{i}')
 
-        time.sleep(10)
+        time.sleep(15)
         result_message_set = set()
         for consumer_proc in consumers_procs:
             consumer_proc.kill()
@@ -202,3 +232,40 @@ class TestMessageConsume(TestCase):
             message = consumer_output[0].strip('\n')
             self.assertEqual(message, 'broadcast_message')
 
+
+class TestMessageAsyncConsume(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        delete_all_topics()
+
+    def test_consume_message_before_consumer_start(self):
+        with Producer() as producer:
+            producer.send('test_topic', 'unprocessed_message')
+
+        async def consume_message():
+            async with AsyncConsumer('test_topic') as consumer:
+                message = await consumer.__anext__()
+                self.assertEqual(str(message.value), 'unprocessed_message')
+        asyncio.run(consume_message())
+
+    def test_value_deserializer(self):
+        test_dict = {'test': 1, 'test1': 'test'}
+        with Producer() as producer:
+            producer.send('test_topic', json.dumps(test_dict))
+
+        async def consume():
+            async with AsyncConsumer('test_topic', value_deserializer=json.loads) as consumer:
+                message = await consumer.__anext__()
+                self.assertDictEqual(message.value, test_dict)
+        asyncio.run(consume())
+
+    def test_key_deserializer(self):
+        test_key = {'test': 1, 'test1': 'test'}
+        with Producer() as producer:
+            producer.send('test_topic', 'unprocessed_message', json.dumps(test_key))
+
+        async def consume():
+            async with AsyncConsumer('test_topic', key_deserializer=json.loads) as consumer:
+                message = await consumer.__anext__()
+                self.assertDictEqual(message.key, test_key)
+        asyncio.run(consume())
