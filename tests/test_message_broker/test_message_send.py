@@ -7,8 +7,9 @@ import json
 
 from pathlib import Path
 from unittest import TestCase
+from kafka.admin.client import KafkaAdminClient
 from message_broker import Producer, AsyncProducer, Consumer, AsyncConsumer
-from message_broker.kafka.consumer import get_kafka_client_admin
+
 
 cur_dir = Path(__file__).parent.resolve()
 
@@ -21,25 +22,31 @@ producer_async_script = str(cur_dir / 'producer_async.py')
 consumer_async_script = str(cur_dir / 'consumer_async.py')
 
 
-def delete_all_topics():
-    client = get_kafka_client_admin({
-        'bootstrap_servers': 'localhost:9092'
-    })
+def delete_topics(topics):
+    client = KafkaAdminClient(
+        bootstrap_servers='localhost:9092'
+    )
     try:
-        client.delete_topics(['test_topic', 'test_topic_4part', 'test_topic_broadcast'])
-    except:
+        client.delete_topics(topics)
+    except Exception as err:
         pass
     try:
         client.delete_consumer_groups(['complex_rest'])
-    except:
+    except Exception as err:
         pass
-    time.sleep(3)
+    client.close()
+    time.sleep(2)
 
 
 class TestMessageSend(TestCase):
+
     @classmethod
-    def setUpClass(cls):
-        delete_all_topics()
+    def setUpClass(cls) -> None:
+        delete_topics(['test_topic', ])
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        delete_topics(['test_topic', ])
 
     def setUp(self) -> None:
         self.consumer_proc = subprocess.Popen(
@@ -110,7 +117,11 @@ class TestMessageSend(TestCase):
 class TestMessageConsume(TestCase):
     @classmethod
     def setUpClass(cls):
-        delete_all_topics()
+        delete_topics(['test_topic', 'test_topic_4part', 'test_topic_broadcast'])
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        delete_topics(['test_topic', 'test_topic_4part', 'test_topic_broadcast'])
 
     def test_consume_message_before_consumer_start(self):
         with Producer() as producer:
@@ -235,8 +246,12 @@ class TestMessageConsume(TestCase):
 
 class TestMessageAsyncConsume(TestCase):
     @classmethod
-    def setUpClass(cls):
-        delete_all_topics()
+    def setUpClass(cls) -> None:
+        delete_topics(['test_topic', ])
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        delete_topics(['test_topic', ])
 
     def test_consume_message_before_consumer_start(self):
         with Producer() as producer:
