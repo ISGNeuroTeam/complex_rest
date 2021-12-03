@@ -1,3 +1,5 @@
+import json
+
 from django.utils.connection import ConnectionProxy
 from django_redis.cache import RedisCache as DjangoRedisCache
 from django.core.cache.backends.filebased import FileBasedCache as DjangoFileBasedCache
@@ -130,15 +132,25 @@ class CacheForFunctionDecorator:
         :return:
         unique key
         """
-        func_key = str(hash(func))
+        l_args = [self._to_hashable(arg) for arg in args]
+        l_kwargs = {k: self._to_hashable(v) for k, v in kwargs.items()}
+
+        func_key = f'{func.__module__}.{func.__name__}'
         arg_key = str(
             hash(
                 tuple(
-                    list(args) + sorted(kwargs.items())
+                    list(l_args) + sorted(l_kwargs.items())
                 )
             )
         )
         return f'_func_cache_{func_key}_{arg_key}'
+
+    @staticmethod
+    def _to_hashable(d):
+        if isinstance(d, dict):
+            return json.dumps(d)
+        else:
+            return d
 
     def clear_cache(self):
         """
