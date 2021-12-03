@@ -25,14 +25,18 @@ class KafkaControl:
 
         consumer_group_info = self.client.describe_consumer_groups([consumer_group, ])[0]
 
+        # find topic consumers in consumer group
         topic_consumers = [
             member for member in consumer_group_info.members
-            if member.member_assignment and member.member_assignment.assignment[0][0] == topic
+            if member.member_assignment and len(member.member_assignment.assignment) > 0 and\
+            member.member_assignment.assignment[0][0] == topic
         ]
 
-        # how many consumers was before current consumer
+        # how many consumers at the moment
         consumers_count = len(topic_consumers)
 
+
+        # create one more partition for consumer
         if consumers_count != 0 and consumers_count >= partitions_count:
             self.create_partitions(topic, consumers_count + 1)
 
