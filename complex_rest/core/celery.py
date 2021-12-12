@@ -1,12 +1,12 @@
 import os
 
 from celery import Celery
-from core.settings.base import redis_connection_string
+from core.settings.base import REDIS_CONNECTION_STRING
 
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 
-app = Celery('core', broker=redis_connection_string)
+app = Celery('core', broker=REDIS_CONNECTION_STRING)
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.

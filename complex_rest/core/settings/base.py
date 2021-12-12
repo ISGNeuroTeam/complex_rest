@@ -136,11 +136,11 @@ DATABASE_ROUTERS = ['core.db_routers.AuthRouter', 'core.db_routers.PluginRouter'
 # redis connection parameters
 REDIS_CONFIG = ini_config['redis']
 
-redis_connection_string = f"redis://{REDIS_CONFIG['host']}:{REDIS_CONFIG['port']}"
+REDIS_CONNECTION_STRING = f"redis://{REDIS_CONFIG['host']}:{REDIS_CONFIG['port']}"
 
 redis_cache_config_dict = {
     'BACKEND': 'cache.RedisCache',
-    'LOCATION': redis_connection_string,
+    'LOCATION': REDIS_CONNECTION_STRING,
     'OPTIONS': {
         'DB': REDIS_CONFIG['db'],
         'PASSWORD': REDIS_CONFIG['password'],
