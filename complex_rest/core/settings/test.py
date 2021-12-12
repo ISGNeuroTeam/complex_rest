@@ -36,5 +36,9 @@ for database_name, database_config in plugin_databases.items():
 
 DATABASES.update(plugin_databases)
 
-INSTALLED_APPS.remove('plugin_example1')
-INSTALLED_APPS.remove('plugin_example2')
+
+if 'plugin_example1' in INSTALLED_APPS:
+    INSTALLED_APPS.remove('plugin_example1')
+if 'plugin_example2' in INSTALLED_APPS:
+    INSTALLED_APPS.remove('plugin_example2')
+

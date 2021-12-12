@@ -6,6 +6,7 @@ from kafka.admin.new_topic import NewTopic
 
 class KafkaControl:
     def __init__(self, config):
+        self.client = None
         self.client = KafkaAdminClient(
                 bootstrap_servers=config['bootstrap_servers']
             )
@@ -54,4 +55,5 @@ class KafkaControl:
                 pass
 
     def __del__(self):
-        self.client.close()
+        if self.client:
+            self.client.close()
