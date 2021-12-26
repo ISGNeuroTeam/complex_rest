@@ -19,6 +19,7 @@ mkdir -p ./deploy_state
 
 touch ./deploy_state/supervisord-control.sock
 
+export PYTHONPATH=$PYTHONPATH:./complex_rest
 python make_supervisor_config.py
 
 
