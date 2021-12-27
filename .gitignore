@@ -104,14 +104,23 @@ GitHub.sublime-settings
 
 # plugin develop directory
 plugin_dev/
+plugins/*
 
 complex_rest/start.sh
 complex_rest/stop.sh
 complex_rest-*.tar.gz
-rest.conf
+complex_rest/rest.conf
+complex_rest/supervisord*
+complex_rest/deploy_state
+
 make_build
 secret_key
-complex_rest/supervisord*
 deploy_state/
-
 nginx/
+supervisord*
+
+start.sh
+stop.sh
+
+# local docker-compose
+docker-compose-local.yml

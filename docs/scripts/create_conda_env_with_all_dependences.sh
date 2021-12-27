@@ -7,7 +7,7 @@ cd unit
 conda create --copy -p ./venv -y
 conda install -p ./venv python==3.9.7 -y
 conda install -p ./venv redis -y
-conda install -p ./venv postgresql -y
+conda install -p ./venv postgresql==12.9 -y
 conda install -p ./venv libpcre2 -y
 ./venv/bin/pip install --no-input  -r ../requirements.txt
 

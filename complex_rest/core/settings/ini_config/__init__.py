@@ -1,3 +1,4 @@
+import os
 import copy
 import configparser
 
@@ -58,13 +59,23 @@ def make_abs_paths(config_dict, dict_keys_list):
 
 def get_ini_config():
     """
-    Read rest.conf in base directory
+    Read config passed in REST_CONF environment variable
+    or rest.conf in base directory
     :return:
     config dictionary merged with defaults
     """
+
+    # try to read path to config from environment
+    conf_path_env = os.environ.get('REST_CONF', None)
+
+    if conf_path_env is None:
+        conf_path = BASE_DIR / 'rest.conf'
+    else:
+        conf_path = Path(conf_path_env).resolve()
+
     config = configparser.ConfigParser()
 
-    config.read(BASE_DIR / 'rest.conf')
+    config.read(conf_path)
 
     # convert to dictionary
     config = {s: dict(config.items(s)) for s in config.sections()}

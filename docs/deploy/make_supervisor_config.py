@@ -1,9 +1,22 @@
+import sys
 import configparser
 import re
 import os
 
 from pathlib import Path
 from core.settings import BASE_DIR, LOG_DIR, PLUGINS_DIR
+
+# first parametr is supervisor_base.conf location
+if len(sys.argv) > 1:
+    supervisor_base_conf_path = sys.argv[1]
+else:
+    supervisor_base_conf_path = 'supervisord_base.conf'
+
+# second parametr is supervisord.conf location
+if len(sys.argv) > 2:
+    supervisord_conf_path = sys.argv[2]
+else:
+    supervisord_conf_path = 'supervisord.conf'
 
 
 def main():
@@ -20,7 +33,7 @@ def main():
 
     # read base config
     config = configparser.ConfigParser()
-    with open('supervisord_base.conf', 'r') as f:
+    with open(supervisor_base_conf_path, 'r') as f:
         config.read_file(f)
 
     # create section for every plugin process
@@ -61,7 +74,7 @@ def main():
             config[section]['priority'] = '100'
 
     # write supervisord config
-    with open('supervisord.conf', 'w') as f:
+    with open(supervisord_conf_path, 'w') as f:
         config.write(f)
 
 
