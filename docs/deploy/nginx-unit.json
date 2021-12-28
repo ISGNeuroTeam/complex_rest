@@ -1,7 +1,7 @@
 {
     "listeners": {
         "*:50000": {
-            "pass": "applications/complex_rest"
+            "pass": "routes"
         }
     },
 
@@ -12,12 +12,20 @@
             "path": "./complex_rest",
             "module": "core.wsgi",
             "environment": {
-                "DJANGO_SETTINGS_MODULE": "core.settings",
+                "DJANGO_SETTINGS_MODULE": "core.settings"
             },
             "limits": {
                 "timeout": 60
             },
-            "processes": 10
+            "processes": 3
         }
-    }
+    },
+
+    "routes": [
+        {
+            "action": {
+                "pass": "applications/complex_rest"
+            }
+        }
+    ]
 }

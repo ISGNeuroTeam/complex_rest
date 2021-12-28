@@ -21,6 +21,7 @@ touch ./deploy_state/supervisord-control.sock
 
 export PYTHONPATH=$PYTHONPATH:./complex_rest
 python make_supervisor_config.py
+python make_nginx_unit_config.py
 
 
 supervisord -c ./supervisord.conf

@@ -54,7 +54,9 @@ make_build: venv.tar.gz
 	mkdir -p make_build/complex_rest/logs/postgres
 
 	mkdir -p make_build/complex_rest/deploy_state
-	cp ./docs/deploy/nginx-unit.json make_build/complex_rest/deploy_state/conf.json
+
+	cp ./docs/deploy/nginx-unit*.json make_build/complex_rest/
+
 	touch make_build/complex_rest/deploy_state/supervisord-control.sock
 	cp ./docs/deploy/*.sh make_build/complex_rest/
 	cp ./docs/deploy/*.py make_build/complex_rest/
