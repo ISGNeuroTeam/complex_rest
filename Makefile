@@ -89,7 +89,7 @@ clean_venv.tar.gz:
 clean_build:
 	rm -rf make_build
 
-clean: clean_build clean_venv.tar.gz clean_pack clean_test clean_kafka clean_unit
+clean: clean_build clean_venv.tar.gz clean_pack clean_test clean_kafka clean_unit clean_test
 
 test:
 	@echo "Testing..."
@@ -99,6 +99,8 @@ test:
 clean_test:
 	@echo "Clean tests"
 	docker-compose -f docker-compose-dev.yml stop
-	docker rm `docker ps -aq -f name=complex_rest`
+	if [[ $$(docker ps -aq -f name=complex_rest) ]]; then docker rm $$(docker ps -aq -f name=complex_rest);  fi;
+
+
 
 
