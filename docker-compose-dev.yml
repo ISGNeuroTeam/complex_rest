@@ -18,7 +18,7 @@ services:
   kafka:
     build: ./docs/docker_dev/kafka
     ports:
-      - "9093:9092"
+      - "9092:9092"
 
   complex_rest:
     build:

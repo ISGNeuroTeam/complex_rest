@@ -1,7 +1,7 @@
 #!/bin/sh
 
-echo "Waiting for postgres..."
-sleep 5
+echo "Waiting for postgres and kafka..."
+sleep 7
 
 
 python ./complex_rest/manage.py flush --no-input

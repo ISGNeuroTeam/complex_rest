@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 import time
@@ -9,6 +10,8 @@ from pathlib import Path
 from unittest import TestCase
 from kafka.admin.client import KafkaAdminClient
 from message_broker import Producer, AsyncProducer, Consumer, AsyncConsumer
+from core.settings import ini_config
+
 
 
 cur_dir = Path(__file__).parent.resolve()
@@ -21,10 +24,15 @@ consumer_script = str(cur_dir / 'consumer.py')
 producer_async_script = str(cur_dir / 'producer_async.py')
 consumer_async_script = str(cur_dir / 'consumer_async.py')
 
+def get_subprocess_env():
+    subproc_env = os.environ.copy()
+    subproc_env["PYTHONPATH"] = base_rest_dir
+    return subproc_env
 
 def delete_topics(topics):
+    bootstrap_server = ini_config['message_broker_consumer']['bootstrap_servers']
     client = KafkaAdminClient(
-        bootstrap_servers='localhost:9092'
+        bootstrap_servers=bootstrap_server
     )
     try:
         client.delete_topics(topics)
@@ -51,10 +59,8 @@ class TestMessageSend(TestCase):
     def setUp(self) -> None:
         self.consumer_proc = subprocess.Popen(
             [sys.executable, consumer_script, 'test_topic', str(1)],
-            env={
-                'PYTHONPATH': f'{base_rest_dir}'
-            },
-            stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True, bufsize=1
+            env=get_subprocess_env(),
+            stderr=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True, bufsize=1
         )
         time.sleep(2)
 
@@ -141,10 +147,8 @@ class TestMessageConsume(TestCase):
 
         consumer_proc = subprocess.Popen(
             [sys.executable, consumer_script, 'test_topic', str(1)],
-            env={
-                'PYTHONPATH': f'{base_rest_dir}'
-            },
-            stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True, bufsize=1
+            env=get_subprocess_env(),
+            stderr=subprocess.PIPE,  stdout=subprocess.PIPE, universal_newlines=True, bufsize=1
         )
         time.sleep(5)
         consumer_proc.kill()
@@ -183,10 +187,8 @@ class TestMessageConsume(TestCase):
         for i in range(consumer_count):
             consumer_proc = subprocess.Popen(
                 [sys.executable, script, 'test_topic_4part', str(2), str(consumer_count), 'false'],
-                env={
-                    'PYTHONPATH': f'{base_rest_dir}'
-                },
-                stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True, bufsize=1
+                env=get_subprocess_env(),
+                stderr=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True, bufsize=1
             )
             consumers_procs.append(consumer_proc)
 
@@ -218,10 +220,8 @@ class TestMessageConsume(TestCase):
         for i in range(consumer_count):
             consumer_proc = subprocess.Popen(
                 [sys.executable, consumer_script, topic_name, str(1), str(consumer_count), 'true'],
-                env={
-                    'PYTHONPATH': f'{base_rest_dir}'
-                },
-                stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True,
+                env=get_subprocess_env(),
+                stderr=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True,
                 bufsize=1
             )
             consumers_procs.append(consumer_proc)

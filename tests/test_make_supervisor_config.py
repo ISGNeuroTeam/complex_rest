@@ -1,6 +1,15 @@
 import os
+import sys
+
+from pathlib import Path
 
 from django.test import TestCase
+
+# make_supervisor_config in docs/deploy
+repo_root = Path(__file__).resolve().parent.parent
+deploy_dir = repo_root / 'docs' / 'deploy'
+sys.path.insert(-1, str(deploy_dir))
+
 from make_supervisor_config import *
 
 

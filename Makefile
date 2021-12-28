@@ -93,7 +93,12 @@ clean: clean_build clean_venv.tar.gz clean_pack clean_test clean_kafka clean_uni
 
 test:
 	@echo "Testing..."
+	docker-compose -f docker-compose-dev.yml run --rm  complex_rest python ./complex_rest/manage.py test ./tests --settings=core.settings.test
+
 
 clean_test:
 	@echo "Clean tests"
+	docker-compose -f docker-compose-dev.yml stop
+	docker rm `docker ps -aq -f name=complex_rest`
+
 
