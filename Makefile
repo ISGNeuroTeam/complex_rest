@@ -53,6 +53,8 @@ make_build: venv.tar.gz
 	mkdir -p make_build/complex_rest/logs/kafka
 	mkdir -p make_build/complex_rest/logs/postgres
 
+	mkdir -p make_build/complex_rest/plugins
+
 	mkdir -p make_build/complex_rest/deploy_state
 
 	cp ./docs/deploy/nginx-unit*.json make_build/complex_rest/

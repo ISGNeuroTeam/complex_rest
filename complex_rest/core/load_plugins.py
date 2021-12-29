@@ -1,3 +1,4 @@
+import os
 import sys
 import re
 
@@ -7,10 +8,18 @@ from django.utils.module_loading import import_string
 
 def get_plugins_names(plugin_dir):
     """
+    Returns all plugin names located in plugins dir
+    If PLUGIN_NAME environment varialbe exists and not empty then only one plugin name returned
     :param plugin_dir: directory with plugins
     :return:
     list with plugins names
     """
+    plugin_name_env = os.environ.get('COMPLEX_REST_PLUGIN_NAME', '')
+    if plugin_name_env:
+        if (Path(plugin_dir) / plugin_name_env).exists():
+            return [plugin_name_env, ]
+        else:
+            return []
     return [full_plugin_path.name for full_plugin_path in Path(plugin_dir).iterdir()]
 
 

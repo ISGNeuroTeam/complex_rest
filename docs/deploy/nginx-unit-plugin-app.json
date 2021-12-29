@@ -5,7 +5,7 @@
   "module": "core.wsgi",
   "environment": {
       "DJANGO_SETTINGS_MODULE": "core.settings",
-      "PLUGIN_NAME": "{{plugin_name}}"
+      "COMPLEX_REST_PLUGIN_NAME": "{{plugin_name}}"
   },
   "limits": {
       "timeout": 60

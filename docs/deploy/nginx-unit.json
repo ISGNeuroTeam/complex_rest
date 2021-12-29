@@ -12,7 +12,8 @@
             "path": "./complex_rest",
             "module": "core.wsgi",
             "environment": {
-                "DJANGO_SETTINGS_MODULE": "core.settings"
+                "DJANGO_SETTINGS_MODULE": "core.settings",
+                "COMPLEX_REST_PLUGIN_NAME": "complex_rest"
             },
             "limits": {
                 "timeout": 60

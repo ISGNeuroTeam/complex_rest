@@ -22,6 +22,7 @@ create user complex_rest_auth with password 'complex_rest_auth';
 EOF
 
 # create database
+
 psql << EOF
 create database complex_rest;
 grant all privileges on database complex_rest to complex_rest;
@@ -30,6 +31,9 @@ grant all privileges on database complex_rest_auth to complex_rest_auth;
 EOF
 
 
+
+# to ensure that plugins not loaded
+export COMPLEX_REST_PLUGIN_NAME=complex_rest
 
 # django migrations
 ./venv/bin/python ./complex_rest/manage.py migrate --database=auth_db
