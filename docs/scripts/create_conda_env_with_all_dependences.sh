@@ -8,11 +8,11 @@ conda create --copy -p ./venv -y
 conda install -p ./venv python==3.9.7 -y
 conda install -p ./venv redis -y
 conda install -p ./venv postgresql==12.9 -y
-conda install -p ./venv libpcre2 -y
+conda install -p ./venv pcre2 -y
 ./venv/bin/pip install --no-input  -r ../requirements.txt
 
 # build nginx unit in conda venv
-./configure --prefix=venv
+./configure --prefix=venv --no-regex
 ./configure python --config=venv/bin/python3.9-config --module=python3.9 --lib-path=venv/lib/libpython3.so
 
 make
