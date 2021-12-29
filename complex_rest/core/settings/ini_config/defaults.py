@@ -14,7 +14,7 @@ default_config = {
         'port': '5432'
     },
     'plugins': {
-        'plugins_dir': './plugins',
+        'plugins_dir': '../plugins',
         'plugin_dev_dir': '../plugin_dev',
     },
     'caches': {
@@ -33,7 +33,7 @@ default_config = {
     },
     'logging': {
         'active': 'True',
-        'log_dir': './logs',
+        'log_dir': '../logs',
         'level': 'INFO',
         'rotate': 'True',
         'rotation_size': '10',

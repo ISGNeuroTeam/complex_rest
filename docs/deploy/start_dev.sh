@@ -14,7 +14,7 @@ fi
 
 
 mkdir -p .logs/redis
-mkdir -p .logs/nginx-unit
+mkdir -p .logs/complex_rest
 mkdir -p .logs/celery
 mkdir -p .logs/zookeeper
 mkdir -p .logs/kafka
@@ -24,9 +24,9 @@ mkdir -p ./deploy_state
 
 touch ./deploy_state/supervisord-control.sock
 
+
 export PYTHONPATH=$PYTHONPATH:./complex_rest
-python make_supervisor_config.py
-python make_nginx_unit_config.py
+python ./docs/deploy/make_supervisor_config.py ./docs/deploy/supervisord_base_dev.conf
 
 
 supervisord -c ./supervisord.conf

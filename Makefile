@@ -3,11 +3,12 @@ SHELL = /bin/bash
 
 
 all:
-	echo -e "Required section:\n\
+	echo -e "Sections:\n\
  build - build project into build directory, with configuration file and environment\n\
  clean - clean all addition file, build directory and output archive file\n\
  test - run all tests\n\
  pack - make output archive, file name format \"complex_rest_vX.Y.Z_BRANCHNAME.tar.gz\"\n\
+ dev - deploy for developing \n\
 "
 
 GENERATE_VERSION = $(shell cat setup.py | grep __version__ | head -n 1 | sed -re 's/[^"]+//' | sed -re 's/"//g' )
@@ -99,12 +100,74 @@ test:
 	@echo "Testing..."
 	docker-compose -f docker-compose-dev.yml run --rm  complex_rest python ./complex_rest/manage.py test ./tests --settings=core.settings.test
 
-
 clean_test:
 	@echo "Clean tests"
 	docker-compose -f docker-compose-dev.yml stop
 	if [[ $$(docker ps -aq -f name=complex_rest) ]]; then docker rm $$(docker ps -aq -f name=complex_rest);  fi;
 
+
+dev: venv logs
+	mkdir -p ./plugins
+	mkdir -p ./plugin_dev
+
+	cp ./docs/deploy/start_dev.sh ./start.sh
+	cp ./docs/deploy/stop.sh ./stop.sh
+	cp -R ./docs/deploy/postgres_config ./postgres_config
+	cp ./docs/deploy/rest_dev.conf ./complex_rest/rest.conf
+
+	./docs/deploy/database_init_dev.sh
+	touch dev
+
+
+deploy_state/supervisord.pid:
+	./start.sh
+
+dev_test: dev deploy_state/supervisord.pid
+	./venv/bin/python ./complex_rest/manage.py test ./tests --settings=core.settings.test
+
+logs:
+	mkdir -p ./logs
+	mkdir -p ./logs/redis
+	mkdir -p ./logs/complex_rest
+	mkdir -p ./logs/celery
+	mkdir -p ./logs/zookeeper
+	mkdir -p ./logs/kafka
+	mkdir -p ./logs/postgres
+
+venv: venv_dev_pack.tar.gz
+	mkdir -p ./venv
+	tar -xzf ./venv_dev_pack.tar.gz -C ./venv
+
+venv_dev_pack.tar.gz: venv_dev
+	conda pack -p ./venv_dev -o ./venv_dev_pack.tar.gz
+
+venv_dev: kafka.tar.gz
+	conda create --copy -p ./venv_dev -y
+	conda install -p ./venv_dev python==3.9.7 -y
+	conda install -p ./venv_dev redis -y
+	conda install -p ./venv_dev postgresql==12.9 -y
+	./venv_dev/bin/pip install --no-input  -r ./requirements.txt
+	mkdir ./venv_dev/apps
+	tar zxf ./kafka.tar.gz -C ./venv_dev/apps/
+
+
+clean_venv:
+	rm -rf ./venv
+	rm -rf ./venv_dev
+	rm -rf ./venv_dev_pack.tar.gz
+
+clean_dev: clean_venv
+	-./stop.sh
+	rm -rf ./deploy_state
+	rm -rf ./logs
+	rm -rf ./postgres_config
+	rm -f stop.sh
+	rm -f start.sh
+	rm -rf ./complex_rest_db
+	rm -f ./complex_rest/rest.conf
+	rm -f ./supervisord.conf
+	rm -rf ./plugins
+	rm -f deve
 
 
 

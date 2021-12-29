@@ -68,6 +68,7 @@ celerybeat-schedule.*
 .venv
 env/
 venv/
+venv_dev/
 ENV/
 env.bak/
 venv.bak/
@@ -118,9 +119,12 @@ secret_key
 deploy_state/
 nginx/
 supervisord*
-
+postgres_config/
 start.sh
 stop.sh
+dev
+
+*tar.gz
 
 # local docker-compose
 docker-compose-local.yml
