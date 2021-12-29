@@ -2,7 +2,7 @@
 Instructions for creating plugin
 
 ## Prerequisites
-1. python 3.8.5
+1. python 3.9.7
 2. [git](https://git-scm.com/)
 3. [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
 4. [Conda-Pack](https://conda.github.io/conda-pack)

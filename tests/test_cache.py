@@ -51,7 +51,6 @@ class TestCache(TestCase):
 class TestCacheFunction(TestCase):
     def test_same_args(self):
         decor = CacheForFunctionDecorator()
-        print(callable(decor))
         was_first_call = False
 
         @decor
