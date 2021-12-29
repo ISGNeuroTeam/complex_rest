@@ -68,7 +68,6 @@ celerybeat-schedule.*
 .venv
 env/
 venv/
-venv_dev/
 ENV/
 env.bak/
 venv.bak/
@@ -103,28 +102,11 @@ GitHub.sublime-settings
 # redis dump
 *.rdb
 
-# plugin develop directory
-plugin_dev/
-plugins/*
 
-complex_rest/start.sh
-complex_rest/stop.sh
-complex_rest-*.tar.gz
-complex_rest/rest.conf
-complex_rest/supervisord*
-complex_rest/deploy_state
-
-make_build
-secret_key
-deploy_state/
-nginx/
-supervisord*
-postgres_config/
 start.sh
 stop.sh
-dev
+{{plugin_name}}-*.tar.gz
+{{plugin_name}}.conf
+venv.tar.gz
 
-*tar.gz
-
-# local docker-compose
-docker-compose-local.yml
+nginx/

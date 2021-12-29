@@ -1,0 +1,9 @@
+{
+    "match": {
+        "uri": "/{{plugin_name}}/*"
+    },
+
+    "action": {
+        "pass": "applications/{{plugin_name}}"
+    }
+}

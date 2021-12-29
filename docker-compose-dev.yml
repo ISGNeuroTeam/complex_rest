@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:12.9
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5433:5432"
+
+  redis:
+    image: redis
+    ports:
+      - "6380:6379"
+
+  kafka:
+    build: ./docs/docker_dev/kafka
+    ports:
+      - "9092:9092"
+
+  complex_rest:
+    build:
+      context: ./
+      dockerfile: ./docs/docker_dev/complex_rest/Dockerfile
+
+    volumes:
+      - ./:/complex_rest
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      - postgres
+      - redis
+      - kafka

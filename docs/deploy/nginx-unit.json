@@ -1,0 +1,32 @@
+{
+    "listeners": {
+        "*:50000": {
+            "pass": "routes"
+        }
+    },
+
+    "applications": {
+        "complex_rest": {
+            "type": "python 3.9",
+            "home": "./venv/",
+            "path": "./complex_rest",
+            "module": "core.wsgi",
+            "environment": {
+                "DJANGO_SETTINGS_MODULE": "core.settings",
+                "COMPLEX_REST_PLUGIN_NAME": "complex_rest"
+            },
+            "limits": {
+                "timeout": 60
+            },
+            "processes": 3
+        }
+    },
+
+    "routes": [
+        {
+            "action": {
+                "pass": "applications/complex_rest"
+            }
+        }
+    ]
+}
