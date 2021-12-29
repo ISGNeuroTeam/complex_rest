@@ -119,10 +119,11 @@ dev: venv logs
 	touch dev
 
 
-deploy_state/supervisord.pid:
+deploy_state/supervisord.pid: dev
 	./start.sh
+	sleep 5
 
-dev_test: dev deploy_state/supervisord.pid
+dev_test: deploy_state/supervisord.pid
 	./venv/bin/python ./complex_rest/manage.py test ./tests --settings=core.settings.test
 
 logs:
