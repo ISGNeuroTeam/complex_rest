@@ -1,6 +1,7 @@
 #.SILENT:
 SHELL = /bin/bash
 
+.PHONY: clean clean_build clean_venv.tar.gz clean_pack clean_kafka clean_unit test docker_test clean_docker_test
 
 all:
 	echo -e "Sections:\n\
@@ -94,13 +95,15 @@ clean_venv.tar.gz:
 clean_build:
 	rm -rf make_build
 
-clean: clean_build clean_venv.tar.gz clean_pack clean_test clean_kafka clean_unit clean_test
+clean: clean_build clean_venv.tar.gz clean_pack clean_kafka clean_unit
 
-test:
+test: docker_test clean_docker_test
+
+docker_test:
 	@echo "Testing..."
 	docker-compose -f docker-compose-dev.yml run --rm  complex_rest python ./complex_rest/manage.py test ./tests --settings=core.settings.test
 
-clean_test:
+clean_docker_test:
 	@echo "Clean tests"
 	docker-compose -f docker-compose-dev.yml stop
 	if [[ $$(docker ps -aq -f name=complex_rest) ]]; then docker rm $$(docker ps -aq -f name=complex_rest);  fi;
