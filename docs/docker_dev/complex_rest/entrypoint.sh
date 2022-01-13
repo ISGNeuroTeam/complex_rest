@@ -5,7 +5,7 @@ sleep 7
 
 
 python ./complex_rest/manage.py flush --no-input
-python manage.py migrate
+
 python ./complex_rest/manage.py migrate --database=auth_db
 python ./complex_rest/manage.py migrate
 python ./complex_rest/manage.py createcachetable --database=auth_db
