@@ -13,12 +13,12 @@ else
 fi
 
 
-mkdir -p .logs/redis
-mkdir -p .logs/nginx-unit
-mkdir -p .logs/celery
-mkdir -p .logs/zookeeper
-mkdir -p .logs/kafka
-mkdir -p .logs/postgres
+mkdir -p ./logs/redis
+mkdir -p ./logs/nginx-unit
+mkdir -p ./logs/celery
+mkdir -p ./logs/zookeeper
+mkdir -p ./logs/kafka
+mkdir -p ./logs/postgres
 
 mkdir -p ./deploy_state
 
