@@ -27,6 +27,7 @@ services:
 
     volumes:
       - ./:/complex_rest
+    user: ${CURRENT_UID}
     ports:
       - "8080:8080"
 
