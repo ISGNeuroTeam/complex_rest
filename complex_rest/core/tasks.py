@@ -1,5 +1,5 @@
 from datetime import datetime
-from core.celery import app
+from core.celeryapp import app
 
 
 @app.task()
