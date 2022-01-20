@@ -101,7 +101,7 @@ test: docker_test clean_docker_test
 
 docker_test:
 	@echo "Testing..."
-	docker-compose -f docker-compose-dev.yml run --rm  complex_rest python ./complex_rest/manage.py test ./tests --settings=core.settings.test
+	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-dev.yml run --rm  complex_rest python ./complex_rest/manage.py test ./tests --settings=core.settings.test
 
 clean_docker_test:
 	@echo "Clean tests"
