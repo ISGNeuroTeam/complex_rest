@@ -171,7 +171,7 @@ clean_dev: clean_venv
 	rm -f ./complex_rest/rest.conf
 	rm -f ./supervisord.conf
 	rm -rf ./plugins
-	rm -f deve
+	rm -f dev
 
 
 

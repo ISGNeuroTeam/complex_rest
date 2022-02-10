@@ -98,7 +98,7 @@ make dev_test
 2. [Docker compose](https://docs.docker.com/compose/install/)
 #### Deploy
 ```bash
-docker-compose -f "docker-compose-dev.yml" up -d --build
+CURRENT_UID=$(id -u):$(id -g) docker-compose -f "docker-compose-dev.yml" up -d --build
 ```
 
 ### Create your plugin
