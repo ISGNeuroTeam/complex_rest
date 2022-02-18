@@ -95,7 +95,7 @@ clean_venv.tar.gz:
 clean_build:
 	rm -rf make_build
 
-clean: clean_build clean_venv.tar.gz clean_pack clean_kafka clean_unit
+clean: clean_build clean_venv.tar.gz clean_pack clean_kafka clean_unit clean_docker_test
 
 test: docker_test clean_docker_test
 
