@@ -11,6 +11,7 @@ export PGPORT=5433
 
 cat ./postgres_config/postgresql.conf >> ./complex_rest_db/postgresql.conf
 
+mkdir -p ./logs/postgres
 pg_ctl -D complex_rest_db -l ./logs/postgres/stderr.log start
 
 # create users for complex_rest
