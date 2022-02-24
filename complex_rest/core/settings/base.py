@@ -284,8 +284,8 @@ plugins_loggers = load_plugins.get_plugins_loggers(PLUGINS, plugin_logger_config
 loggers_for_plugins = logger_utils.convert_to_superlogger_conf(plugins_log_handlers, plugins_loggers, PLUGINS,
                                                                LOG_ROTATION)
 # form custom logger types
-loggers_for_plugins = logger_utils.update_from_logging_conf(loggers_for_plugins, PLUGINS_DIR,
-                                                            logger_utils.extract_logging_configurations_dict_from_ini)
+loggers_for_plugins = logger_utils.update_from_plugin_conf(loggers_for_plugins, PLUGINS_DIR,
+                                                           logger_utils.extract_logging_configurations_dict_from_ini)
 
 LOGGING = {
     "loggers": [

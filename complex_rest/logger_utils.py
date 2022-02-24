@@ -10,7 +10,7 @@ default_common_logs_level = 'ERROR'
 
 
 class LoggersInfo:
-    """structure to keep track of separate logs and common logs option of loggers for one plugin"""
+    """Structure to keep track of separate logs and common logs option of loggers for one plugin"""
     def __init__(self, separate_logs: str, common_logs: str, loggers_lst: List[Dict[str, Union[bool, int, str]]]):
         self.separate_logs = separate_logs
         self.common_logs = common_logs
@@ -19,7 +19,11 @@ class LoggersInfo:
 
 def get_one_plugin_config(handlers: List[str], plugins_loggers: Dict[str, Dict[str, Union[int, str]]],
                           LOG_ROTATION: bool) -> LoggersInfo:
-    """adds one default logger type to the plugin"""
+    """
+    Adds one default logger type to the plugin in form of structure with config
+    and default level for separate log file and common log file
+    """
+
     config = {
         "type": 'HR',
         "file": plugins_loggers[handlers[0]]['filename'],
@@ -48,6 +52,13 @@ def get_one_plugin_config(handlers: List[str], plugins_loggers: Dict[str, Dict[s
 def convert_to_superlogger_conf(plugins_loggers: Dict[str, Dict[str, Union[int, str]]],
                                 plugins_log_handlers: Dict[str, Dict[str, Union[int, bool, List[str]]]],
                                 PLUGINS: List[str], LOG_ROTATION: bool) -> Dict[str, LoggersInfo]:
+    """
+    Converts default plugin logging config to default super logging config
+    returns a dictionary
+    key: plugin name
+    value: LoggersInfo containing super logger configuration for one logger
+    and default level for separate log file and common log file
+    """
     loggers_for_plugins = {}
     for plugin in PLUGINS:
         loggers_for_plugins[plugin] = get_one_plugin_config(plugins_log_handlers[plugin]['handlers'], plugins_loggers,
@@ -56,7 +67,10 @@ def convert_to_superlogger_conf(plugins_loggers: Dict[str, Dict[str, Union[int, 
 
 
 def override_root_logger() -> None:
-    """this function is responsible for setting root logger (not super root logger)"""
+    """
+    This function is responsible for adding handlers and level to root logger (not super root logger)
+    it is done to see logs from external libraries in super logger format
+    """
     super_root_logger = super_logger.getLogger()
     root_logger = logging.getLogger()
     if not root_logger.hasHandlers():
@@ -65,12 +79,21 @@ def override_root_logger() -> None:
 
 
 def set_minimal_separate_log_level(loggers_lst: List[Dict], separate_logs_level: str) -> None:
+    """
+    separate log level has priority over loggers level in super logger,
+    hence minimal level of loggers will be set to separate logs level.
+    if logger level is DEBUG and separate logs level is INFO, logger level will be set to INFO
+    """
     for logger in loggers_lst:
         if super_logger.logging_levels[logger['level']] < super_logger.logging_levels[separate_logs_level]:
             logger['level'] = separate_logs_level
 
 
 def add_root_handlers(loggers_lst: List[Dict], base_loggers: List[Dict], common_logs_level: str) -> None:
+    """
+    Add super root logger handlers to every plugin specifying common logs level
+    Inheritance and propagate True cannot be used due to common logs level restriction
+    """
     for logger in base_loggers:
         logger['level'] = common_logs_level
         loggers_lst.append(logger)
@@ -78,7 +101,7 @@ def add_root_handlers(loggers_lst: List[Dict], base_loggers: List[Dict], common_
 
 def superlogging_config_func(logging_settings: Dict[str, Union[List, LoggersInfo]]) -> None:
     """
-    will be used as logging_config_func in configure_logging instead of logging.config.dictConfig
+    Will be used as logging_config_func in DJANGO configure_logging instead of logging.config.dictConfig
     this behaviour is specified by LOGGING_CONFIG in base.py
     """
     super_logger.getLogger().setLogger({"loggers": logging_settings["loggers"]})
@@ -86,13 +109,11 @@ def superlogging_config_func(logging_settings: Dict[str, Union[List, LoggersInfo
     for settings in logging_settings:
         if settings != "loggers":
             plugin_logger = super_logger.getLogger(settings)
-            plugin_logger.propagate = False
-            # plugin_logger.propagate = logging_settings[settings].common_logs
+            plugin_logger.propagate = False  # because root handlers will be added manually to specify different level
             set_minimal_separate_log_level(logging_settings[settings].loggers_lst,
                                            logging_settings[settings].separate_logs)
             add_root_handlers(logging_settings[settings].loggers_lst, logging_settings["loggers"],
                               logging_settings[settings].common_logs)
-
             plugin_logger.setLogger({"loggers": logging_settings[settings].loggers_lst})
 
 
@@ -128,12 +149,16 @@ def merge_dicts(d_primary: Dict, d_secondary: Dict) -> Dict:
 def transform_str_to_bool(**kwargs) -> Dict:
     """transforms str 'true' or str 'false' values to bool True and bool False respectively"""
     for k, v in kwargs.items():
-        if v == 'true' or v == 'false':
-            kwargs[k] = v == 'true'
+        if v.lower() == 'true' or v.lower() == 'false':
+            kwargs[k] = v.lower() == 'true'
     return kwargs
 
 
 def extract_logging_configurations_dict_from_ini(config_filename: Path) -> Dict[str, Union[str, List[Dict]]]:
+    """
+    Plugins config are currently in ini format
+    This function is passed as parameter to update_from_plugin_conf to parse ini config ang extract logging information
+    """
     config_dict = dict()
     config = configparser.ConfigParser(interpolation=None)  # otherwise, it will affect message format
     config.optionxform = str  # to preserve case sensitivity of the attributes
@@ -153,13 +178,16 @@ def extract_logging_configurations_dict_from_ini(config_filename: Path) -> Dict[
     return config_dict
 
 
-def update_from_logging_conf(loggers_for_plugins: Dict[str, LoggersInfo], PLUGINS_DIR: str,
-                             get_config_func: Callable[[Path],  Dict[str, Union[str, List[Dict]]]]) -> Dict[str, LoggersInfo]:
-    """override default logger type and add more logger types if specified in PLUGINS_DIR/plugin_name/logging.conf"""
+def update_from_plugin_conf(loggers_for_plugins: Dict[str, LoggersInfo], PLUGINS_DIR: str,
+                            get_config_func: Callable[[Path],  Dict[str, Union[str, List[Dict]]]]) -> Dict[str, LoggersInfo]:
+    """
+    Override default logger type and add more logger types if specified in
+    <PLUGINS_DIR>/<plugin_name>/<plugin_name>.conf
+    """
     for plugin_name in loggers_for_plugins:
         config_file = Path(PLUGINS_DIR) / plugin_name / f'{plugin_name}.conf'
         if config_file.is_file():
-            conf_dict = get_config_func(config_file)
+            conf_dict = get_config_func(config_file)  # function to parse config and extract logging information
             loggers_for_plugins[plugin_name].common_logs = conf_dict.get('common_logs', default_common_logs_level)
             loggers_for_plugins[plugin_name].separate_logs = conf_dict.get('separate_logs', default_separate_logs_level)
             if conf_dict.get('loggers', None):
