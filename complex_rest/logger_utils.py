@@ -66,18 +66,6 @@ def convert_to_superlogger_conf(plugins_loggers: Dict[str, Dict[str, Union[int, 
     return loggers_for_plugins
 
 
-def override_root_logger() -> None:
-    """
-    This function is responsible for adding handlers and level to root logger (not super root logger)
-    it is done to see logs from external libraries in super logger format
-    """
-    super_root_logger = super_logger.getLogger()
-    root_logger = logging.getLogger()
-    if not root_logger.hasHandlers():
-        root_logger.handlers = super_root_logger.handlers
-        root_logger.level = super_root_logger.level
-
-
 def set_minimal_separate_log_level(loggers_lst: List[Dict], separate_logs_level: str) -> None:
     """
     separate log level has priority over loggers level in super logger,
@@ -105,7 +93,7 @@ def superlogging_config_func(logging_settings: Dict[str, Union[List, LoggersInfo
     this behaviour is specified by LOGGING_CONFIG in base.py
     """
     super_logger.getLogger().setLogger({"loggers": logging_settings["loggers"]})
-    override_root_logger()
+    logging.getLogger().level = float('inf')  # silence all loggers from logging
     for settings in logging_settings:
         if settings != "loggers":
             plugin_logger = super_logger.getLogger(settings)
