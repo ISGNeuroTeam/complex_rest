@@ -15,7 +15,7 @@ from datetime import timedelta
 
 from core import load_plugins
 from .ini_config import ini_config
-
+import logger_utils
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -280,48 +280,61 @@ plugin_logger_config = {
 plugins_log_handlers = load_plugins.get_plugins_handlers_config(PLUGINS, LOG_DIR, plugin_log_handler_config)
 plugins_loggers = load_plugins.get_plugins_loggers(PLUGINS, plugin_logger_config)
 
+# form default logger types
+loggers_for_plugins = logger_utils.convert_to_superlogger_conf(plugins_log_handlers, plugins_loggers, PLUGINS,
+                                                               LOG_ROTATION)
+# form custom logger types
+loggers_for_plugins = logger_utils.update_from_logging_conf(loggers_for_plugins, PLUGINS_DIR,
+                                                            logger_utils.extract_logging_configurations_dict_from_ini)
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'default': {
-            'format': '%(asctime)s %(levelname)s %(name)s %(message)s'
+    "loggers": [
+        {
+            "type": "HR",
+            "file": str(LOG_DIR / 'hr_rest.log'),
+            "level": LOG_LEVEL,
+            "rotation": LOG_ROTATION,
+            "message_format": "@_time:%Y-%m-%d %H:%M:%S@ |@name@| <@message@> @level@ {@extra@}",
+            "standard_attributes": {
+                "name": "name",
+                "levelname": "level",
+                "module": "module",
+                "filename": "filename",
+                "lineno": "line",
+                "funcName": "func",
+                "processName": "proc",
+                "process": "PID",
+                "message": "message",
+                "exception": "exception",
+                "created": "_time",
+                "extra": "extra"
+            }
         },
-        'simple': {
-            'format': '%(message)s'
+        {
+            "type": "JSON",
+            "file": str(LOG_DIR / "json_rest.log"),
+            "level": LOG_LEVEL,
+            "rotation": LOG_ROTATION,
+            "standard_attributes": {
+                "name": "name",
+                "levelname": "level",
+                "module": "module",
+                "filename": "filename",
+                "lineno": "line",
+                "funcName": "func",
+                "processName": "proc",
+                "process": "PID",
+                "message": "message",
+                "exception": "exception",
+                "created": "_time",
+                "extra": "extra"
+            }
         }
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'level': LOG_LEVEL
-        },
-        'file': {
-            'class': 'logging.FileHandler',
-            'level': LOG_LEVEL,
-            'filename': str(LOG_DIR / 'rest.log'),
-            'formatter': 'default',
-
-        },
-        'rotate': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'level': LOG_LEVEL,
-            'filename': str(LOG_DIR / 'rest.log'),
-            'maxBytes': 1024 * 1024 * int(ini_config['logging']['rotation_size']),
-            'backupCount': int(ini_config['logging']['keep_files']),
-            'formatter': 'default',
-        },
-        **plugins_log_handlers,
-    },
-    'root': {
-        'handlers': ['rotate', ] if LOG_ROTATION else ['file', ],
-        'level': LOG_LEVEL,
-    },
-    'loggers': {
-        **plugins_loggers,
-    },
+    ],
+    **loggers_for_plugins  # dict with keys == name_of_plugin and values == list of loggers configs
 }
+
+LOGGING_CONFIG = "logger_utils.superlogging_config_func"
 
 DEFAULT_RENDERER_CLASSES = (
     'rest_framework.renderers.JSONRenderer',

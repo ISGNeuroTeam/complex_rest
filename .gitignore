@@ -128,3 +128,4 @@ dev
 
 # local docker-compose
 docker-compose-local.yml
+complex_rest_db/
