@@ -3,7 +3,7 @@ import logging
 from cache import get_cache, cache_page
 
 from rest.views import APIView
-from rest.response import Response, status
+from rest.response import SuccessResponse, status, ErrorResponse
 from rest.permissions import IsAuthenticated, AllowAny
 
 from {{plugin_name}}.settings import ini_config
@@ -41,7 +41,14 @@ class ExampleView(APIView):
         # Example: request.GET.get('some param', None)
 
         log.info('Get request to {{plugin_name}}')
-        return Response(
+
+        # if some error occured return
+        # return ErrorResponse(
+        #     error_message='Some error message',
+        #     http_status=status.HTTP_400_BAD_REQUEST
+        # )
+
+        return SuccessResponse(
             {
                 'message': 'plugin with name {{plugin_name}} created successfully. This is get request',
                 'url_params': dict(request.GET)
@@ -54,7 +61,7 @@ class ExampleView(APIView):
         # request.data.get('some_field', None)
 
         log.info('Post request to {{plugin_name}}')
-        return Response(
+        return SuccessResponse(
             {
                 'message': 'plugin with name {{plugin_name}} created successfully. This is post request',
                 'body_params': request.data
