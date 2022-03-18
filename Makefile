@@ -81,7 +81,7 @@ unit:
 	git clone https://github.com/nginx/unit
 
 kafka.tar.gz:
-	curl https://downloads.apache.org/kafka/3.0.0/kafka_2.13-3.0.0.tgz --output kafka.tar.gz
+	curl https://archive.apache.org/dist/kafka/3.0.0/kafka_2.13-3.0.0.tgz --output kafka.tar.gz
 
 clean_kafka:
 	rm -f kafka.tar.gz
