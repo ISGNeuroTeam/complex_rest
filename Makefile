@@ -17,6 +17,11 @@ GENERATE_BRANCH = $(shell git name-rev $$(git rev-parse HEAD) | cut -d\  -f2 | s
 SET_VERSION = $(eval VERSION=$(GENERATE_VERSION))
 SET_BRANCH = $(eval BRANCH=$(GENERATE_BRANCH))
 
+define clean_docker_containers
+	@echo "Stopping and removing docker containers"
+	docker-compose -f docker-compose-dev.yml stop
+	if [[ $$(docker ps -aq -f name=complex_rest) ]]; then docker rm $$(docker ps -aq -f name=complex_rest);  fi;
+endef
 
 pack: make_build
 	$(SET_VERSION)
@@ -97,16 +102,16 @@ clean_build:
 
 clean: clean_build clean_venv.tar.gz clean_pack clean_kafka clean_unit clean_docker_test
 
-test: clean_docker_test docker_test
+test: docker_test
 
 docker_test:
+	$(call clean_docker_containers)
 	@echo "Testing..."
 	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-dev.yml run --rm  complex_rest python ./complex_rest/manage.py test ./tests --settings=core.settings.test
+	$(call clean_docker_containers)
 
 clean_docker_test:
-	@echo "Clean tests"
-	docker-compose -f docker-compose-dev.yml stop
-	if [[ $$(docker ps -aq -f name=complex_rest) ]]; then docker rm $$(docker ps -aq -f name=complex_rest);  fi;
+	$(call clean_docker_containers)
 
 
 dev: venv logs
