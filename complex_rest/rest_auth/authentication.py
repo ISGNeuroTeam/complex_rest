@@ -26,16 +26,19 @@ class JWTAuthentication(authentication.BaseAuthentication):
     www_authenticate_realm = 'api'
 
     def authenticate(self, request):
-        header = self.get_header(request)
-        if header is None:
-            return None
-
-        raw_token = self.get_raw_token(header)
-        if raw_token is None:
-            return None
-
+        raw_token = None
+        # if cookie is present, authenticate with cookie
+        cookie = self.get_cookie(request)
+        if cookie:
+            raw_token = self.get_raw_token(cookie)
+        if not raw_token:
+            header = self.get_header(request)
+            if header is None:
+                return None
+            raw_token = self.get_raw_token(header)
+            if raw_token is None:
+                return None
         validated_token = self.get_validated_token(raw_token)
-
         return self.get_user(validated_token), validated_token
 
     def authenticate_header(self, request):
@@ -43,6 +46,12 @@ class JWTAuthentication(authentication.BaseAuthentication):
             AUTH_HEADER_TYPES[0],
             self.www_authenticate_realm,
         )
+
+    def get_cookie(self, request):
+        cookie = request.COOKIES.get('auth_token')
+        if isinstance(cookie, str):
+            cookie = cookie.encode('utf-8')
+        return cookie
 
     def get_header(self, request):
         """

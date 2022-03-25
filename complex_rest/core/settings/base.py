@@ -32,6 +32,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
+SESSION_COOKIE_HTTPONLY = True  # SECURITY: JavaScript won't be able to access cookies
 
 # Application definition
 

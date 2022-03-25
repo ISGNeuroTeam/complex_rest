@@ -33,8 +33,9 @@ class Login(generics.GenericAPIView):
             serializer.is_valid(raise_exception=True)
         except TokenError as e:
             raise InvalidToken(e.args[0])
-
-        return SuccessResponse(serializer.validated_data)
+        response = SuccessResponse(serializer.validated_data)
+        response.set_cookie('auth_token', f'Bearer {serializer.validated_data["token"]}', httponly=True)
+        return response
 
 
 User = get_user_model()
