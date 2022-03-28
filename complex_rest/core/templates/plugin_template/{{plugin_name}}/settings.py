@@ -20,7 +20,10 @@ config_parser = configparser.ConfigParser()
 
 config_parser.read(Path(__file__).parent / '{{plugin_name}}.conf')
 
-ini_config = merge_ini_config_with_defaults(config_parser, default_ini_config)
+# convert to dictionary
+config = {s: dict(config_parser.items(s)) for s in config_parser.sections()}
+
+ini_config = merge_ini_config_with_defaults(config, default_ini_config)
 
 # configure your own database if you need
 # DATABASE = {
