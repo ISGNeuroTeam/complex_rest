@@ -9,6 +9,7 @@ from rest.response import Response
 from . import serializers
 from .authentication import AUTH_HEADER_TYPES
 from .exceptions import InvalidToken, TokenError
+from .settings import api_settings
 
 
 class Login(generics.GenericAPIView):
@@ -36,7 +37,8 @@ class Login(generics.GenericAPIView):
         except TokenError as e:
             raise InvalidToken(e.args[0])
         response = SuccessResponse(serializer.validated_data)
-        response.set_cookie('auth_token', f'Bearer {serializer.validated_data["token"]}', httponly=True)
+        response.set_cookie('auth_token', f'Bearer {serializer.validated_data["token"]}',
+                            httponly=True, max_age=api_settings.ACCESS_TOKEN_LIFETIME.total_seconds())
         return response
 
 
