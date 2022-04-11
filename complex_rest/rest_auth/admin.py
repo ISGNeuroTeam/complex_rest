@@ -5,7 +5,48 @@ from .models import User, Group, Permission
 
 
 class UserAdmin(DjangoUserAdmin):
-    list_display = ('username', 'guid', 'email', 'first_name', 'last_name', 'is_staff')
+    list_display = ('username', 'guid', 'email', 'first_name', 'last_name', 'is_staff', 'phone', 'photo')
+    fieldsets = (
+        (None, {
+            'fields': ('username', 'password')
+        }),
+        ('Personal info', {
+            'fields': ('first_name', 'last_name', 'email')
+        }),
+        ('Permissions', {
+            'fields': (
+                'is_active', 'is_staff', 'is_superuser',
+                'groups', 'user_permissions'
+            )
+        }),
+        ('Important dates', {
+            'fields': ('last_login', 'date_joined')
+        }),
+        ('Additional info', {
+            'fields': ('phone', 'photo')
+        })
+    )
+
+    add_fieldsets = (
+        (None, {
+            'fields': ('username', 'password1', 'password2')
+        }),
+        ('Personal info', {
+            'fields': ('first_name', 'last_name', 'email')
+        }),
+        ('Permissions', {
+            'fields': (
+                'is_active', 'is_staff', 'is_superuser',
+                'groups', 'user_permissions'
+            )
+        }),
+        ('Important dates', {
+            'fields': ('last_login', 'date_joined')
+        }),
+        ('Additional info', {
+            'fields': ('phone', 'photo')
+        })
+    )
 
 
 admin.site.unregister(DjangoGroup)
