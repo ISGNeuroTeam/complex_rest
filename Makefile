@@ -100,7 +100,7 @@ clean_venv.tar.gz:
 clean_build:
 	rm -rf make_build
 
-clean: clean_build clean_venv.tar.gz clean_pack clean_kafka clean_unit clean_docker_test
+clean: clean_build clean_venv.tar.gz clean_pack clean_kafka clean_unit clean_docker_test clean_dev
 
 test: docker_test
 
@@ -149,6 +149,7 @@ venv: venv_dev_pack.tar.gz
 
 venv_dev_pack.tar.gz: venv_dev
 	conda pack -p ./venv_dev -o ./venv_dev_pack.tar.gz
+
 
 venv_dev: kafka.tar.gz
 	conda create --copy -p ./venv_dev -y
