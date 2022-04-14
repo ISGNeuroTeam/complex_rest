@@ -1,6 +1,9 @@
 {
     "match": {
-        "uri": "/{{plugin_name}}/*"
+        "uri": [
+            "/{{plugin_name}}/*",
+            "/admin/{{plugin_name}}/*"
+        ]
     },
 
     "action": {
