@@ -36,10 +36,10 @@ def get_plugins_names(plugin_dir):
     """
     plugin_name_env = os.environ.get('COMPLEX_REST_PLUGIN_NAME', '')
     if plugin_name_env:
-        if (Path(plugin_dir) / plugin_name_env).exists():
-            return plugin_name_env.split()
-        else:
-            return []
+        return [
+            plugin_name for plugin_name in plugin_name_env.split()
+            if (Path(plugin_dir) / plugin_name).exists()
+        ]
     return [full_plugin_path.name for full_plugin_path in Path(plugin_dir).iterdir()]
 
 
