@@ -26,9 +26,21 @@ def main():
     applications = dict()
 
     for plugin_name in plugin_names:
+        # if plugin has custom configuration for nginx unit app then use it
+        plugin_unit_app_config_path = plugins_dir / plugin_name / 'nginx-unit-app.json'
+        if plugin_unit_app_config_path.exists():
+            with open(plugin_unit_app_config_path) as f:
+                plugin_app_conf = json.load(f)
+        else:
+            plugin_app_conf = json.loads(plugin_app_conf_template.replace("{{plugin_name}}", plugin_name))
 
-        plugin_app_conf = json.loads(plugin_app_conf_template.replace("{{plugin_name}}", plugin_name))
-        plugin_route_conf = json.loads(plugin_route_conf_template.replace("{{plugin_name}}", plugin_name))
+        # if plugin has custom configuration for nginx unit route then use it
+        plugin_unit_route_config_path = plugins_dir / plugin_name / 'nginx-unit-route.json'
+        if plugin_unit_route_config_path.exists():
+            with open(plugin_unit_route_config_path) as f:
+                plugin_route_conf = json.load(f)
+        else:
+            plugin_route_conf = json.loads(plugin_route_conf_template.replace("{{plugin_name}}", plugin_name))
 
         routes.append(plugin_route_conf)
         applications[plugin_name] = plugin_app_conf
