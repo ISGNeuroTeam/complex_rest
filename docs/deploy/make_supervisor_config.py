@@ -73,6 +73,10 @@ def main():
             # add priority config
             config[section]['priority'] = '100'
 
+            config[section]['stopwaitsecs'] = '20'
+            config[section]['stopasgroup'] = 'true'
+            config[section]['killasgroup'] = 'true'
+
     # write supervisord config
     with open(supervisord_conf_path, 'w') as f:
         config.write(f)
