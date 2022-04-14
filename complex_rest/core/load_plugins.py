@@ -86,6 +86,25 @@ def get_plugins_databases(plugins_names):
     return plugin_db_settings
 
 
+def get_plugins_celery_schedule(plugins_names):
+    """
+    Finds settings.py in plugin directory and loads CELERY_BEAT_SCHEDULE
+    Returns dictionary with setting
+    """
+    celery_beat_settings = dict()
+    for plugin_name in plugins_names:
+        try:
+            plugin_celery_settings = import_string(f'{plugin_name}.settings.CELERY_BEAT_SCHEDULE')
+            plugin_celery_settings = {
+                plugin_name + '_' + rule_name: rule_value for rule_name, rule_value in plugin_celery_settings.items()
+            }
+            celery_beat_settings.update(plugin_celery_settings)
+        except ImportError:
+            # plugin doesn't have celery setting
+            pass
+    return celery_beat_settings
+
+
 def get_plugins_handlers_config(plugins_names, log_dir, handler_base_config):
     """
     Creates log handler config with name {plugin_name}_handler for every plugin name
