@@ -19,7 +19,7 @@ SET_BRANCH = $(eval BRANCH=$(GENERATE_BRANCH))
 
 define clean_docker_containers
 	@echo "Stopping and removing docker containers"
-	docker-compose -f docker-compose-dev.yml stop
+	docker-compose -f docker-compose-test.yml stop
 	if [[ $$(docker ps -aq -f name=complex_rest) ]]; then docker rm $$(docker ps -aq -f name=complex_rest);  fi;
 endef
 
@@ -107,7 +107,7 @@ test: docker_test
 docker_test:
 	$(call clean_docker_containers)
 	@echo "Testing..."
-	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-dev.yml run --rm  complex_rest python ./complex_rest/manage.py test ./tests --settings=core.settings.test
+	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-test.yml run --rm  complex_rest python ./complex_rest/manage.py test ./tests --settings=core.settings.test
 	$(call clean_docker_containers)
 
 clean_docker_test:

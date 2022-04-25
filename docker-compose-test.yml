@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:12.9
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  redis:
+    image: redis
+
+  kafka:
+    build: ./docs/docker_dev/kafka
+
+  complex_rest:
+    build:
+      context: ./
+      dockerfile: ./docs/docker_dev/complex_rest/Dockerfile
+
+    volumes:
+      - ./:/complex_rest
+    user: ${CURRENT_UID}
+
+    depends_on:
+      - postgres
+      - redis
+      - kafka
