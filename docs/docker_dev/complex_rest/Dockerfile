@@ -12,7 +12,9 @@ RUN mkdir /complex_rest
 WORKDIR /complex_rest
 COPY requirements.txt /complex_rest/
 RUN pip install --no-cache-dir  -r requirements.txt
-COPY . .
+COPY complex_rest /complex_rest/
+COPY docs /complex_rest/
+
 ENTRYPOINT ["/complex_rest/docs/docker_dev/complex_rest/entrypoint.sh"]
 CMD ["/complex_rest/docs/docker_dev/complex_rest/start.sh"]
 EXPOSE 8080

@@ -32,6 +32,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
+SESSION_COOKIE_HTTPONLY = True  # SECURITY: JavaScript won't be able to access cookies
 
 # Application definition
 
@@ -354,3 +355,10 @@ TOKEN_SETTINGS = {
 CELERY_TIMEZONE = 'Europe/Moscow'
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
+
+CELERY_BEAT_SCHEDULE = {
+    # for complex rest scheduled tasks
+}
+CELERY_BEAT_SCHEDULE.update(
+    load_plugins.get_plugins_celery_schedule(PLUGINS)
+)

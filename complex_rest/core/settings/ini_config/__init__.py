@@ -17,8 +17,18 @@ def merge_ini_config_with_defaults(config, default_config):
     :return:
     Merged dictionary config
     """
+    if isinstance(config, configparser.ConfigParser):
+        config = configparser_to_dict(config)
+
     result_config = merge_dicts(config, default_config)
     return result_config
+
+
+def configparser_to_dict(config):
+    """
+    Convert configparser  to dictionary
+    """
+    return {s: dict(config.items(s)) for s in config.sections()}
 
 
 def merge_dicts(first_dict, second_dict):
@@ -32,7 +42,8 @@ def merge_dicts(first_dict, second_dict):
             node = result_dict.setdefault(key, {})
             result_dict[key] = merge_dicts(value, node)
         else:
-            result_dict[key] = value
+            if value:
+                result_dict[key] = value
 
     return result_dict
 
@@ -77,8 +88,7 @@ def get_ini_config():
 
     config.read(conf_path)
 
-    # convert to dictionary
-    config = {s: dict(config.items(s)) for s in config.sections()}
+    config = configparser_to_dict(config)
 
     merged_with_defaults = merge_ini_config_with_defaults(
         config, defaults

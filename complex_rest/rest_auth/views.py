@@ -1,12 +1,15 @@
 from django.contrib.auth import get_user_model
 from rest_framework import generics, status
-from rest_framework.response import Response
+from rest.response import SuccessResponse
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
+from rest.views import APIView
+from rest.response import Response
 
 from . import serializers
 from .authentication import AUTH_HEADER_TYPES
 from .exceptions import InvalidToken, TokenError
+from .settings import api_settings
 
 
 class Login(generics.GenericAPIView):
@@ -33,8 +36,40 @@ class Login(generics.GenericAPIView):
             serializer.is_valid(raise_exception=True)
         except TokenError as e:
             raise InvalidToken(e.args[0])
+        response = SuccessResponse(serializer.validated_data)
+        response.set_cookie('auth_token', f'Bearer {serializer.validated_data["token"]}',
+                            httponly=True, max_age=api_settings.ACCESS_TOKEN_LIFETIME.total_seconds())
+        return response
 
-        return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
+class Logout(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def delete(self, request):
+        """logout by removing http only cookie"""
+        current_user = request.user.username
+        response = Response(
+            {
+                'message': f'{current_user} logged out',
+            },
+            status.HTTP_200_OK
+        )
+        response.delete_cookie('auth_token')
+        request.session.flush()  # clear session
+        return response
+
+
+class IsLoggedIn(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request):
+        """checks if the user is logged in."""
+        return Response(
+            {
+                'status': request.user.is_authenticated
+            },
+            status.HTTP_200_OK
+        )
 
 
 User = get_user_model()

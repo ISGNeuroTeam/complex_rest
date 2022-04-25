@@ -98,7 +98,7 @@ make dev_test
 2. [Docker compose](https://docs.docker.com/compose/install/)
 #### Deploy
 ```bash
-docker-compose -f "docker-compose-dev.yml" up -d --build
+CURRENT_UID=$(id -u):$(id -g) docker-compose -f "docker-compose-dev.yml" up -d --build
 ```
 
 ### Create your plugin
@@ -137,6 +137,26 @@ docker-compose -f docker-compose-dev.yml run --rm  complex_rest python ./complex
 ./database_init.sh
 ```
 3. Run `start.sh`
+
+## Updating
+1. Stop complex_rest
+```bash
+./stop.sh
+```
+2. Unpack tar archive to destination directory excluding any configuration files that have been changed. Example:
+```bash
+tar -xzf complex_rest.tar.gz -C /opt/otp/ --exclude=complex_rest/complex_rest/rest.conf --exclude=complex_rest/complex_rest/nginx_unit.json
+```
+3. Start complex rest
+```bash
+./start.sh
+```
+4. Do migrations:
+```bash
+./venv/bin/python ./complex_rest/manage.py migrate --database=auth_db
+./venv/bin/python ./complex_rest/manage.py migrate
+```
+
 
 ## Built With
 - Conda

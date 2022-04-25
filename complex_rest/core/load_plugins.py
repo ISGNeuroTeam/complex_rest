@@ -36,10 +36,10 @@ def get_plugins_names(plugin_dir):
     """
     plugin_name_env = os.environ.get('COMPLEX_REST_PLUGIN_NAME', '')
     if plugin_name_env:
-        if (Path(plugin_dir) / plugin_name_env).exists():
-            return [plugin_name_env, ]
-        else:
-            return []
+        return [
+            plugin_name for plugin_name in plugin_name_env.split()
+            if (Path(plugin_dir) / plugin_name).exists()
+        ]
     return [full_plugin_path.name for full_plugin_path in Path(plugin_dir).iterdir()]
 
 
@@ -84,6 +84,25 @@ def get_plugins_databases(plugins_names):
             # plugin doesn't have DATABASE setting
             pass
     return plugin_db_settings
+
+
+def get_plugins_celery_schedule(plugins_names):
+    """
+    Finds settings.py in plugin directory and loads CELERY_BEAT_SCHEDULE
+    Returns dictionary with setting
+    """
+    celery_beat_settings = dict()
+    for plugin_name in plugins_names:
+        try:
+            plugin_celery_settings = import_string(f'{plugin_name}.settings.CELERY_BEAT_SCHEDULE')
+            plugin_celery_settings = {
+                plugin_name + '_' + rule_name: rule_value for rule_name, rule_value in plugin_celery_settings.items()
+            }
+            celery_beat_settings.update(plugin_celery_settings)
+        except ImportError:
+            # plugin doesn't have celery setting
+            pass
+    return celery_beat_settings
 
 
 def get_plugins_handlers_config(plugins_names, log_dir, handler_base_config):

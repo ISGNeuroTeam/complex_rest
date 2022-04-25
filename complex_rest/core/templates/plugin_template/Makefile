@@ -56,7 +56,7 @@ venv:
 	if [ -s requirements.txt ]; then \
 		echo Create venv; \
 		conda create --copy -p ./venv -y; \
-		conda install -p ./venv python==3.8.5 -y; \
+		conda install -p ./venv python==3.9.7 -y; \
 		./venv/bin/pip install --no-input  -r requirements.txt; \
 	fi
 
@@ -70,25 +70,13 @@ clean_venv:
 	rm -f ./venv.tar.gz
 
 
-complex_rest:
-	git clone git@github.com:ISGNeuroTeam/complex_rest.git
-	{ cd ./complex_rest; git checkout develop; }
+clean: clean_build clean_venv clean_pack clean_test
 
-
-clean_complex_rest:
-ifneq (,$(wildcard ./complex_rest))
-	{ cd ./complex_rest; make clean;}
-	rm -f ./complex_rest/plugins/{{plugin_name}}
-	rm -rf ./complex_rest
-endif
-
-clean: clean_build clean_venv clean_pack clean_test clean_complex_rest
-
-test: complex_rest
+test: venv
 	@echo "Testing..."
 
 
-clean_test: clean_complex_rest
+clean_test:
 	@echo "Clean tests"
 
 

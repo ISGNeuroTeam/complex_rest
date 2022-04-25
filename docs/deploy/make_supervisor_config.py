@@ -6,13 +6,13 @@ import os
 from pathlib import Path
 from core.settings import BASE_DIR, LOG_DIR, PLUGINS_DIR
 
-# first parametr is supervisor_base.conf location
+# first argument is supervisor_base.conf location
 if len(sys.argv) > 1:
     supervisor_base_conf_path = sys.argv[1]
 else:
     supervisor_base_conf_path = 'supervisord_base.conf'
 
-# second parametr is supervisord.conf location
+# second argument is supervisord.conf location
 if len(sys.argv) > 2:
     supervisord_conf_path = sys.argv[2]
 else:
@@ -72,6 +72,10 @@ def main():
 
             # add priority config
             config[section]['priority'] = '100'
+
+            config[section]['stopwaitsecs'] = '20'
+            config[section]['stopasgroup'] = 'true'
+            config[section]['killasgroup'] = 'true'
 
     # write supervisord config
     with open(supervisord_conf_path, 'w') as f:
