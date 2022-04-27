@@ -274,7 +274,7 @@ plugin_log_handler_config.update(
 )
 
 plugin_logger_config = {
-    'propagate': False,
+    'propagate': True,
     'level': LOG_LEVEL,
 }
 
@@ -328,7 +328,7 @@ LOGGING = {
     },
     'root': {
         'handlers': ['rotate', ] if LOG_ROTATION else ['file', ],
-        'level': LOG_LEVEL,
+        'level': logging.WARNING,  # rest.log contains warning and errors
     },
     'kafka': {
         'handlers': ['kafka', ],
