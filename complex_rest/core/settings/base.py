@@ -303,14 +303,14 @@ LOGGING = {
         },
         'file': {
             'class': 'logging.FileHandler',
-            'level': LOG_LEVEL,
+            'level': logging.WARNING,
             'filename': str(LOG_DIR / 'rest.log'),
             'formatter': 'default',
 
         },
         'rotate': {
             'class': 'logging.handlers.RotatingFileHandler',
-            'level': LOG_LEVEL,
+            'level': logging.WARNING,
             'filename': str(LOG_DIR / 'rest.log'),
             'maxBytes': 1024 * 1024 * int(ini_config['logging']['rotation_size']),
             'backupCount': int(ini_config['logging']['keep_files']),
@@ -330,11 +330,11 @@ LOGGING = {
         'handlers': ['rotate', ] if LOG_ROTATION else ['file', ],
         'level': logging.WARNING,  # rest.log contains warning and errors
     },
-    'kafka': {
-        'handlers': ['kafka', ],
-        'level': ini_config['message_broker']['log_level'],
-    },
     'loggers': {
+        'kafka': {
+            'handlers': ['kafka', ],
+            'level': ini_config['message_broker']['log_level'],
+        },
         **plugins_loggers,
     },
 }
