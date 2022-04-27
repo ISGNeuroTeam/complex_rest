@@ -5,6 +5,7 @@ mkdir -p ./logs/complex_rest
 mkdir -p ./deploy_state
 mkdir -p ./plugins
 mkdir -p ./plugin_dev
+mkdir -p ./logs/kafka
 
 touch ./deploy_state/supervisord-control.sock
 

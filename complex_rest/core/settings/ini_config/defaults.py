@@ -40,7 +40,8 @@ default_config = {
         'keep_files': '10'
     },
     'message_broker': {
-        'backend': 'kafka'
+        'backend': 'kafka',
+        'log_level': 'WARNING',
     },
     'message_broker_producer': {
         'bootstrap_servers': 'localhost:9092',
