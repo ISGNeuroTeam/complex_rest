@@ -40,6 +40,7 @@ keep_files = 10
 
 [message_broker]
 backend = kafka
+log_level = WARNING
 
 [message_broker_producer]
 bootstrap_servers = localhost:9092

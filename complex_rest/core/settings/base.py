@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
+import logging
 import sys
 from pathlib import Path
 from datetime import timedelta
@@ -281,6 +282,8 @@ plugin_logger_config = {
 plugins_log_handlers = load_plugins.get_plugins_handlers_config(PLUGINS, LOG_DIR, plugin_log_handler_config)
 plugins_loggers = load_plugins.get_plugins_loggers(PLUGINS, plugin_logger_config)
 
+kafka_log_dir = LOG_DIR / 'kafka'
+kafka_log_dir.mkdir(parents=True, exist_ok=True)
 
 LOGGING = {
     'version': 1,
@@ -313,11 +316,23 @@ LOGGING = {
             'backupCount': int(ini_config['logging']['keep_files']),
             'formatter': 'default',
         },
+        'kafka': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': ini_config['message_broker']['log_level'],
+            'filename': str(kafka_log_dir / 'kafka.log'),
+            'maxBytes': 1024 * 1024 * int(ini_config['logging']['rotation_size']),
+            'backupCount': int(ini_config['logging']['keep_files']),
+            'formatter': 'default',
+        },
         **plugins_log_handlers,
     },
     'root': {
         'handlers': ['rotate', ] if LOG_ROTATION else ['file', ],
         'level': LOG_LEVEL,
+    },
+    'kafka': {
+        'handlers': ['kafka', ],
+        'level': ini_config['message_broker']['log_level'],
     },
     'loggers': {
         **plugins_loggers,
