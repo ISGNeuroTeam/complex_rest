@@ -17,6 +17,7 @@ def hello(request):
 @api_view(['GET', ])
 @permission_classes((permissions.AllowAny,))
 def random_dataframe(request):
+
     dates = pd.date_range(datetime.datetime.now(), periods=6)
     df = pd.DataFrame(np.random.randn(6, 4), index=dates, columns=list("ABCD"))
 

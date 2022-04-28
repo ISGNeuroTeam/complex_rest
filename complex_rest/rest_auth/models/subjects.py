@@ -2,6 +2,8 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group as DjangoGroup, Permission as DjangoPermission
 
+from rest_auth.models.base import BaseModel, NamedModel
+
 
 class User(AbstractUser):
     guid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
@@ -24,5 +26,15 @@ class Permission(DjangoPermission):
     class Meta:
         proxy = True
 
+
+class Role(BaseModel, NamedModel):
+    permits = models.ManyToManyField('Permit', related_name='roles', blank=True)
+    groups = models.ManyToManyField(Group, related_name='roles')
+
+    def __str__(self):
+        return self.name
+
+    def contains_user(self, user: User):
+        return user in self.users.all() | User.objects.filter(groups__in=self.groups.all())
 
 
