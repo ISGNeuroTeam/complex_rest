@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group as DjangoGroup
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin, GroupAdmin
-from .models import User, Group, Permission
 
+from .models import Group, Permission, Role, Plugin, KeyChain, Action, Permit, SecurityZone, User, ActionsToPermit
 
 class UserAdmin(DjangoUserAdmin):
     list_display = ('username', 'guid', 'email', 'first_name', 'last_name', 'is_staff', 'phone', 'photo')
@@ -53,3 +53,11 @@ admin.site.unregister(DjangoGroup)
 admin.site.register(User, UserAdmin)
 admin.site.register(Group, GroupAdmin)
 admin.site.register(Permission)
+
+admin.site.register(Role)
+admin.site.register(Plugin)
+admin.site.register(KeyChain)
+admin.site.register(Action)
+admin.site.register(Permit)
+admin.site.register(SecurityZone)
+admin.site.register(ActionsToPermit)
