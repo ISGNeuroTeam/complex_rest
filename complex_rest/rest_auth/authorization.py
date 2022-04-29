@@ -1,10 +1,12 @@
 from typing import Optional, Any
 
-from .exceptions import AccessDeniedError
+from .exceptions import AccessDeniedError, OwnerIDError, KeyChainIDError
 from .models import User, KeyChain, Action
 
 
 class BaseProtectedResource:
+
+
 
     __slots__ = 'user', 'owner_id', 'keychain_id'
 
@@ -22,8 +24,15 @@ class BaseProtectedResource:
 def check_authorization(action: str):
     def deco(func):
         def wrapper(obj: BaseProtectedResource, *args, **kwargs):
-            owner = User.objects.get(id=obj.owner_id)
-            keychain = KeyChain.objects.get(id=obj.keychain_id)
+            try:
+                owner = User.objects.get(id=obj.owner_id) if obj.owner_id else None
+            except User.DoesNotExist:
+                raise OwnerIDError("user unknown", obj.owner_id)
+            try:
+                keychain = KeyChain.objects.get(id=obj.keychain_id)
+            except KeyChain.DoesNotExist:
+                raise KeyChainIDError("keychain unknown", obj.keychain_id)
+
             act = Action.objects.get(name=action, plugin__name=obj.plugin)
             is_owner = obj.user == owner
 
@@ -33,13 +42,13 @@ def check_authorization(action: str):
             ]
 
             if permissions:
-                if all(permissions):
+                if any(permissions):
                     return func(obj, *args, **kwargs)
             else:
                 if act.default_permission is True:
                     return func(obj, *args, **kwargs)
 
-            raise AccessDeniedError('Access denied', obj.user.guid)
+            raise AccessDeniedError('Access denied', obj.user.pk)
 
         return wrapper
     return deco

@@ -6,6 +6,7 @@ from django.core.cache.backends.filebased import FileBasedCache as DjangoFileBas
 from django.core.cache.backends.locmem import LocMemCache as DjangoLocMemCache
 from django.core.cache.backends.db import DatabaseCache as DjangoDatabaseCache
 from django.core.cache.backends.base import InvalidCacheBackendError
+from django.core.cache.backends.base import BaseCache
 from django.core.cache import caches
 from django.views.decorators.cache import cache_page
 from django.conf import settings
@@ -49,7 +50,7 @@ loc_mem_cache = ConnectionProxy(caches, 'LocMemCache')
 db_cache = ConnectionProxy(caches, 'DatabaseCache')
 
 
-def get_cache(base_cache, namespace=None, timeout=None, max_entries=None):
+def get_cache(base_cache, namespace=None, timeout=None, max_entries=None) -> BaseCache:
     """
     Create or return existing cache instance
     :param base_cache: one of the configured django caches in 'CASHES' settings
