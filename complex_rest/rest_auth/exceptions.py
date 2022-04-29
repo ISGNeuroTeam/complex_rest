@@ -37,3 +37,11 @@ class InvalidToken(AuthenticationFailed):
 
 class AccessDeniedError(Exception):
     pass
+
+
+class OwnerIDError(Exception):
+    pass
+
+
+class KeyChainIDError(Exception):
+    pass

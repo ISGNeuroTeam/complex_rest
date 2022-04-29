@@ -29,12 +29,16 @@ class Permission(DjangoPermission):
 
 class Role(BaseModel, NamedModel):
     permits = models.ManyToManyField('Permit', related_name='roles', blank=True)
-    groups = models.ManyToManyField(Group, related_name='roles')
+    groups = models.ManyToManyField(Group, related_name='roles', blank=True)
 
     def __str__(self):
         return self.name
 
     def contains_user(self, user: User):
-        return user in self.users.all() | User.objects.filter(groups__in=self.groups.all())
+        return user in self.all_users
+
+    @property
+    def all_users(self):
+        return User.objects.filter(groups__in=self.groups.all())
 
 
