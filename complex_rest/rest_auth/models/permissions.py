@@ -23,14 +23,14 @@ class ActionsToPermit(models.Model):
     action = models.ForeignKey(Action, on_delete=models.CASCADE)
     permit = models.ForeignKey('Permit', on_delete=models.CASCADE)
     permission = models.BooleanField(choices=ALLOW_OR_DENY, null=True, default=None)
-    by_owner_only = models.BooleanField(null=True, default=None, blank=True)
+    by_owner_only = models.BooleanField(null=False, default=False, blank=False)
 
     @property
     def allow(self):
         return self.permission
 
 
-class Permit(BaseModel, NamedModel):
+class Permit(BaseModel):
     plugin = models.ForeignKey(Plugin, on_delete=models.CASCADE, related_name='permits')
     actions = models.ManyToManyField(Action,
                                      related_name='permit',
@@ -51,10 +51,17 @@ class Permit(BaseModel, NamedModel):
         if act not in self.actions.all():
             return
 
-        action = ActionsToPermit.objects.get(action=act, permit=self)
+        actions = ActionsToPermit.objects.filter(action=act, permit=self)
 
-        if action:
+        results = set()
+        for action in actions:
             if action.by_owner_only and by_owner is not None:
-                return by_owner if action.allow else not by_owner
+                results.add(by_owner if action.allow else not by_owner)
             elif not action.by_owner_only:
-                return action.allow
+                results.add(action.allow)
+
+        if results:
+            return all(results)
+
+    def __str__(self):
+        return f'{self.plugin} [{", ".join((act.name for act in self.actions.all()))}]'
