@@ -22,11 +22,11 @@ class Action(BaseModel, NamedModel):
 class ActionsToPermit(models.Model):
     action = models.ForeignKey(Action, on_delete=models.CASCADE)
     permit = models.ForeignKey('Permit', on_delete=models.CASCADE)
-    permission = models.BooleanField(choices=ALLOW_OR_DENY, null=True, default=None)
+    permission = models.BooleanField(choices=ALLOW_OR_DENY, null=False, blank=False)
     by_owner_only = models.BooleanField(null=False, default=False, blank=False)
 
     @property
-    def allow(self):
+    def allows(self):
         return self.permission
 
 
@@ -56,9 +56,9 @@ class Permit(BaseModel):
         results = set()
         for action in actions:
             if action.by_owner_only and by_owner is not None:
-                results.add(by_owner if action.allow else not by_owner)
+                results.add(by_owner if action.allows else not by_owner)
             elif not action.by_owner_only:
-                results.add(action.allow)
+                results.add(action.allows)
 
         if results:
             return all(results)
