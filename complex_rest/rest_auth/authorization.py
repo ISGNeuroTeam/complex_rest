@@ -36,13 +36,13 @@ def check_authorization(action: str):
             act = Action.objects.get(name=action, plugin__name=obj.plugin)
             is_owner = obj.user == owner
 
-            permissions = [
+            permissions = {
                 permit.allows(
                     obj.user, act, by_owner=is_owner) for permit in keychain.permissions if permit.affects_on(obj.user)
-            ]
+            }
 
-            if permissions:
-                if any(permissions):
+            if permissions and permissions != {None}:
+                if False not in permissions:
                     return func(obj, *args, **kwargs)
             else:
                 if act.default_permission is True:
