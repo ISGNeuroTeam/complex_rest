@@ -6,8 +6,6 @@ from .models import User, KeyChain, Action
 
 class BaseProtectedResource:
 
-
-
     __slots__ = 'user', 'owner_id', 'keychain_id'
 
     def __init__(

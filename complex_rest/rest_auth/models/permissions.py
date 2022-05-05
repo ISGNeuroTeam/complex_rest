@@ -55,8 +55,8 @@ class Permit(BaseModel):
 
         results = set()
         for action in actions:
-            if action.by_owner_only and by_owner is not None:
-                results.add(by_owner if action.allows else not by_owner)
+            if action.by_owner_only and by_owner is True:
+                results.add(action.allows)
             elif not action.by_owner_only:
                 results.add(action.allows)
 
