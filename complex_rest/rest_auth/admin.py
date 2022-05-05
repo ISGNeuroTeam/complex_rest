@@ -2,9 +2,6 @@ from django import forms
 from django.contrib import admin
 from django.contrib.auth.models import Group as DjangoGroup
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin, GroupAdmin
-from django.db.models import QuerySet
-from django.urls import resolve
-from rest_framework.request import Request
 
 from .models import Group, Permission, Role, Plugin, KeyChain, Action, Permit, SecurityZone, User, ActionsToPermit
 
