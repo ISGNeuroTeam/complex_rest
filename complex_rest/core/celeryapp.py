@@ -1,6 +1,6 @@
 import os
 
-from celery import Celery
+from celery import Celery, schedules
 from core.settings.base import REDIS_CONNECTION_STRING
 
 # Set the default Django settings module for the 'celery' program.
