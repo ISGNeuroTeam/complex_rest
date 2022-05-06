@@ -1,4 +1,4 @@
-from typing import Optional, Any
+from typing import Optional, Any, Callable
 
 from .exceptions import AccessDeniedError, OwnerIDError, KeyChainIDError
 from .models import User, KeyChain, Action
@@ -7,6 +7,8 @@ from .models import User, KeyChain, Action
 class BaseProtectedResource:
 
     __slots__ = 'user', 'owner_id', 'keychain_id'
+
+    plugin = None  # Some magic requested!
 
     def __init__(
             self,
@@ -19,16 +21,20 @@ class BaseProtectedResource:
         self.keychain_id = keychain_id
 
 
-def check_authorization(action: str):
+def check_authorization(action: str, when_denied: Optional[Any] = None, on_error: Optional[Callable] = None):
     def deco(func):
         def wrapper(obj: BaseProtectedResource, *args, **kwargs):
             try:
                 owner = User.objects.get(id=obj.owner_id) if obj.owner_id else None
             except User.DoesNotExist:
-                raise OwnerIDError("user unknown", obj.owner_id)
+                if on_error:
+                    return on_error(f"Owner with ID {obj.owner_id} unknown")
+                raise OwnerIDError("Owner unknown", obj.owner_id)
             try:
                 keychain = KeyChain.objects.get(id=obj.keychain_id)
             except KeyChain.DoesNotExist:
+                if on_error:
+                    return on_error(f"Keychain with ID {obj.owner_id} unknown")
                 raise KeyChainIDError("keychain unknown", obj.keychain_id)
 
             act = Action.objects.get(name=action, plugin__name=obj.plugin)
@@ -45,6 +51,9 @@ def check_authorization(action: str):
             else:
                 if act.default_permission is True:
                     return func(obj, *args, **kwargs)
+
+            if when_denied:
+                return when_denied
 
             raise AccessDeniedError('Access denied', obj.user.pk)
 
