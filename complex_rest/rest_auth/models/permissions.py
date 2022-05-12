@@ -45,6 +45,7 @@ class Permit(BaseModel):
 
     def allows(self, user: User, act: Action, by_owner: bool = None) -> Optional[bool]:
 
+        # redundant. already checked it in set comprehension
         if not self.affects_on(user):
             return
 
