@@ -79,6 +79,8 @@ class A2PInline(admin.TabularInline):
     model = ActionsToPermit
     fk_name = 'permit'
     extra = 0
+    verbose_name = 'Action'
+    verbose_name_plural = 'Actions'
 
 
 class RolesInline(admin.TabularInline):
@@ -95,11 +97,10 @@ class PermitAdmin(BaseAdmin):
     list_display = ('__str__',)
 
 
-
 admin.site.unregister(DjangoGroup)
 admin.site.register(User, UserAdmin)
 admin.site.register(Group, GroupAdmin)
-admin.site.register(Permission)
+# admin.site.register(Permission)
 
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Plugin, BaseAdmin)

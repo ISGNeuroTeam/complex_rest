@@ -43,5 +43,9 @@ class OwnerIDError(Exception):
     pass
 
 
+class ActionError(Exception):
+    pass
+
+
 class KeyChainIDError(Exception):
     pass
