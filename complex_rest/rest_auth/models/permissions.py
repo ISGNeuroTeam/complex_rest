@@ -52,7 +52,7 @@ class Permit(BaseModel):
         if act not in self.actions.all():
             return
 
-        actions = ActionsToPermit.objects.filter(action=act, permit=self)
+        actions = ActionsToPermit.objects.filter(action=act, permit=self)  # what if always one?
 
         results = set()
         for action in actions:
