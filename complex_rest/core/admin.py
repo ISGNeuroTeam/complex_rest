@@ -1,4 +1,4 @@
-from django.contrib.auth.models import Permission
+from django.contrib.admin.apps import AdminConfig
 from django.contrib.admin.models import LogEntry
 from django.contrib import admin
 

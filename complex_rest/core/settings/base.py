@@ -18,6 +18,8 @@ from core import load_plugins
 from .ini_config import ini_config
 
 
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -38,7 +40,7 @@ SESSION_COOKIE_HTTPONLY = True  # SECURITY: JavaScript won't be able to access c
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'core.override_admin.RestAdminConfig',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
