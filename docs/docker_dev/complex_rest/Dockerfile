@@ -5,8 +5,9 @@ ENV DATABASE=postgres
 ENV DB_USER=postgres
 ENV DB_PASSWORD=postgres
 ENV DB_HOST=postgres
-ENV DBL_PORT=5432
+ENV DB_PORT=5432
 ENV REST_CONF=/complex_rest/docs/docker_dev/complex_rest/rest.conf
+ENV PYTHONPATH=/complex_rest/complex_rest
 
 RUN mkdir /complex_rest
 WORKDIR /complex_rest
