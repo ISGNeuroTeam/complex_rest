@@ -1,6 +1,6 @@
 from typing import Optional, Any, Callable
-
-from .exceptions import AccessDeniedError, OwnerIDError, KeyChainIDError, ActionError
+from core.settings.base import PLUGINS_DIR
+from .exceptions import OwnerIDError, KeyChainIDError, ActionError
 from .models import User, KeyChain, Action, Role, Permit
 
 
@@ -19,6 +19,11 @@ class BaseProtectedResource:
         self.user = user
         self.owner_id = owner_id
         self.keychain_id = keychain_id
+
+    @staticmethod
+    def get_plugin_name(view_filepath: str):
+        plugin = view_filepath[view_filepath.find(PLUGINS_DIR) + len(PLUGINS_DIR) + 1:]
+        return plugin[:plugin.find('/')]
 
 
 def check_authorization(action: str, when_denied: Optional[Any] = None, on_error: Optional[Callable] = None):
@@ -67,8 +72,7 @@ def check_authorization(action: str, when_denied: Optional[Any] = None, on_error
                 if act.default_permission is True:
                     return func(obj, *args, **kwargs)
 
-            if when_denied:
-                return when_denied
+            return when_denied
 
         return wrapper
     return deco
