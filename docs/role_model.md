@@ -38,6 +38,5 @@ To elaborate on that, it has obligatory parameter **action** that specifies the 
 - finally, we see if **action allows** (if True it means user is allowed else user is explicitly prohibited to perform the action)
 
 ### After checking, the decision is made either to perform an action or to return when_denied if provided or None:
-- if set of booleans is empty or it has only Nones, we have to stick with **action default permission** because there's no way we can figure out whether the user has rights
-- otherwise, we have a set of booleans. Note that False has priority over True because, as mentioned above, if there is False, user is explicitly prohibited to perform the action. Hence, if we have 100 Trues and 1 False
-  -> Access is denied. To grant access the set has to contain no False at all.
+- if set of booleans is empty or it has only None, we have to stick with **action default permission** because there's no way we can figure out whether the user has rights
+- otherwise, we have a set of 1 to 3 possible values (True, False, None). Note that False has priority over True because, as mentioned above, if there is False, user is explicitly prohibited to perform the action. Hence if there is False -> Access is denied. To grant access the set has to contain no False.
