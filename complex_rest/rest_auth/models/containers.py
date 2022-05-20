@@ -15,6 +15,10 @@ class SecurityZone(BaseModel, NamedModel):
         return self.permits.all().union(self.parent.effective_permissions if self.parent else Permit.objects.none())
 
     def save(self, *args, **kwargs):
+        """
+        Prevent of assignment successor security zone as a parent
+        """
+
         children = SecurityZone.objects.raw(
             f"""
             WITH RECURSIVE children(id) AS (
@@ -25,7 +29,7 @@ class SecurityZone(BaseModel, NamedModel):
                 )
             SELECT id FROM children;
             """
-        )
+        )  # Get all the child security zones with a recursive query
 
         if self.parent in children:
             raise SecurityZoneCircularInheritance()
