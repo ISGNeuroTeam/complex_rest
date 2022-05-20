@@ -1,6 +1,6 @@
 from django.db import models
-from .. import exceptions
 from rest_auth.authentication import User
+from rest_auth.exceptions import SecurityZoneCircularInheritance
 from rest_auth.models import BaseModel, NamedModel, Permit, Action
 
 
@@ -14,17 +14,23 @@ class SecurityZone(BaseModel, NamedModel):
     def effective_permissions(self):
         return self.permits.all().union(self.parent.effective_permissions if self.parent else Permit.objects.none())
 
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
-        current_parent = self.parent
-        heritage = {self.id}
-        while current_parent:
-            if current_parent.id in heritage:
-                raise exceptions.SecurityZoneCircularInheritance()
-            heritage.add(current_parent.id)
-            current_parent = current_parent.parent
-        super().save(force_insert=False, force_update=False, using=None,
-                     update_fields=None)
+    def save(self, *args, **kwargs):
+        children = SecurityZone.objects.raw(
+            f"""
+            WITH RECURSIVE children(id) AS (
+                SELECT id FROM rest_auth_securityzone WHERE parent_id = {self.pk}
+                UNION 
+                SELECT r.id FROM rest_auth_securityzone r, children p
+                WHERE r.parent_id = p.id
+                )
+            SELECT id FROM children;
+            """
+        )
+
+        if self.parent in children:
+            raise SecurityZoneCircularInheritance()
+
+        super().save(*args, **kwargs)
 
 
 class KeyChain(BaseModel):
