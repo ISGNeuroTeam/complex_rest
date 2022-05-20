@@ -49,3 +49,8 @@ class ActionError(Exception):
 
 class KeyChainIDError(Exception):
     pass
+
+
+class SecurityZoneCircularInheritance(Exception):
+    def __init__(self):
+        super().__init__("Security Zone Circular Inheritance detected")
