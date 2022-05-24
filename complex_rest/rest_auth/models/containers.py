@@ -19,20 +19,31 @@ class SecurityZone(BaseModel, NamedModel):
         Prevent of assignment successor security zone as a parent
         """
 
-        children = SecurityZone.objects.raw(
-            f"""
-            WITH RECURSIVE children(id) AS (
-                SELECT id FROM rest_auth_securityzone WHERE parent_id = {self.pk}
-                UNION 
-                SELECT r.id FROM rest_auth_securityzone r, children p
-                WHERE r.parent_id = p.id
-                )
-            SELECT id FROM children;
-            """
-        )  # Get all the child security zones with a recursive query
+        if self.pk:
+            if self.parent and self.parent.pk == self.pk:
+                raise SecurityZoneCircularInheritance()  # zone inherits from itself
+            children = SecurityZone.objects.raw(
+                f"""
+                WITH RECURSIVE children(id) AS (
+                    SELECT id FROM rest_auth_securityzone WHERE parent_id = {self.pk}
+                    UNION 
+                    SELECT r.id FROM rest_auth_securityzone r, children p
+                    WHERE r.parent_id = p.id
+                    )
+                SELECT id FROM children;
+                """
+            )  # Get all the child security zones with a recursive query
 
-        if self.parent in children:
-            raise SecurityZoneCircularInheritance()
+            if self.parent in children:
+                raise SecurityZoneCircularInheritance()
+        else:
+            current_parent = self.parent
+            heritage = {self.id}
+            while current_parent:
+                if current_parent.id in heritage:
+                    raise SecurityZoneCircularInheritance()
+                heritage.add(current_parent.id)
+                current_parent = current_parent.parent
 
         super().save(*args, **kwargs)
 
