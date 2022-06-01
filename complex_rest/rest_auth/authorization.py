@@ -1,6 +1,6 @@
 from typing import Optional, Any, Callable
 from core.settings.base import PLUGINS_DIR
-from .exceptions import OwnerIDError, KeyChainIDError, ActionError
+from .exceptions import OwnerIDError, KeyChainIDError, ActionError, AccessDeniedError
 from .models import User, KeyChain, Action, Role, Permit
 
 
@@ -72,7 +72,10 @@ def check_authorization(action: str, when_denied: Optional[Any] = None, on_error
                 if act.default_permission is True:
                     return func(obj, *args, **kwargs)
 
-            return when_denied
+            if when_denied:
+                return when_denied
+
+            raise AccessDeniedError('Access denied', obj.user.pk)
 
         return wrapper
     return deco
