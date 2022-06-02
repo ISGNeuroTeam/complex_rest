@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.contrib.auth.models import Group as DjangoGroup
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin, GroupAdmin
 
-from .models import Group, Permission, Role, Plugin, KeyChain, Action, Permit, SecurityZone, User, ActionsToPermit
+from .models import Group, Permission, Role, Plugin, KeyChain, Action, Permit, SecurityZone, User, ActionsToPermit, ProtectedResource
 
 
 class BaseAdmin(admin.ModelAdmin):
@@ -109,3 +109,5 @@ admin.site.register(Action, BaseAdmin)
 admin.site.register(Permit, PermitAdmin)
 admin.site.register(SecurityZone, BaseAdmin)
 admin.site.register(ActionsToPermit, BaseAdmin)
+
+admin.site.register(ProtectedResource, BaseAdmin)

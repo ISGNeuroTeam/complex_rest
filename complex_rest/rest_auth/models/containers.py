@@ -60,3 +60,10 @@ class KeyChain(BaseModel):
         return any([
             permit.allows(user, act, by_owner) for permit in self.permissions
         ])
+
+
+class ProtectedResource(BaseModel, NamedModel):
+    # path to protected resource
+    object_id = models.TextField('object', max_length=12000000, blank=True, null=False, unique=True)
+    owner = models.ForeignKey(User, related_name='protected_resource', on_delete=models.CASCADE)
+    zone = models.ForeignKey(SecurityZone, related_name='protected_resource', on_delete=models.CASCADE)
