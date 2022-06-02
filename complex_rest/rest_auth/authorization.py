@@ -69,7 +69,7 @@ def check_authorization(action: str, when_denied: Optional[Any] = None, on_error
                 if False not in permissions:
                     return func(obj, *args, **kwargs)
             else:
-                if act.default_permission is True:
+                if act.default_rule is True:
                     return func(obj, *args, **kwargs)
 
             return when_denied
