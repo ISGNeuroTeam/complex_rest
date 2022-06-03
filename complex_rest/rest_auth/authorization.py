@@ -1,31 +1,69 @@
 import logging
 
-from typing import Optional, Any, Callable
+from typing import Any
 from django.core.exceptions import ObjectDoesNotExist
 from rest.globals import global_vars
-from .exceptions import OwnerIDError, KeyChainIDError, ActionError, AccessDeniedError
+from .exceptions import AccessDeniedError
 from .models import User, KeyChain, Action, Role, Permit, Plugin
 
 
 log = logging.getLogger('root')
 
 
-def has_perm(user: User, action: Action, obj: Any):
-    pass
+def has_perm(user: User, action: Action, keychain: KeyChain = None, object_owner: User=None) -> bool:
+    """
+    Returns True if user has right to do action on object with specified keychain, otherwise return False
+    """
+    is_owner = user == object_owner if object_owner else None
+
+    if keychain:
+        permits = keychain.permissions
+    else:
+        permits = Permit.objects.filter(
+            actions=action,
+            roles_in=Role.objects.filter(groups__in=user.groups.all())
+        )
+
+    permissions = (
+        {
+            permit.allows(user, action, by_owner=is_owner)
+            for permit in permits if permit.affects_on(user)
+        }
+    )
+    if permissions and permissions != {None}:
+        if False not in permissions:
+            return True
+    else:
+        return action.default_rule
 
 
-def check_authorisation(obj, action_name):
+def check_authorisation(obj: Any, action_name: str):
+    """
+    Checks if action can be done with object
+    If not allowed raises AccessDeniedError
+    """
     user = global_vars.get_current_user()
     plugin_name = obj.__class__.__module__.split('.')[0]
 
     try:
         plugin = Plugin.objects.get(name=plugin_name)
         action = Action.objects.get(plugin=plugin, name=action_name)
+
+        if hasattr(obj, 'owner_guid'):
+            obj_owner = User.objects.get(guid=obj.owner_guid)
+        else:
+            obj_owner = None
+
+        if hasattr(obj, 'keychain_id'):
+            key_chain = KeyChain.objects.get(id=obj.keychain_id)
+        else:
+            key_chain = None
+
     except ObjectDoesNotExist as err:
         log.error(f'Error occurred while authorization: {err}')
         raise AccessDeniedError(f'Error occurred while authorization: {err}')
 
-    if not has_perm(user, action, obj):
+    if not has_perm(user, action, key_chain, obj_owner):
         raise AccessDeniedError(
             f'Access denied. Action {action_name} on object {str(obj)} for user {user.username} is not allowed'
         )
@@ -66,56 +104,4 @@ def auth_covered_method(action_name: str):
             return class_method(*args, **kwargs)
         return wrapper
     return decorator
-
-
-# def check_authorization(action: str, when_denied: Optional[Any] = None, on_error: Optional[Callable] = None):
-#     def deco(func):
-#         def wrapper(obj: BaseProtectedResource, *args, **kwargs):
-#             try:
-#                 owner = User.objects.get(id=obj.owner_id) if obj.owner_id else None
-#             except User.DoesNotExist:
-#                 if on_error:
-#                     return on_error(f"Owner with ID {obj.owner_id} unknown")
-#                 raise OwnerIDError("Owner unknown", obj.owner_id)
-#
-#             try:
-#                 act = Action.objects.get(name=action, plugin__name=obj.plugin)
-#             except Action.DoesNotExist:
-#                 if on_error:
-#                     return on_error(f"Action with name {action} unknown")
-#                 raise ActionError("Action unknown", action)
-#
-#             is_owner = obj.user == owner if owner else None
-#
-#             if obj.keychain_id:
-#                 try:
-#                     permits = KeyChain.objects.get(id=obj.keychain_id).permissions
-#                 except KeyChain.DoesNotExist:
-#                     if on_error:
-#                         return on_error(f"Keychain with ID {obj.owner_id} unknown")
-#                     raise KeyChainIDError("keychain unknown", obj.keychain_id)
-#             else:
-#                 permits = Permit.objects.filter(
-#                     actions=act,
-#                     roles__in=Role.objects.filter(groups__in=obj.user.groups.all())
-#                 )
-#
-#             permissions = (
-#                 {
-#                     permit.allows(
-#                         obj.user, act, by_owner=is_owner) for permit in permits if permit.affects_on(obj.user)
-#                 }
-#             )
-#
-#             if permissions and permissions != {None}:
-#                 if False not in permissions:
-#                     return func(obj, *args, **kwargs)
-#             else:
-#                 if act.default_rule is True:
-#                     return func(obj, *args, **kwargs)
-#
-#             return when_denied
-#
-#         return wrapper
-#     return deco
 
