@@ -17,8 +17,8 @@ class Plugin(TimeStampedModel):
 
 
 class Action(TimeStampedModel, NamedModel):
-    default_rule = models.BooleanField(choices=ALLOW_OR_DENY)
-    owner_applicability = models.BooleanField()
+    default_rule = models.BooleanField(choices=ALLOW_OR_DENY, default=True)
+    owner_applicability = models.BooleanField(default=True)
     plugin = models.ForeignKey(Plugin, related_name='actions', on_delete=models.CASCADE)
 
     class Meta:
