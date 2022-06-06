@@ -15,6 +15,7 @@ class SecurityZone(NamedModel, TimeStampedModel, MPTTModel):
 
 
 class KeyChain(TimeStampedModel):
+    keychain_id = models.CharField('keychain_id', unique=True, max_length=255)
     zone = models.ForeignKey(SecurityZone, on_delete=models.CASCADE, related_name='keychains', null=True, blank=True)
     permits = models.ManyToManyField(Permit, related_name='keychains', blank=True)
 
