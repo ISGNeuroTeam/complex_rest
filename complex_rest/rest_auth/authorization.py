@@ -21,7 +21,7 @@ def has_perm(user: User, action: Action, keychain: KeyChain = None, object_owner
     else:
         permits = Permit.objects.filter(
             actions=action,
-            roles_in=Role.objects.filter(groups__in=user.groups.all())
+            roles__in=Role.objects.filter(groups__in=user.groups.all())
         )
 
     permissions = (
@@ -46,6 +46,7 @@ def check_authorisation(obj: Any, action_name: str):
     plugin_name = obj.__class__.__module__.split('.')[0]
 
     try:
+
         plugin = Plugin.objects.get(name=plugin_name)
         action = Action.objects.get(plugin=plugin, name=action_name)
 
@@ -54,19 +55,31 @@ def check_authorisation(obj: Any, action_name: str):
         else:
             obj_owner = None
 
-        if hasattr(obj, 'keychain_id'):
-            key_chain = KeyChain.objects.get(id=obj.keychain_id)
-        else:
-            key_chain = None
+        # if key_chain is not found it's not error
+        try:
+            keychain_id = _get_obj_keychain_id(obj)
+            keychain = KeyChain.objects.get(keychain_id=keychain_id)
+        except KeyChain.DoesNotExist:
+            keychain = None
 
     except ObjectDoesNotExist as err:
         log.error(f'Error occurred while authorization: {err}')
         raise AccessDeniedError(f'Error occurred while authorization: {err}')
 
-    if not has_perm(user, action, key_chain, obj_owner):
+    if not has_perm(user, action, keychain, obj_owner):
         raise AccessDeniedError(
             f'Access denied. Action {action_name} on object {str(obj)} for user {user.username} is not allowed'
         )
+
+
+def _get_obj_keychain_id(obj):
+    # find object keychain_id
+    class_obj = obj.__class__
+    if hasattr(obj, 'keychain_id'):
+        key_chain_id = f'{_generate_default_keychain_id(class_obj)}.{str(obj.keychain_id)}'
+    else:
+        key_chain_id = obj.default_keychain_id
+    return key_chain_id
 
 
 def _generate_default_keychain_id(class_obj):
@@ -79,6 +92,8 @@ def _transform_auth_covered_obj(class_obj, default_keychain_id=None):
     """
     if default_keychain_id is None:
         default_keychain_id = _generate_default_keychain_id(class_obj)
+    else:
+        default_keychain_id = f'{class_obj.__module__}.{default_keychain_id}'
     setattr(class_obj, 'default_keychain_id', default_keychain_id)
     return class_obj
 
@@ -100,7 +115,8 @@ def auth_covered_object(obj: Any):
 def auth_covered_method(action_name: str):
     def decorator(class_method):
         def wrapper(*args, **kwargs):
-            has_perm(args[0], action_name)
+            # args[0] = self
+            check_authorisation(args[0], action_name)
             return class_method(*args, **kwargs)
         return wrapper
     return decorator
