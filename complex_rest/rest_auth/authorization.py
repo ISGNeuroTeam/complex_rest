@@ -98,7 +98,7 @@ def _transform_auth_covered_obj(class_obj, default_keychain_id=None):
     return class_obj
 
 
-def auth_covered_object(obj: Any):
+def auth_covered_class(obj: Any):
     # obj - either a class object when decorator called without parentheses or default_keychain_id
     if isinstance(obj, str):
         default_keychain_id = obj

@@ -10,7 +10,7 @@ from rest.globals import global_vars
 
 from rest_auth.models import User, Action, Plugin, Permit, AccessRule, Role
 from rest_auth.exceptions import TokenError
-from rest_auth.authorization import auth_covered_object, auth_covered_method, _get_obj_keychain_id, AccessDeniedError
+from rest_auth.authorization import auth_covered_class, auth_covered_method, _get_obj_keychain_id, AccessDeniedError
 
 test_token_settings = {
     'ACCESS_TOKEN_LIFETIME': timedelta(seconds=4),
@@ -105,7 +105,7 @@ class TestAuthentication(TestCase):
 class TestKeyChain(TestCase):
 
     def test_default_keychain_id(self):
-        @auth_covered_object
+        @auth_covered_class
         class ProtectedObject:
             pass
 
@@ -115,7 +115,7 @@ class TestKeyChain(TestCase):
     def test_user_specified_default_keychain_id(self):
         user_specified_keychain_id = 'UserSpecifiedKeychainId'
 
-        @auth_covered_object(user_specified_keychain_id)
+        @auth_covered_class(user_specified_keychain_id)
         class ProtectedObject:
             pass
 
@@ -123,7 +123,7 @@ class TestKeyChain(TestCase):
         self.assertEqual(_get_obj_keychain_id(test_object), f'test_auth.{user_specified_keychain_id}')
 
     def test_keychain_property(self):
-        @auth_covered_object('default_keychain')
+        @auth_covered_class('default_keychain')
         class ProtectedObject:
             @property
             def keychain_id(self):
@@ -153,7 +153,7 @@ class TestAuthProtection(TestCase):
 
     def test_deny_method(self):
 
-        @auth_covered_object
+        @auth_covered_class
         class ProtectedObject:
             @auth_covered_method(action_name='test_action')
             def protected_method(self):
@@ -165,7 +165,7 @@ class TestAuthProtection(TestCase):
 
     def test_allow_method(self):
 
-        @auth_covered_object
+        @auth_covered_class
         class ProtectedObject:
             @auth_covered_method(action_name='test_action')
             def protected_method(self):
