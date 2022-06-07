@@ -76,10 +76,17 @@ def _get_obj_keychain_id(obj):
     # find object keychain_id
     class_obj = obj.__class__
     if hasattr(obj, 'keychain_id'):
-        key_chain_id = f'{_generate_default_keychain_id(class_obj)}.{str(obj.keychain_id)}'
+        key_chain_id = f'{obj.default_keychain_id}.{str(obj.keychain_id)}'
     else:
         key_chain_id = obj.default_keychain_id
     return key_chain_id
+
+
+def _plugin_name(cls):
+    """
+    Returns plugin name for class
+    """
+    return cls.__module__.split('.')[0]
 
 
 def _generate_default_keychain_id(class_obj):
@@ -93,7 +100,7 @@ def _transform_auth_covered_obj(class_obj, default_keychain_id=None):
     if default_keychain_id is None:
         default_keychain_id = _generate_default_keychain_id(class_obj)
     else:
-        default_keychain_id = f'{class_obj.__module__}.{default_keychain_id}'
+        default_keychain_id = f'{_plugin_name(class_obj)}.{default_keychain_id}'
     setattr(class_obj, 'default_keychain_id', default_keychain_id)
     return class_obj
 
