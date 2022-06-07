@@ -15,9 +15,16 @@ class SecurityZone(NamedModel, TimeStampedModel, MPTTModel):
 
 
 class KeyChain(TimeStampedModel):
+    plugin = models.ForeignKey('rest_auth.Plugin', on_delete=models.CASCADE, related_name='keychains')
     keychain_id = models.CharField('keychain_id', unique=True, max_length=255)
     zone = models.ForeignKey(SecurityZone, on_delete=models.CASCADE, related_name='keychains', null=True, blank=True)
     permits = models.ManyToManyField(Permit, related_name='keychains', blank=True)
+
+    def __str__(self):
+        return f'{self.plugin.name}.{self.keychain_id}'
+
+    class Meta:
+        unique_together = ('plugin', 'keychain_id',)
 
     @property
     def permissions(self):

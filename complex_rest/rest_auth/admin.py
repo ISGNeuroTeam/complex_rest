@@ -103,6 +103,10 @@ class SecurityZoneAdmin(MPTTModelAdmin):
     search_fields = ['name', ]
 
 
+class KeyChainAdmin(BaseAdmin):
+    list_filter = (('plugin', admin.RelatedOnlyFieldListFilter),)
+
+
 admin.site.unregister(DjangoGroup)
 admin.site.register(User, UserAdmin)
 admin.site.register(Group, GroupAdmin)
@@ -110,7 +114,7 @@ admin.site.register(Group, GroupAdmin)
 
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Plugin, BaseAdmin)
-admin.site.register(KeyChain, BaseAdmin)
+admin.site.register(KeyChain, KeyChainAdmin)
 admin.site.register(Action, BaseAdmin)
 admin.site.register(Permit, PermitAdmin)
 admin.site.register(SecurityZone, SecurityZoneAdmin)

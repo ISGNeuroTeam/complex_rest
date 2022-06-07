@@ -16,7 +16,7 @@ class TestKeyChain(TestCase):
             pass
 
         test_object = ProtectedObject()
-        self.assertEqual(_get_obj_keychain_id(test_object), 'test_auth.test_authorization.ProtectedObject')
+        self.assertEqual(_get_obj_keychain_id(test_object), 'ProtectedObject')
 
     def test_user_specified_default_keychain_id(self):
         user_specified_keychain_id = 'UserSpecifiedKeychainId'
@@ -26,7 +26,7 @@ class TestKeyChain(TestCase):
             pass
 
         test_object = ProtectedObject()
-        self.assertEqual(_get_obj_keychain_id(test_object), f'test_auth.{user_specified_keychain_id}')
+        self.assertEqual(_get_obj_keychain_id(test_object), user_specified_keychain_id)
 
     def test_keychain_property(self):
         @auth_covered_class('default_keychain')
@@ -36,7 +36,7 @@ class TestKeyChain(TestCase):
                 return 10
 
         test_object = ProtectedObject()
-        self.assertEqual(_get_obj_keychain_id(test_object), 'test_auth.default_keychain.10')
+        self.assertEqual(_get_obj_keychain_id(test_object), 'default_keychain.10')
 
 
 class TestAuthProtection(TestCase):

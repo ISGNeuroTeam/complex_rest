@@ -43,7 +43,7 @@ def check_authorisation(obj: Any, action_name: str):
     If not allowed raises AccessDeniedError
     """
     user = global_vars.get_current_user()
-    plugin_name = obj.__class__.__module__.split('.')[0]
+    plugin_name = _plugin_name(obj.__class__)
 
     try:
 
@@ -58,7 +58,7 @@ def check_authorisation(obj: Any, action_name: str):
         # if key_chain is not found it's not error
         try:
             keychain_id = _get_obj_keychain_id(obj)
-            keychain = KeyChain.objects.get(keychain_id=keychain_id)
+            keychain = KeyChain.objects.get(keychain_id=keychain_id, plugin=plugin)
         except KeyChain.DoesNotExist:
             keychain = None
 
@@ -90,7 +90,7 @@ def _plugin_name(cls):
 
 
 def _generate_default_keychain_id(class_obj):
-    return f'{class_obj.__module__}.{class_obj.__name__}'
+    return class_obj.__name__
 
 
 def _transform_auth_covered_obj(class_obj, default_keychain_id=None):
@@ -99,8 +99,6 @@ def _transform_auth_covered_obj(class_obj, default_keychain_id=None):
     """
     if default_keychain_id is None:
         default_keychain_id = _generate_default_keychain_id(class_obj)
-    else:
-        default_keychain_id = f'{_plugin_name(class_obj)}.{default_keychain_id}'
     setattr(class_obj, 'default_keychain_id', default_keychain_id)
     return class_obj
 
@@ -127,4 +125,3 @@ def auth_covered_method(action_name: str):
             return class_method(*args, **kwargs)
         return wrapper
     return decorator
-
