@@ -37,13 +37,13 @@ def has_perm(user: User, action: Action, keychain: KeyChain = None, object_owner
         return action.default_rule
 
 
-def check_authorisation(obj: Any, action_name: str):
+def check_authorization(obj: Any, action_name: str):
     """
     Checks if action can be done with object
     If not allowed raises AccessDeniedError
     """
     user = global_vars.get_current_user()
-    plugin_name = _plugin_name(obj.__class__)
+    plugin_name = _plugin_name(obj)
 
     try:
 
@@ -82,11 +82,11 @@ def _get_obj_keychain_id(obj):
     return key_chain_id
 
 
-def _plugin_name(cls):
+def _plugin_name(obj):
     """
-    Returns plugin name for class
+    Returns plugin name for object
     """
-    return cls.__module__.split('.')[0]
+    return obj.__module__.split('.')[0]
 
 
 def _generate_default_keychain_id(class_obj):
@@ -119,9 +119,25 @@ def auth_covered_class(obj: Any):
 
 def auth_covered_method(action_name: str):
     def decorator(class_method):
+        """
+        Decorator returns method that do the same but checks authorization
+        """
         def wrapper(*args, **kwargs):
             # args[0] = self
-            check_authorisation(args[0], action_name)
+            check_authorization(args[0], action_name)
             return class_method(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def auth_covered_func(action_name: str):
+    def decorator(func):
+        """
+        Decorator return function that do the same but checks authorization
+        """
+        def wrapper(*args, **kwargs):
+            func.default_keychain_id = func.__name__
+            check_authorization(func, action_name)
+            return func(*args, **kwargs)
         return wrapper
     return decorator
