@@ -118,4 +118,3 @@ class TestAuthProtection(TestCase):
 
         test_func()
         self.assertTrue(func_was_executed)
-

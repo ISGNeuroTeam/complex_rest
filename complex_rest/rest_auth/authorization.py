@@ -10,7 +10,7 @@ from .models import User, KeyChain, Action, Role, Permit, Plugin
 log = logging.getLogger('root')
 
 
-def has_perm(user: User, action: Action, keychain: KeyChain = None, object_owner: User=None) -> bool:
+def has_perm(user: User, action: Action, keychain: KeyChain = None, object_owner: User = None) -> bool:
     """
     Returns True if user has right to do action on object with specified keychain, otherwise return False
     """
