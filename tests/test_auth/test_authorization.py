@@ -38,6 +38,16 @@ class TestKeyChain(TestCase):
         test_object = ProtectedObject()
         self.assertEqual(_get_obj_keychain_id(test_object), 'default_keychain.10')
 
+    def test_keychain_property_without_common_keychain(self):
+        @auth_covered_class
+        class ProtectedObject:
+            @property
+            def keychain_id(self):
+                return 10
+
+        test_object = ProtectedObject()
+        self.assertEqual(_get_obj_keychain_id(test_object), 'ProtectedObject.10')
+
 
 class TestAuthProtection(TestCase):
     databases = {'default', 'auth_db'}
