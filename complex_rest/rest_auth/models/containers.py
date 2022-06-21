@@ -63,8 +63,6 @@ class KeyChain(BaseModel):
 
 
 class ProtectedResource(BaseModel, NamedModel):
-    # path to protected resource
-    title = models.TextField(max_length=512, blank=True, null=True)
     object_id = models.CharField(max_length=256, blank=True, null=False, unique=True)
     owner = models.ForeignKey(User, related_name='protected_resources', on_delete=models.CASCADE)
     keychain = models.ForeignKey(KeyChain, related_name='protected_resources', on_delete=models.CASCADE)
