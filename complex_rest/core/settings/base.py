@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'mptt',
     'rest_framework',
     'django_celery_beat',
+    'drf_spectacular',
 ]
 
 LOCAL_APPS = [
@@ -351,7 +352,8 @@ REST_FRAMEWORK = {
         'rest_auth.authentication.JWTAuthentication',
     ],
     'DEFAULT_RENDERER_CLASSES': DEFAULT_RENDERER_CLASSES,
-    'EXCEPTION_HANDLER': 'rest.exception_handler.custom_exception_handler'
+    'EXCEPTION_HANDLER': 'rest.exception_handler.custom_exception_handler',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 
@@ -377,3 +379,10 @@ CELERY_BEAT_SCHEDULE = {
 CELERY_BEAT_SCHEDULE.update(
     load_plugins.get_plugins_celery_schedule(PLUGINS)
 )
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Complex rest API',
+    'DESCRIPTION': 'Complex rest API',
+    'VERSION': '1.0.3',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
