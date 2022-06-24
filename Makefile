@@ -72,7 +72,7 @@ make_build: venv.tar.gz
 	cp ./docs/deploy/supervisord_base.conf make_build/complex_rest/supervisord_base.conf
 	cp -R ./docs/deploy/postgres_config make_build/complex_rest/postgres_config
 	cp ./docs/deploy/database_init.sh make_build/complex_rest/database_init.sh
-
+	cp ./docs/deploy/collectstatic.sh make_build/complex_rest/collectstatic.sh
 	mkdir make_build/complex_rest/venv
 	tar -xzf ./venv.tar.gz -C make_build/complex_rest/venv
 

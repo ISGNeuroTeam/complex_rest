@@ -136,7 +136,11 @@ docker-compose -f docker-compose-dev.yml run --rm  complex_rest python ./complex
 ```bash
 ./database_init.sh
 ```
-3. Run `start.sh`
+3. Collect static files in static directory:
+```bash
+./collectstatic.sh
+```
+4. Run `start.sh`
 
 ## Updating
 1. Stop complex_rest
