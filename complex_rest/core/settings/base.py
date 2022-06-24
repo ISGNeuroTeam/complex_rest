@@ -220,6 +220,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR.parent / 'static'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR.parent / 'media'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -385,4 +390,7 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'Complex rest API',
     'VERSION': '1.0.3',
     'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
 }
