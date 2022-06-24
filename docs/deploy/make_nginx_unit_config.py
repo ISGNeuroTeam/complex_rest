@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from core.settings import BASE_DIR, LOG_DIR, PLUGINS_DIR
+from core.settings import BASE_DIR, LOG_DIR, PLUGINS_DIR, STATIC_ROOT, STATIC_URL, MEDIA_URL, MEDIA_ROOT
 
 
 def main():
@@ -44,6 +44,34 @@ def main():
 
         routes.append(plugin_route_conf)
         applications[plugin_name] = plugin_app_conf
+
+    # add static and media uri
+
+    routes.extend(
+        [
+            {
+                "match": {
+                    "uri": [
+                        f"{STATIC_URL}*",
+                    ]
+                },
+
+                "action": {
+                    "share": str(STATIC_ROOT.parent)
+                }
+            },
+            {
+                "match": {
+                    "uri": [
+                        f"{MEDIA_URL}*",
+                    ]
+                },
+                "action": {
+                    "share": str(MEDIA_ROOT.parent)
+                }
+            }
+        ]
+    )
 
     nginx_unit_conf['applications'].update(applications)
     nginx_unit_conf['routes'] = routes + nginx_unit_conf['routes']
