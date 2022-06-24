@@ -83,7 +83,7 @@ unit/venv: unit kafka.tar.gz
 	./docs/scripts/create_conda_env_with_all_dependences.sh
 
 unit:
-	git clone https://github.com/nginx/unit
+	git clone --depth 1 --branch 1.27.0https://github.com/nginx/unit
 
 kafka.tar.gz:
 	curl https://archive.apache.org/dist/kafka/3.0.0/kafka_2.13-3.0.0.tgz --output kafka.tar.gz
