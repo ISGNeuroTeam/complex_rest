@@ -1,8 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group as DjangoGroup, Permission as DjangoPermission
-
-from rest_auth.models.base import BaseModel, NamedModel
+from mixins.models import TimeStampedModel, NamedModel
 
 
 class User(AbstractUser):
@@ -27,7 +26,7 @@ class Permission(DjangoPermission):
         proxy = True
 
 
-class Role(BaseModel, NamedModel):
+class Role(TimeStampedModel, NamedModel):
     permits = models.ManyToManyField('Permit', related_name='roles', blank=True)
     groups = models.ManyToManyField(Group, related_name='roles', blank=True)
 
@@ -40,5 +39,3 @@ class Role(BaseModel, NamedModel):
     @property
     def all_users(self):
         return User.objects.filter(groups__in=self.groups.all())
-
-
