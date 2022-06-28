@@ -33,3 +33,24 @@ class InvalidToken(AuthenticationFailed):
     status_code = status.HTTP_401_UNAUTHORIZED
     default_detail = _('Token is invalid or expired')
     default_code = 'token_not_valid'
+
+
+class AccessDeniedError(Exception):
+    pass
+
+
+class OwnerIDError(Exception):
+    pass
+
+
+class ActionError(Exception):
+    pass
+
+
+class KeyChainIDError(Exception):
+    pass
+
+
+class SecurityZoneCircularInheritance(Exception):
+    def __init__(self):
+        super().__init__("Security Zone Circular Inheritance detected")
