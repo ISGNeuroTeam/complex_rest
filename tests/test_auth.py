@@ -1,12 +1,13 @@
 import time
 
 from datetime import timedelta
+from importlib import import_module, reload
 from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
 from cache import get_cache
 from rest_auth.models import User
-from rest_auth.exceptions import TokenError
+
 
 test_token_settings = {
     'ACCESS_TOKEN_LIFETIME': timedelta(seconds=4),
@@ -16,7 +17,13 @@ test_token_settings = {
 }
 
 with override_settings(TOKEN_SETTINGS=test_token_settings):
-    from rest_auth.tokens import AccessToken
+
+    # to rewrite token settings with test settings
+    auth_settings_module = import_module('rest_auth.settings')
+    reload(auth_settings_module)
+    AccessToken = import_module('rest_auth.tokens').AccessToken
+
+    from rest_auth.exceptions import TokenError
 
 
     class TestAccessToken(TestCase):
@@ -96,9 +103,3 @@ class TestAuthentication(TestCase):
         client.credentials(HTTP_AUTHORIZATION='Bearer ' + str(admin_token))
         response = client.get('/auth/users/')
         self.assertEqual(response.status_code, 200, 'Access for admin')
-
-
-
-
-
-
