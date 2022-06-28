@@ -12,3 +12,5 @@ supervisor==4.2.2
 django-mptt==0.13.4
 PyJWT==2.3.0
 requests==2.27.1
+drf-spectacular==0.22.1
+drf-spectacular-sidecar==2022.6.1

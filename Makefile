@@ -72,7 +72,7 @@ make_build: venv.tar.gz
 	cp ./docs/deploy/supervisord_base.conf make_build/complex_rest/supervisord_base.conf
 	cp -R ./docs/deploy/postgres_config make_build/complex_rest/postgres_config
 	cp ./docs/deploy/database_init.sh make_build/complex_rest/database_init.sh
-
+	cp ./docs/deploy/collectstatic.sh make_build/complex_rest/collectstatic.sh
 	mkdir make_build/complex_rest/venv
 	tar -xzf ./venv.tar.gz -C make_build/complex_rest/venv
 
@@ -83,7 +83,7 @@ unit/venv: unit kafka.tar.gz
 	./docs/scripts/create_conda_env_with_all_dependences.sh
 
 unit:
-	git clone https://github.com/nginx/unit
+	git clone --depth 1 --branch 1.27.0 https://github.com/nginx/unit unit
 
 kafka.tar.gz:
 	curl https://archive.apache.org/dist/kafka/3.0.0/kafka_2.13-3.0.0.tgz --output kafka.tar.gz
@@ -107,7 +107,7 @@ test: docker_test
 docker_test:
 	$(call clean_docker_containers)
 	@echo "Testing..."
-	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-test.yml run --rm  complex_rest python ./complex_rest/manage.py test ./tests --settings=core.settings.test
+	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-test.yml run --rm  complex_rest python ./complex_rest/manage.py test ./tests --settings=core.settings.test --no-input
 	$(call clean_docker_containers)
 
 clean_docker_test:

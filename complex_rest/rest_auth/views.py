@@ -6,7 +6,9 @@ from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
 from rest.views import APIView
 from rest.response import Response
 
+
 from . import serializers
+from .apidoc import login_api_doc, logout_api_doc
 from .authentication import AUTH_HEADER_TYPES
 from .exceptions import InvalidToken, TokenError
 from .settings import api_settings
@@ -29,6 +31,7 @@ class Login(generics.GenericAPIView):
             self.www_authenticate_realm,
         )
 
+    @login_api_doc
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
 
@@ -44,15 +47,16 @@ class Login(generics.GenericAPIView):
 
 class Logout(APIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = serializers.LogoutSerializer
 
+    @logout_api_doc
     def delete(self, request):
         """logout by removing http only cookie"""
         current_user = request.user.username
-        response = Response(
+        response = SuccessResponse(
             {
                 'message': f'{current_user} logged out',
-            },
-            status.HTTP_200_OK
+            }
         )
         response.delete_cookie('auth_token')
         request.session.flush()  # clear session

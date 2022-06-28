@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'mptt',
     'rest_framework',
     'django_celery_beat',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
 ]
 
 LOCAL_APPS = [
@@ -219,6 +221,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR.parent / 'static'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR.parent / 'media'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -351,7 +358,8 @@ REST_FRAMEWORK = {
         'rest_auth.authentication.JWTAuthentication',
     ],
     'DEFAULT_RENDERER_CLASSES': DEFAULT_RENDERER_CLASSES,
-    'EXCEPTION_HANDLER': 'rest.exception_handler.custom_exception_handler'
+    'EXCEPTION_HANDLER': 'rest.exception_handler.custom_exception_handler',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 
@@ -377,3 +385,13 @@ CELERY_BEAT_SCHEDULE = {
 CELERY_BEAT_SCHEDULE.update(
     load_plugins.get_plugins_celery_schedule(PLUGINS)
 )
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Complex rest API',
+    'DESCRIPTION': 'Complex rest API',
+    'VERSION': '1.0.3',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
+}

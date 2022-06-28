@@ -5,6 +5,8 @@ from django.contrib.auth.models import update_last_login
 from django.utils.translation import gettext_lazy as _
 from rest_framework import exceptions, serializers
 
+from rest.serializers import ResponseSerializer
+
 from .settings import api_settings
 from .tokens import AccessToken
 
@@ -75,3 +77,16 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+
+
+class TokenResponseSerializer(ResponseSerializer):
+    token = serializers.CharField()
+
+
+class LogoutResponseSerializer(ResponseSerializer):
+    message = serializers.CharField()
+
+
+class LogoutSerializer(serializers.Serializer):
+    pass
+

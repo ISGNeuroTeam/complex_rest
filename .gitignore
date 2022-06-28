@@ -107,8 +107,10 @@ GitHub.sublime-settings
 plugin_dev/
 plugins/*
 
+# deploy scripts
 complex_rest/start.sh
 complex_rest/stop.sh
+
 complex_rest-*.tar.gz
 complex_rest/rest.conf
 complex_rest/supervisord*
@@ -124,9 +126,14 @@ start.sh
 stop.sh
 dev
 
+# local django settings
+local.py
+
 *tar.gz
 
 # local docker-compose
 docker-compose-local.yml
 
 complex_rest_db
+
+schema.yml

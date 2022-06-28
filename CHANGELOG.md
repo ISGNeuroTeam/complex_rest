@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2022-06-28
+### Added
+- Add [drf-spectacular](https://drf-spectacular.readthedocs.io/en/latest/) package
+- Add `/schema/`, `/schema/redoc/`, `/schema/swagger-ui/` paths
+- Add `collectstatic.sh` script
+### Changed 
+- Add `stopasgroup` and `killasgroup` settings to all services in supervisor base config
+- Set complex rest image version in docker compose file
+- Configure `media` and `static` directory
 
 ## [1.0.2] - 2022-05-17
 ### Changed

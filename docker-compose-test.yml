@@ -57,6 +57,7 @@ services:
     build:
       context: ./
       dockerfile: ./docs/docker_dev/complex_rest/Dockerfile
+    image: "complex_rest:1.0.2"
 
     volumes:
       - ./:/complex_rest
