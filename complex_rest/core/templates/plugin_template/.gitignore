@@ -110,3 +110,5 @@ stop.sh
 venv.tar.gz
 
 nginx/
+
+logs/

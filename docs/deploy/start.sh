@@ -21,6 +21,7 @@ mkdir -p ./logs/kafka
 mkdir -p ./logs/postgres
 
 mkdir -p ./deploy_state
+mkdir -p ./deploy_state/tmp
 
 touch ./deploy_state/supervisord-control.sock
 
