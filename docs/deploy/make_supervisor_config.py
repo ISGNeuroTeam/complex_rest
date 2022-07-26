@@ -83,10 +83,7 @@ def main():
 
 
 def make_interpolation(value, plugin_dir):
-    return value % {
-        'plugin_dir': plugin_dir,
-        'here': plugin_dir
-    }
+    return value.replace("%(here)s", str(plugin_dir)).replace("%(plugin_dir)s", str(plugin_dir))
 
 
 def create_environment_value_for_plugin_proc_config(environment=""):
