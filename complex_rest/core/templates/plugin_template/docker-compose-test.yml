@@ -28,7 +28,7 @@ services:
     build:
       context: ./
       dockerfile: ./docs/docker/complex_rest/Dockerfile
-    image: "complex_rest_for_plugin_celery:1.0.2"
+    image: "complex_rest_for_{{plugin_name}}_celery:1.1.2"
     volumes:
       - ./{{plugin_name}}:/complex_rest/plugins/{{plugin_name}}
     user: ${CURRENT_UID}
@@ -43,7 +43,7 @@ services:
     build:
       context: ./
       dockerfile: ./docs/docker/complex_rest/Dockerfile
-    image: "complex_rest_for_plugin_celery:1.0.2"
+    image: "complex_rest_for_{{plugin_name}}_celery:1.1.2"
     volumes:
       - ./{{plugin_name}}:/complex_rest/plugins/{{plugin_name}}
     user: ${CURRENT_UID}
@@ -58,7 +58,7 @@ services:
     build:
       context: ./
       dockerfile: ./docs/docker/complex_rest/Dockerfile
-    image: "complex_rest_for_plugin:1.0.2"
+    image: "complex_rest_for_{{plugin_name}}:1.1.2"
 
     volumes:
       - ./{{plugin_name}}:/complex_rest/plugins/{{plugin_name}}

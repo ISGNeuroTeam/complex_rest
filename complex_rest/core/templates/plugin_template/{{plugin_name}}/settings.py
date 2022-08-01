@@ -1,7 +1,8 @@
 import configparser
+import os
 
 from pathlib import Path
-from core.settings.ini_config import merge_ini_config_with_defaults
+from core.settings.ini_config import merge_ini_config_with_defaults, configparser_to_dict
 
 default_ini_config = {
     'logging': {
@@ -16,14 +17,23 @@ default_ini_config = {
     }
 }
 
-config_parser = configparser.ConfigParser()
 
-config_parser.read(Path(__file__).parent / '{{plugin_name}}.conf')
+# try to read path to config from environment
+conf_path_env = os.environ.get('{{plugin_name}}_conf', None)
+base_dir = Path(__file__).resolve().parent
+if conf_path_env is None:
+    conf_path = base_dir / '{{plugin_name}}.conf'
+else:
+    conf_path = Path(conf_path_env).resolve()
 
-# convert to dictionary
-config = {s: dict(config_parser.items(s)) for s in config_parser.sections()}
+config = configparser.ConfigParser()
+
+config.read(conf_path)
+
+config = configparser_to_dict(config)
 
 ini_config = merge_ini_config_with_defaults(config, default_ini_config)
+
 
 # configure your own database if you need
 # DATABASE = {
@@ -34,3 +44,4 @@ ini_config = merge_ini_config_with_defaults(config, default_ini_config)
 #         "HOST": ini_config['db_conf']['host'],
 #         "PORT": ini_config['db_conf']['port']
 # }
+
