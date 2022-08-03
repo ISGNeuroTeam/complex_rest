@@ -36,6 +36,7 @@ services:
     image: "complex_rest_for_{{plugin_name}}_celery:1.1.2"
     volumes:
       - ./{{plugin_name}}:/complex_rest/plugins/{{plugin_name}}
+      - ./logs:/complex_rest/logs
     user: ${CURRENT_UID}
 
     depends_on:
@@ -51,6 +52,7 @@ services:
     image: "complex_rest_for_{{plugin_name}}_celery:1.1.2"
     volumes:
       - ./{{plugin_name}}:/complex_rest/plugins/{{plugin_name}}
+      - ./logs:/complex_rest/logs
     user: ${CURRENT_UID}
 
     depends_on:
