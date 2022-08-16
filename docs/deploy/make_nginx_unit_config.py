@@ -2,13 +2,15 @@ import json
 from pathlib import Path
 
 from core.settings import BASE_DIR, LOG_DIR, PLUGINS_DIR, STATIC_ROOT, STATIC_URL, MEDIA_URL, MEDIA_ROOT
-
+from core.load_plugins import get_plugins_names
 
 def main():
     plugins_dir = Path(PLUGINS_DIR)
+    plugin_names = get_plugins_names(plugins_dir)
+
+    # make nginx configs only for plugins with 'urls.py
     plugin_names = [
-        plugin_dir.name
-        for plugin_dir in plugins_dir.iterdir() if plugin_dir.is_dir() and (plugin_dir / 'urls.py').exists()
+        plugin_name for plugin_name in plugin_names if (plugins_dir / plugin_name / 'urls.py').exists()
     ]
 
     # read nginx-unit config

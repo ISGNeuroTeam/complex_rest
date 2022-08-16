@@ -5,6 +5,7 @@ import os
 
 from pathlib import Path
 from core.settings import BASE_DIR, LOG_DIR, PLUGINS_DIR
+from core.load_plugins import get_plugins_names
 
 # first argument is supervisor_base.conf location
 if len(sys.argv) > 1:
@@ -25,11 +26,16 @@ def main():
     and creates supervisord.conf with plugins [program:] sections
     """
     plugins_dir = Path(PLUGINS_DIR)
-    # get plugins proc.conf
-    plugin_dirs_with_conf_files = [
-        plugin_dir
-        for plugin_dir in plugins_dir.iterdir() if plugin_dir.is_dir() and (plugin_dir / 'proc.conf').exists()
-    ]
+
+    plugin_names = get_plugins_names(plugins_dir)
+
+    # make supervisor configs only for plugins with 'proc.conf'
+
+    plugin_dirs_with_conf_files = []
+    for plugin_name in plugin_names:
+        plugin_dir = plugins_dir / plugin_name
+        if (plugin_dir / 'proc.conf').exists():
+            plugin_dirs_with_conf_files.append(plugin_dir)
 
     # read base config
     config = configparser.ConfigParser()
