@@ -58,10 +58,11 @@ class Command(BaseCommand):
 
         # directory with plugins
         plugins_dir = Path(settings.PLUGINS_DIR)
-        self.render_dir(plugin_template_dir, plugin_dev_dir / plugin_name, context)
+        plugin_repository_name = 'complex_rest_' + plugin_name
+        self.render_dir(plugin_template_dir, plugin_dev_dir / plugin_repository_name, context)
 
         # symlink to plugins dir
-        relative_plugin_dev_path = os.path.relpath(plugin_dev_dir / plugin_name / plugin_name, plugins_dir)
+        relative_plugin_dev_path = os.path.relpath(plugin_dev_dir / plugin_repository_name / plugin_name, plugins_dir)
 
         os.symlink(relative_plugin_dev_path, plugins_dir / plugin_name)
 

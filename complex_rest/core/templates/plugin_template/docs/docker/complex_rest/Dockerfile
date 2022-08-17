@@ -8,6 +8,7 @@ ENV DB_HOST=postgres
 ENV DB_PORT=5432
 ENV REST_CONF=/complex_rest/docs/docker_dev/complex_rest/rest.conf
 ENV PYTHONPATH=/complex_rest/complex_rest
+ENV {{plugin_name}}_conf=/complex_rest/complex_rest/{{plugin_name}}.conf
 
 RUN mkdir /complex_rest
 
@@ -17,6 +18,8 @@ RUN ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts
 RUN eval "$(ssh-agent -s)" && ssh-add /root/.ssh/id_rsa_plugin && git clone git@github.com:ISGNeuroTeam/complex_rest.git
 
 RUN chmod -R 0777 /complex_rest
+
+ADD ./docs/docker/{{plugin_name}}.conf /complex_rest/complex_rest/{{plugin_name}}.conf
 WORKDIR /complex_rest
 
 RUN pip install --no-cache-dir  -r requirements.txt

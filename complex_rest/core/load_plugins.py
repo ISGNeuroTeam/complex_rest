@@ -1,9 +1,16 @@
 import os
 import sys
 import re
+import traceback
 
 from importlib import import_module
 from pathlib import Path
+
+
+def handle_plugin_load_error(plugin_name: str, err: Exception):
+    print(f'Plugin {plugin_name} loading failed: {err}', file=sys.stderr)
+    tb = traceback.format_exc()
+    print(tb, file=sys.stderr)
 
 
 def import_string(dotted_path):
@@ -36,12 +43,21 @@ def get_plugins_names(plugin_dir):
     """
     plugin_name_env = os.environ.get('COMPLEX_REST_PLUGIN_NAME', '')
     if plugin_name_env:
-        return [
-            plugin_name for plugin_name in plugin_name_env.split()
-            if (Path(plugin_dir) / plugin_name).exists()
-        ]
-    return [full_plugin_path.name for full_plugin_path in Path(plugin_dir).iterdir()]
+        plugin_names = plugin_name_env.split()
+    else:
+        plugin_names = [full_plugin_path.name for full_plugin_path in Path(plugin_dir).iterdir()]
 
+    # check plugins
+    checked_plugin_names = []
+    for plugin_name in plugin_names:
+        try:
+            # check import errors
+            import_module(plugin_name)
+            checked_plugin_names.append(plugin_name)
+        except Exception as err:
+            handle_plugin_load_error(plugin_name, err)
+
+    return checked_plugin_names
 
 def add_plugins_env_dirs_to_sys_path(plugin_dir, plugins_names):
     """
@@ -83,6 +99,9 @@ def get_plugins_databases(plugins_names):
         except ImportError:
             # plugin doesn't have DATABASE setting
             pass
+        except Exception as err:
+            handle_plugin_load_error(plugin_name, err)
+
     return plugin_db_settings
 
 
@@ -102,6 +121,8 @@ def get_plugins_celery_schedule(plugins_names):
         except ImportError:
             # plugin doesn't have celery setting
             pass
+        except Exception as err:
+            handle_plugin_load_error(plugin_name, err)
     return celery_beat_settings
 
 
@@ -151,8 +172,10 @@ def get_plugin_api_version(plugin_name):
     try:
         return import_string(f'{plugin_name}.setup.__api_version__')
     except ImportError:
-        return '1'
-
+        pass
+    except Exception as err:
+        handle_plugin_load_error(plugin_name, err)
+    return '1'
 
 PLUGIN_VERSION_PATTERN = re.compile(r'_v(\d+(\.\d)*)$')
 

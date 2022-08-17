@@ -33,7 +33,7 @@ def configparser_to_dict(config):
 
 def merge_dicts(first_dict, second_dict):
     """
-    Merges two dicts. Returns new dictionary. Fist dict in priority
+    Merges two dicts. Returns new dictionary. First dict in priority
     """
     result_dict = copy.deepcopy(second_dict)
     for key, value in first_dict.items():

@@ -77,6 +77,7 @@ class BaseKafkaConsumer:
         :param extra_config:
         :return:
         """
+        kafka_config = kafka_config.copy()
         # if broadcast option generate unique group id
         broadcast = extra_config.get('broadcast', False)
         if broadcast:

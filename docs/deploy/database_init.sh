@@ -33,7 +33,7 @@ EOF
 
 
 # to ensure that plugins not loaded
-export COMPLEX_REST_PLUGIN_NAME=complex_rest
+export COMPLEX_REST_PLUGIN_NAME=' '
 
 # django migrations
 ./venv/bin/python ./complex_rest/manage.py migrate --database=auth_db
