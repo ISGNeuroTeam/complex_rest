@@ -24,3 +24,7 @@ class ErrorResponse(Response):
         })
         super().__init__(data, http_status)
 
+
+class ForbiddenResponse(ErrorResponse):
+    def __init__(self, error_message):
+        ErrorResponse.__init__(self, None, status.HTTP_403_FORBIDDEN, error_message)

@@ -1,81 +1,143 @@
-from typing import Optional, Any, Callable
-from core.settings.base import PLUGINS_DIR
-from .exceptions import OwnerIDError, KeyChainIDError, ActionError, AccessDeniedError
-from .models import User, KeyChain, Action, Role, Permit
+import logging
+
+from typing import Any
+from django.core.exceptions import ObjectDoesNotExist
+from rest.globals import global_vars
+from .exceptions import AccessDeniedError
+from .models import User, KeyChain, Action, Role, Permit, Plugin
 
 
-class BaseProtectedResource:
-
-    __slots__ = 'user', 'owner_id', 'keychain_id'
-
-    plugin = None  # Some magic requested!
-
-    def __init__(
-            self,
-            user: Optional[User] = None,
-            owner_id: Optional[Any] = None,
-            keychain_id: Optional[Any] = None):
-
-        self.user = user
-        self.owner_id = owner_id
-        self.keychain_id = keychain_id
-
-    @staticmethod
-    def get_plugin_name(view_filepath: str):
-        plugin = view_filepath[view_filepath.find(PLUGINS_DIR) + len(PLUGINS_DIR) + 1:]
-        return plugin[:plugin.find('/')]
+log = logging.getLogger('root')
 
 
-def check_authorization(action: str, when_denied: Optional[Any] = None, on_error: Optional[Callable] = None):
-    def deco(func):
-        def wrapper(obj: BaseProtectedResource, *args, **kwargs):
-            try:
-                owner = User.objects.get(id=obj.owner_id) if obj.owner_id else None
-            except User.DoesNotExist:
-                if on_error:
-                    return on_error(f"Owner with ID {obj.owner_id} unknown")
-                raise OwnerIDError("Owner unknown", obj.owner_id)
+def has_perm(user: User, action: Action, keychain: KeyChain = None, object_owner: User = None) -> bool:
+    """
+    Returns True if user has right to do action on object with specified keychain, otherwise return False
+    """
+    is_owner = user == object_owner if object_owner else None
 
-            try:
-                act = Action.objects.get(name=action, plugin__name=obj.plugin)
-            except Action.DoesNotExist:
-                if on_error:
-                    return on_error(f"Action with name {action} unknown")
-                raise ActionError("Action unknown", action)
+    if keychain:
+        permits = keychain.permissions
+    else:
+        permits = Permit.objects.filter(
+            actions=action,
+            roles__in=Role.objects.filter(groups__in=user.groups.all())
+        )
 
-            is_owner = obj.user == owner if owner else None
+    permissions = (
+        {
+            permit.allows(user, action, by_owner=is_owner)
+            for permit in permits if permit.affects_on(user)
+        }
+    )
+    if permissions and permissions != {None}:
+        if False not in permissions:
+            return True
+    else:
+        return action.default_rule
 
-            if obj.keychain_id:
-                try:
-                    permits = KeyChain.objects.get(id=obj.keychain_id).permissions
-                except KeyChain.DoesNotExist:
-                    if on_error:
-                        return on_error(f"Keychain with ID {obj.owner_id} unknown")
-                    raise KeyChainIDError("keychain unknown", obj.keychain_id)
-            else:
-                permits = Permit.objects.filter(
-                    actions=act,
-                    roles__in=Role.objects.filter(groups__in=obj.user.groups.all())
-                )
 
-            permissions = (
-                {
-                    permit.allows(
-                        obj.user, act, by_owner=is_owner) for permit in permits if permit.affects_on(obj.user)
-                }
-            )
+def check_authorization(obj: Any, action_name: str):
+    """
+    Checks if action can be done with object
+    If not allowed raises AccessDeniedError
+    """
+    user = global_vars.get_current_user()
+    plugin_name = _plugin_name(obj)
 
-            if permissions and permissions != {None}:
-                if False not in permissions:
-                    return func(obj, *args, **kwargs)
-            else:
-                if act.default_rule is True:
-                    return func(obj, *args, **kwargs)
+    try:
 
-            if when_denied is not None:
-                return when_denied
+        plugin = Plugin.objects.get(name=plugin_name)
+        action = Action.objects.get(plugin=plugin, name=action_name)
 
-            raise AccessDeniedError('Access denied', obj.user.pk)
+        if hasattr(obj, 'owner_guid'):
+            obj_owner = User.objects.get(guid=obj.owner_guid)
+        else:
+            obj_owner = None
 
+        # if key_chain is not found it's not error
+        try:
+            keychain_id = _get_obj_keychain_id(obj)
+            keychain = KeyChain.objects.get(keychain_id=keychain_id, plugin=plugin)
+        except KeyChain.DoesNotExist:
+            keychain = None
+
+    except ObjectDoesNotExist as err:
+        log.error(f'Error occurred while authorization: {err}')
+        raise AccessDeniedError(f'Error occurred while authorization: {err}')
+
+    if not has_perm(user, action, keychain, obj_owner):
+        raise AccessDeniedError(
+            f'Access denied. Action {action_name} on object {str(obj)} for user {user.username} is not allowed'
+        )
+
+
+def _get_obj_keychain_id(obj):
+    # find object keychain_id
+    class_obj = obj.__class__
+    if hasattr(obj, 'keychain_id'):
+        key_chain_id = f'{obj.default_keychain_id}.{str(obj.keychain_id)}'
+    else:
+        key_chain_id = obj.default_keychain_id
+    return key_chain_id
+
+
+def _plugin_name(obj):
+    """
+    Returns plugin name for object
+    """
+    return obj.__module__.split('.')[0]
+
+
+def _generate_default_keychain_id(class_obj):
+    return class_obj.__name__
+
+
+def _transform_auth_covered_obj(class_obj, default_keychain_id=None):
+    """
+    Makes class transform. Adds attribute 'default_keychain_id'.
+    """
+    if default_keychain_id is None:
+        default_keychain_id = _generate_default_keychain_id(class_obj)
+    setattr(class_obj, 'default_keychain_id', default_keychain_id)
+    return class_obj
+
+
+def auth_covered_class(obj: Any):
+    # obj - either a class object when decorator called without parentheses or default_keychain_id
+    if isinstance(obj, str):
+        default_keychain_id = obj
+
+        def decorator(class_obj):
+            _transform_auth_covered_obj(class_obj, default_keychain_id)
+            return class_obj
+
+        return decorator
+    else:  # decorator called without parentheses
+        return _transform_auth_covered_obj(obj)
+
+
+def auth_covered_method(action_name: str):
+    def decorator(class_method):
+        """
+        Decorator returns method that do the same but checks authorization
+        """
+        def wrapper(*args, **kwargs):
+            # args[0] = self
+            check_authorization(args[0], action_name)
+            return class_method(*args, **kwargs)
         return wrapper
-    return deco
+    return decorator
+
+
+def auth_covered_func(action_name: str):
+    def decorator(func):
+        """
+        Decorator return function that do the same but checks authorization
+        """
+        def wrapper(*args, **kwargs):
+            func.default_keychain_id = func.__name__
+            check_authorization(func, action_name)
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
