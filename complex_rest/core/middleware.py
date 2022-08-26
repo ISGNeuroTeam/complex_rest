@@ -1,4 +1,4 @@
-from rest.globals import global_vars
+from core.globals import global_vars
 
 
 class GlobalSetMiddleware(object):
