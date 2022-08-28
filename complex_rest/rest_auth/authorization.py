@@ -2,23 +2,24 @@ import logging
 
 from typing import Any
 from django.core.exceptions import ObjectDoesNotExist
-from rest.globals import global_vars
-from rest_auth.abc import IKeyChain
+from core.globals import global_vars
+from rest_auth.models.abc import IKeyChain
 from .exceptions import AccessDeniedError
 from .models import User, Action, Role, Permit, Plugin
+from .models.abc import IAuthCovered
 
 
 log = logging.getLogger('root')
 
 
-def has_perm(user: User, action: Action, keychain: IKeyChain = None, object_owner: User = None) -> bool:
+def has_perm(user: User, action: Action, obj: IAuthCovered) -> bool:
     """
     Returns True if user has right to do action on object with specified keychain, otherwise return False
     """
-    is_owner = user == object_owner if object_owner else None
+    is_owner = user == obj.owner if obj.owner else None
 
-    if keychain:
-        permits = keychain.permissions
+    if obj.keychain:
+        permits = obj.keychain.permissions
     else:
         permits = Permit.objects.filter(
             actions=action,
@@ -38,7 +39,7 @@ def has_perm(user: User, action: Action, keychain: IKeyChain = None, object_owne
         return action.default_rule
 
 
-def check_authorization(obj: Any, action_name: str):
+def check_authorization(obj: IAuthCovered, action_name: str):
     """
     Checks if action can be done with object
     If not allowed raises AccessDeniedError
@@ -51,36 +52,14 @@ def check_authorization(obj: Any, action_name: str):
         plugin = Plugin.objects.get(name=plugin_name)
         action = Action.objects.get(plugin=plugin, name=action_name)
 
-        if hasattr(obj, 'owner_guid'):
-            obj_owner = User.objects.get(guid=obj.owner_guid)
-        else:
-            obj_owner = None
-
-        # if key_chain is not found it's not error
-        try:
-            keychain_id = _get_obj_keychain_id(obj)
-            keychain = KeyChain.objects.get(keychain_id=keychain_id, plugin=plugin)
-        except KeyChain.DoesNotExist:
-            keychain = None
-
     except ObjectDoesNotExist as err:
         log.error(f'Error occurred while authorization: {err}')
         raise AccessDeniedError(f'Error occurred while authorization: {err}')
 
-    if not has_perm(user, action, keychain, obj_owner):
+    if not has_perm(user, action, obj):
         raise AccessDeniedError(
             f'Access denied. Action {action_name} on object {str(obj)} for user {user.username} is not allowed'
         )
-
-
-def _get_obj_keychain_id(obj):
-    # find object keychain_id
-    class_obj = obj.__class__
-    if hasattr(obj, 'keychain_id'):
-        key_chain_id = f'{obj.default_keychain_id}.{str(obj.keychain_id)}'
-    else:
-        key_chain_id = obj.default_keychain_id
-    return key_chain_id
 
 
 def _plugin_name(obj):
@@ -92,16 +71,6 @@ def _plugin_name(obj):
 
 def _generate_default_keychain_id(class_obj):
     return class_obj.__name__
-
-
-def _transform_auth_covered_obj(class_obj, default_keychain_id=None):
-    """
-    Makes class transform. Adds attribute 'default_keychain_id'.
-    """
-    if default_keychain_id is None:
-        default_keychain_id = _generate_default_keychain_id(class_obj)
-    setattr(class_obj, 'default_keychain_id', default_keychain_id)
-    return class_obj
 
 
 def auth_covered_method(action_name: str):
