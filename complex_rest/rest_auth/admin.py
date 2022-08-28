@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.contrib.auth.models import Group as DjangoGroup
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin, GroupAdmin
 from mptt.admin import MPTTModelAdmin
-from .models import Group, Permission, Role, Plugin, KeyChain, Action, Permit, SecurityZone, User, AccessRule, ProtectedResource
+from .models import Group, Role, Plugin, Action, Permit, SecurityZone, User, AccessRule
 
 
 class BaseAdmin(admin.ModelAdmin):
@@ -114,10 +114,7 @@ admin.site.register(Group, GroupAdmin)
 
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Plugin, BaseAdmin)
-admin.site.register(KeyChain, KeyChainAdmin)
 admin.site.register(Action, BaseAdmin)
 admin.site.register(Permit, PermitAdmin)
 admin.site.register(SecurityZone, SecurityZoneAdmin)
 admin.site.register(AccessRule, BaseAdmin)
-
-admin.site.register(ProtectedResource, BaseAdmin)
