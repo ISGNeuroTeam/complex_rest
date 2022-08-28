@@ -93,9 +93,12 @@ def auth_covered_func(action_name: str):
         """
         Decorator return function that do the same but checks authorization
         """
+
         def wrapper(*args, **kwargs):
-            func.default_keychain_id = func.__name__
+            func.owner = None
+            func.keychain = None
             check_authorization(func, action_name)
             return func(*args, **kwargs)
+
         return wrapper
     return decorator
