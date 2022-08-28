@@ -1,27 +1,18 @@
-import typing
 from abc import abstractmethod
-from typing import Union, List
+from typing import Union, List, Optional, TYPE_CHECKING
 from django.db.models import QuerySet
 
 
-if typing.TYPE_CHECKING:  # circular import protection
+if TYPE_CHECKING:  # circular import protection
     from .subjects import User
-    from .permissions import Permit, Action
+    from .permissions import Permit
     from .containers import SecurityZone
 
 
 class IKeyChain:
     @property
     @abstractmethod
-    def keychain_id(self) -> str:
-        """
-        Returns any unique identifier
-        """
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def zone(self) -> 'SecurityZone':
+    def zone(self) -> Optional['SecurityZone']:
         """
         Returns security zone
         """
@@ -35,23 +26,11 @@ class IKeyChain:
         """
         raise NotImplementedError
 
-    @abstractmethod
-    def allows(self, user: 'User', act: 'Action', by_owner: bool = None) -> bool:
-        raise NotImplementedError
-
 
 class IAuthCovered:
     @property
     @abstractmethod
-    def object_id(self) -> str:
-        """
-        Returns any unique identifier
-        """
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def owner(self) -> 'User':
+    def owner(self) -> Optional['User']:
         """
         Returns owner
         """
@@ -59,7 +38,7 @@ class IAuthCovered:
 
     @property
     @abstractmethod
-    def keychain(self) -> 'IKeyChain':
+    def keychain(self) -> Optional['IKeyChain']:
         """
         Returns object keychain
         """

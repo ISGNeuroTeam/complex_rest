@@ -31,10 +31,13 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
 
     @property
     def zone(self) -> SecurityZone:
-        try:
-            return SecurityZone.objects.get(id=self._zone) if self._zone else None
-        except SecurityZone.DoesNotExist:
-            log.error(f'Not found securit zone with id {self._zone}')
+        if self._zone:
+            try:
+                return SecurityZone.objects.get(id=self._zone) if self._zone else None
+            except SecurityZone.DoesNotExist:
+                log.error(f'Not found security zone with id {self._zone}')
+
+        return None
 
     @property
     def permissions(self):
@@ -42,15 +45,6 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
 
     def __str__(self):
         return f'{self.keychain_id}'
-
-    @property
-    def permissions(self):
-        return self.permits.all().union(self.zone.effective_permissions if self.zone else Permit.objects.none())
-
-    def allows(self, user: User, act: Action, by_owner: bool = None):
-        return any([
-            permit.allows(user, act, by_owner) for permit in self.permissions
-        ])
 
     class Meta:
         abstract = True

@@ -19,7 +19,13 @@ def has_perm(user: User, action: Action, obj: IAuthCovered) -> bool:
     is_owner = user == obj.owner if obj.owner else None
 
     if obj.keychain:
-        permits = obj.keychain.permissions
+        key_chain_permits = obj.keychain.permissions
+
+        # union with security zone permissions
+        return key_chain_permits.permits.all().union(
+            obj.keychain.zone.effective_permissions if obj.keychain.zone else Permit.objects.none()
+        )
+
     else:
         permits = Permit.objects.filter(
             actions=action,
@@ -67,10 +73,6 @@ def _plugin_name(obj):
     Returns plugin name for object
     """
     return obj.__module__.split('.')[0]
-
-
-def _generate_default_keychain_id(class_obj):
-    return class_obj.__name__
 
 
 def auth_covered_method(action_name: str):
