@@ -2,11 +2,13 @@ import time
 
 from datetime import timedelta
 from importlib import import_module, reload
-from django.test import override_settings
+from django.test import TestCase, override_settings
+from rest_framework.test import APIClient
 
 from cache import get_cache
+from rest_auth.models import User
 
-from rest.test import create_test_users, APITestCase, TEST_USER_PASSWORD, TestCase
+from utils import create_test_users
 
 test_token_settings = {
     'ACCESS_TOKEN_LIFETIME': timedelta(seconds=4),
@@ -70,7 +72,7 @@ with override_settings(TOKEN_SETTINGS=test_token_settings):
                 AccessToken(encoded_token1)
 
 
-class TestAuthentication(APITestCase):
+class TestAuthentication(TestCase):
     databases = {'default', 'auth_db'}
 
     def setUp(self):
@@ -78,12 +80,19 @@ class TestAuthentication(APITestCase):
         self.test_user1 = test_users[0]
 
     def test_admin_token_required(self):
-        self.login('test_user1', TEST_USER_PASSWORD)
-        response = self.client.get('/auth/users/')
+        client = APIClient()
+        response = client.post('/auth/login/', data={'login': 'test_user1', 'password': 'user11q2w3e4r5t'})
+        ordinary_user_token = response.data['token']
+
+        client.credentials(HTTP_AUTHORIZATION='Bearer ' + str(ordinary_user_token))
+        response = client.get('/auth/users/')
         self.assertEqual(response.status_code, 403, 'Access for ordinary user is forbidden')
 
-        self.client.credentials()
+        client.credentials()
 
-        self.login('admin', 'admin')
-        response = self.client.get('/auth/users/')
+        response = client.post('/auth/login/', data={'login': 'admin', 'password': 'admin'})
+        admin_token = response.data['token']
+
+        client.credentials(HTTP_AUTHORIZATION='Bearer ' + str(admin_token))
+        response = client.get('/auth/users/')
         self.assertEqual(response.status_code, 200, 'Access for admin')
