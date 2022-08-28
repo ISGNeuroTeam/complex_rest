@@ -3,14 +3,15 @@ import logging
 from typing import Any
 from django.core.exceptions import ObjectDoesNotExist
 from rest.globals import global_vars
+from rest_auth.abc import IKeyChain
 from .exceptions import AccessDeniedError
-from .models import User, KeyChain, Action, Role, Permit, Plugin
+from .models import User, Action, Role, Permit, Plugin
 
 
 log = logging.getLogger('root')
 
 
-def has_perm(user: User, action: Action, keychain: KeyChain = None, object_owner: User = None) -> bool:
+def has_perm(user: User, action: Action, keychain: IKeyChain = None, object_owner: User = None) -> bool:
     """
     Returns True if user has right to do action on object with specified keychain, otherwise return False
     """
@@ -101,20 +102,6 @@ def _transform_auth_covered_obj(class_obj, default_keychain_id=None):
         default_keychain_id = _generate_default_keychain_id(class_obj)
     setattr(class_obj, 'default_keychain_id', default_keychain_id)
     return class_obj
-
-
-def auth_covered_class(obj: Any):
-    # obj - either a class object when decorator called without parentheses or default_keychain_id
-    if isinstance(obj, str):
-        default_keychain_id = obj
-
-        def decorator(class_obj):
-            _transform_auth_covered_obj(class_obj, default_keychain_id)
-            return class_obj
-
-        return decorator
-    else:  # decorator called without parentheses
-        return _transform_auth_covered_obj(obj)
 
 
 def auth_covered_method(action_name: str):
