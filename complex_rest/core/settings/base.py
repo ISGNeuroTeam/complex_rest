@@ -377,6 +377,8 @@ TOKEN_SETTINGS = {
     ],
 }
 
+ROLE_MODEL_AUTH_COVERED_CLASSES = load_plugins.get_plugins_auth_covered_classes(PLUGINS)
+
 # Celery Configuration Options
 CELERY_TIMEZONE = 'Europe/Moscow'
 CELERY_TASK_TRACK_STARTED = True
