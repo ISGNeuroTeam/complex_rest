@@ -39,9 +39,26 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
 
         return None
 
+    @zone.setter
+    def zone(self, zone: SecurityZone):
+        self._zone = zone
+        self.save()
+
     @property
     def permissions(self):
         return Permit.objects.filter(id__in=self._permits.split(','))
+
+    def add_permission(self, permission: 'Permit'):
+        permit_ids = set(self._permits.split(','))
+        permit_ids.add(permission.pk)
+        self._permits = ','.join(permit_ids)
+        self.save()
+
+    def remove_permission(self, permission: 'Permit'):
+        permit_ids = set(self._permits.split(','))
+        permit_ids.remove(permission.pk)
+        self._permits = ','.join(permit_ids)
+        self.save()
 
     def __str__(self):
         return f'{self.keychain_id}'

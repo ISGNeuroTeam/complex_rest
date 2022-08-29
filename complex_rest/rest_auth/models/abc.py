@@ -18,11 +18,33 @@ class IKeyChain:
         """
         pass
 
+    @zone.setter
+    @abstractmethod
+    def zone(self, zone: 'SecurityZone'):
+        """
+        Sets security zone
+        """
+        raise NotImplementedError
+
     @property
     @abstractmethod
     def permissions(self) -> Union[QuerySet, List['Permit']]:
         """
         Returns permissions
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def add_permission(self, permission: 'Permit'):
+        """
+        Add permission to keychain
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def remove_permission(self, permission: 'Permit'):
+        """
+        Removes permission
         """
         raise NotImplementedError
 
@@ -36,10 +58,26 @@ class IAuthCovered:
         """
         raise NotImplementedError
 
+    @owner.setter
+    @abstractmethod
+    def owner(self, user: 'User'):
+        """
+        Sets owner
+        """
+        raise NotImplementedError
+
     @property
     @abstractmethod
     def keychain(self) -> Optional['IKeyChain']:
         """
         Returns object keychain
+        """
+        raise NotImplementedError
+
+    @keychain.setter
+    @abstractmethod
+    def keychain(self, keychain: 'IKeyChain'):
+        """
+        sets keychain
         """
         raise NotImplementedError
