@@ -60,6 +60,8 @@ def make_abs_paths(config_dict, dict_keys_list):
         p = Path(config_dict[section][option])
         if not p.is_absolute():
             dir_path = (BASE_DIR / p).resolve()
+        else:
+            dir_path = p
 
         # create directory
         if not dir_path.exists():
