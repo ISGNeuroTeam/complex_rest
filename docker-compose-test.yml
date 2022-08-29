@@ -37,6 +37,8 @@ services:
       - redis
       - kafka
     command: "celery --app core.celeryapp:app worker --loglevel=INFO --concurrency 8"
+    environment:
+      - REST_CONF=/complex_rest/docs/docker_dev/complex_rest/rest_test.conf
 
   celery-beat:
     build:
@@ -52,6 +54,8 @@ services:
       - redis
       - kafka
     command: "celery --app core.celeryapp:app beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+    environment:
+      - REST_CONF=/complex_rest/docs/docker_dev/complex_rest/rest_test.conf
 
   complex_rest:
     build:
@@ -63,6 +67,8 @@ services:
       - ./:/complex_rest
     user: ${CURRENT_UID}
     command: "python /complex_rest/complex_rest/manage.py runserver [::]:8080"
+    environment:
+      - REST_CONF=/complex_rest/docs/docker_dev/complex_rest/rest_test.conf
 
     depends_on:
       - postgres
