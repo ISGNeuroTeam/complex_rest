@@ -23,7 +23,6 @@ class SecurityZone(NamedModel, TimeStampedModel, MPTTModel):
 
 
 class KeyChainModel(IKeyChain, TimeStampedModel):
-    keychain_id = models.CharField('keychain_id', unique=True, max_length=255)
     _zone = models.IntegerField(null=True, blank=True)
     _permits = models.CharField(
         max_length=1024, validators=[int_list_validator(sep=','), ]
