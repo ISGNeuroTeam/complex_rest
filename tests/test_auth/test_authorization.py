@@ -1,4 +1,7 @@
 from django.test import TestCase
+from django.conf import settings
+
+from rest_framework.test import APIClient
 
 from core.globals import global_vars
 
@@ -7,10 +10,12 @@ from rest_auth.authorization import (
    auth_covered_method, auth_covered_func, AccessDeniedError
 )
 
+from rolemodel_test.models import SomePluginAuthCoveredModel
+
 from utils import create_test_users
 
 
-class TestAuthProtection(TestCase):
+class TestSimpleAuthProtection(TestCase):
     databases = {'default', 'auth_db'}
 
     def setUp(self):
@@ -95,3 +100,21 @@ class TestAuthProtection(TestCase):
 
         test_func()
         self.assertTrue(func_was_executed)
+
+
+class TestPluginAuthCoveredClass(TestCase):
+
+    def setUp(self):
+        # create 10 plugin objects
+        for i in range(10):
+            obj = SomePluginAuthCoveredModel()
+            obj.save()
+
+    def test_plugin_url(self):
+        print(settings.PLUGINS_DIR)
+        client = APIClient()
+        response = client.get('/rolemodel_test/v1/hello/')
+        print(response.data['message'])
+
+    def test_obj_exists(self):
+        self.assertEqual(SomePluginAuthCoveredModel.objects.all().count(), 10)
