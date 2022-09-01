@@ -34,7 +34,21 @@ config = configparser_to_dict(config)
 
 ini_config = merge_ini_config_with_defaults(config, default_ini_config)
 
-AUTH_COVERED_CLASSES = ['rolemodel_test.models.SomePluginAuthCoveredModel', ]
+ROLE_MODEL_AUTH_COVERED_CLASSES = ['rolemodel_test.models.SomePluginAuthCoveredModel', ]
+ROLE_MODEL_ACTIONS = {
+    'test.create': {
+        'default_rule': True,  # allow or deny True or False, default True,
+        'owner_applicability': True,  # default True
+    },
+    'test.protected_action1': {
+            'default_rule': True,  # allow or deny True or False, default True,
+            'owner_applicability': True,  # default True
+    },
+    'test.protected_action2': {
+        'default_rule': True,  # allow or deny True or False, default True,
+        'owner_applicability': True,  # default True
+    },
+}
 
 # configure your own database if you need
 # DATABASE = {
