@@ -18,6 +18,7 @@ class Plugin(TimeStampedModel):
 
 class Action(TimeStampedModel, NamedModel):
     default_rule = models.BooleanField(choices=ALLOW_OR_DENY, default=True)
+    # define whether by_owner_only field in AccessRule is used
     owner_applicability = models.BooleanField(default=True)
     plugin = models.ForeignKey(Plugin, related_name='actions', on_delete=models.CASCADE)
 
