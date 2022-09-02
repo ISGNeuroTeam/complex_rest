@@ -1,8 +1,9 @@
-from django.test import TestCase
+from django.apps import apps
 from django.conf import settings
 
 from rest_framework.test import APIClient
 
+from rest.test import TestCase
 from core.globals import global_vars
 
 from rest_auth.models import User, Action, Plugin, Permit, AccessRule, Role, Group, IAuthCovered
@@ -105,16 +106,56 @@ class TestSimpleAuthProtection(TestCase):
 class TestPluginAuthCoveredClass(TestCase):
 
     def setUp(self):
+        rest_auth_app = apps.get_app_config('rest_auth')
+        print('in setup')
+        rest_auth_app.ready()
+        self.admin, self.test_users = create_test_users(10)
+
+        self._admin_permits()
+
+        global_vars.set_current_user(self.admin)
         # create 10 plugin objects
         for i in range(10):
             obj = SomePluginAuthCoveredModel()
             obj.save()
 
+    def _admin_permits(self):
+        admin_group = Group(name='admin')
+        admin_group.save()
+        self.admin.groups.add(admin_group)
+        admin_role = Role(name='admin')
+        admin_role.save()
+        admin_role.groups.add(admin_group)
+
+        plugin = Plugin.objects.get(name='rolemodel_test')
+        admin_permit = Permit(plugin=plugin)
+        admin_permit.save()
+
+        # for each action create access rule for admit permit
+        for action in Action.objects.all():
+            access_rule = AccessRule(
+                action=action,
+                permit=admin_permit,
+                rule=True,
+            )
+            access_rule.save()
+
+        admin_role.permits.add(admin_permit)
+
     def test_plugin_url(self):
-        print(settings.PLUGINS_DIR)
         client = APIClient()
         response = client.get('/rolemodel_test/v1/hello/')
-        print(response.data['message'])
 
     def test_obj_exists(self):
         self.assertEqual(SomePluginAuthCoveredModel.objects.all().count(), 10)
+
+    def test_role_model_init(self):
+        self.assertListEqual(
+            settings.ROLE_MODEL_AUTH_COVERED_CLASSES,
+            ['rolemodel_test.models.SomePluginAuthCoveredModel', ]
+        )
+
+        self.assertListEqual(
+            list(Action.objects.all().values_list('name', flat=True)),
+            ['test.create', 'test.protected_action1', 'test.protected_action2']
+        )

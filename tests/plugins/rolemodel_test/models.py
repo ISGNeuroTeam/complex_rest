@@ -14,7 +14,6 @@ class PluginKeychain(KeyChainModel):
 class SomePluginAuthCoveredModel(AuthCoveredModel):
     keychain_model = PluginKeychain
 
-    @auth_covered_method(action_name='test.create')
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -22,6 +21,8 @@ class SomePluginAuthCoveredModel(AuthCoveredModel):
     def test_method1(self):
         print('calling test auth covered method1')
 
-    
+    @auth_covered_method(action_name='test.protected_action2')
+    def test_method2(self):
+        print('calling test auth covered method2')
 
 
