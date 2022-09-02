@@ -1,6 +1,6 @@
 import logging
 
-from abc import ABCMeta
+from typing import Optional
 
 from django.db import models
 from rest_auth.authentication import User
@@ -38,14 +38,17 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
     def owner(self) -> User:
         try:
             if self._owner_id:
-                return User.objects.get(id=self._owner_id)
+                return User.objects.get(pk=self._owner_id)
         except User.DoesNotExist:
             log.error(f'Not found owner with id = {self._owner_id}')
         return None
 
     @owner.setter
-    def owner(self, user: User):
-        self._owner_id = user.pk
+    def owner(self, user: Optional[User]):
+        if user:
+            self._owner_id = user.pk
+        else:
+            self._owner_id = None
         self.save()
 
     class Meta:
