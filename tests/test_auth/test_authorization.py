@@ -13,7 +13,7 @@ from rest_auth.authorization import (
 
 from rolemodel_test.models import SomePluginAuthCoveredModel
 
-from utils import create_test_users
+from rest.test import create_test_users
 
 
 class TestSimpleAuthProtection(TestCase):
@@ -107,7 +107,6 @@ class TestPluginAuthCoveredClass(TestCase):
 
     def setUp(self):
         rest_auth_app = apps.get_app_config('rest_auth')
-        print('in setup')
         rest_auth_app.ready()
         self.admin, self.test_users = create_test_users(10)
 
