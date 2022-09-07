@@ -107,7 +107,7 @@ test: docker_test
 docker_test:
 	$(call clean_docker_containers)
 	@echo "Testing..."
-	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-test.yml run --rm  complex_rest python ./complex_rest/manage.py test ./tests -k test_access_with_keychain_permissions --settings=core.settings.test --no-input
+	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-test.yml run --rm  complex_rest python ./complex_rest/manage.py test ./tests --settings=core.settings.test --no-input
 	$(call clean_docker_containers)
 
 clean_docker_test:
