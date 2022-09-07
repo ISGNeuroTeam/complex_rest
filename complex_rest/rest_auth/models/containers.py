@@ -45,11 +45,18 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
 
     @property
     def permissions(self):
-        return Permit.objects.filter(id__in=self._permits.split(','))
+        if self._permits:
+            return Permit.objects.filter(id__in=self._permits.split(','))
+        else:
+            return Permit.objects.none()
 
     def add_permission(self, permission: 'Permit'):
-        permit_ids = set(self._permits.split(','))
-        permit_ids.add(permission.pk)
+        if self._permits:
+            permit_ids = set(self._permits.split(','))
+        else:
+            permit_ids = set()
+
+        permit_ids.add(str(permission.pk))
         self._permits = ','.join(permit_ids)
         self.save()
 

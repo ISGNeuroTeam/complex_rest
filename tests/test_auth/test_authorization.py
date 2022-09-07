@@ -6,14 +6,15 @@ from rest_framework.test import APIClient
 from rest.test import TestCase
 from core.globals import global_vars
 
-from rest_auth.models import User, Action, Plugin, Permit, AccessRule, Role, Group, IAuthCovered
+from rest_auth.models.abc import IKeyChain
+from rest_auth.models import User, Action, Plugin, Permit, AccessRule, Role, Group, IAuthCovered, KeyChainModel
 from rest_auth.authorization import (
    auth_covered_method, auth_covered_func, AccessDeniedError
 )
 
-from rolemodel_test.models import SomePluginAuthCoveredModel
+from rolemodel_test.models import SomePluginAuthCoveredModel, PluginKeychain
 
-from rest.test import create_test_users
+from rest.test import create_test_users, APITestCase, TEST_USER_PASSWORD
 
 
 class TestSimpleAuthProtection(TestCase):
@@ -103,31 +104,29 @@ class TestSimpleAuthProtection(TestCase):
         self.assertTrue(func_was_executed)
 
 
-class TestPluginAuthCoveredClass(TestCase):
+class TestPluginAuthCoveredModelClass(APITestCase):
 
     def setUp(self):
+        # to make action and plugin objects
         rest_auth_app = apps.get_app_config('rest_auth')
         rest_auth_app.ready()
+        self.plugin = Plugin.objects.get(name='rolemodel_test')
         self.admin, self.test_users = create_test_users(10)
 
+        # make admin to have access to all actions
         self._admin_permits()
 
-        global_vars.set_current_user(self.admin)
         # create 10 plugin objects
         for i in range(10):
             obj = SomePluginAuthCoveredModel()
             obj.save()
 
     def _admin_permits(self):
-        admin_group = Group(name='admin')
-        admin_group.save()
-        self.admin.groups.add(admin_group)
-        admin_role = Role(name='admin')
-        admin_role.save()
-        admin_role.groups.add(admin_group)
+        admin_role = self._create_role('admin')
 
-        plugin = Plugin.objects.get(name='rolemodel_test')
-        admin_permit = Permit(plugin=plugin)
+        self._add_role_to_user(self.admin, 'admin')
+
+        admin_permit = Permit(plugin=self.plugin)
         admin_permit.save()
 
         # for each action create access rule for admit permit
@@ -140,6 +139,41 @@ class TestPluginAuthCoveredClass(TestCase):
             access_rule.save()
 
         admin_role.permits.add(admin_permit)
+
+    def _create_role(self, name):
+
+        group = Group(name=name)
+        group.save()
+        role = Role(name=name)
+        role.save()
+        role.groups.add(group)
+        return role
+
+    def _add_role_to_user(self, user, role_name: str):
+        """
+        adds group to user
+        """
+        g, created = Group.objects.get_or_create(name=role_name)
+        user.groups.add(g)
+
+    def _create_permission_for_actions(self, role_name, *action_names, allow=True, keychain: 'IKeyChain'=None):
+        r = Role.objects.get(name=role_name)
+
+        permit = Permit(plugin=self.plugin)
+        permit.save()
+
+        for action_name in action_names:
+            action = Action.objects.get(name=action_name)
+            access_rule = AccessRule(
+                action=action,
+                permit=permit,
+                rule=allow,
+            )
+            access_rule.save()
+
+        r.permits.add(permit)
+        if keychain:
+            keychain.add_permission(permit)
 
     def test_plugin_url(self):
         client = APIClient()
@@ -158,3 +192,55 @@ class TestPluginAuthCoveredClass(TestCase):
             list(Action.objects.all().values_list('name', flat=True)),
             ['test.create', 'test.protected_action1', 'test.protected_action2']
         )
+
+    def test_access_without_keychain(self):
+        test_user = self.test_users[1]
+        global_vars.set_current_user(test_user)
+        obj = SomePluginAuthCoveredModel.objects.all().first()
+
+        # user has no access
+        with self.assertRaises(AccessDeniedError):
+            obj.test_method1()
+
+        # admin has access
+        global_vars.set_current_user(self.admin)
+        obj.test_method1()
+
+        global_vars.set_current_user(test_user)
+        # add access to user role
+        user_role = self._create_role('test_user')
+        self._add_role_to_user(test_user, 'test_user')
+        self._create_permission_for_actions('test_user', 'test.protected_action1')
+
+        # now user has access
+        obj.test_method1()
+        global_vars.set_current_user(self.test_users[2])
+        with self.assertRaises(AccessDeniedError):
+            obj.test_method1()
+
+    def test_access_with_keychain_permissions(self):
+        # add user permission
+        test_user = self.test_users[1]
+        global_vars.set_current_user(test_user)
+        obj = SomePluginAuthCoveredModel.objects.all().first()
+
+        with self.assertRaises(AccessDeniedError):
+            obj.test_method1()
+
+        user_role = self._create_role('test_user')
+        self._add_role_to_user(test_user, 'test_user')
+
+        self._create_permission_for_actions('test_user', 'test.protected_action1')
+
+        obj.test_method1()
+
+        keychain = PluginKeychain()
+        keychain.save()
+        self._create_permission_for_actions('test_user', 'test.protected_action1', allow=False, keychain=keychain)
+        obj.keychain = keychain
+        obj.save()
+
+        # now obj has keychain with no access
+        with self.assertRaises(AccessDeniedError):
+            obj.test_method1()
+
