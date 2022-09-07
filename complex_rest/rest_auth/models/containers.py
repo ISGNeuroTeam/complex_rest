@@ -40,7 +40,7 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
 
     @zone.setter
     def zone(self, zone: SecurityZone):
-        self._zone = zone
+        self._zone = zone.pk
         self.save()
 
     @property

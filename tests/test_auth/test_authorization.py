@@ -7,7 +7,7 @@ from rest.test import TestCase
 from core.globals import global_vars
 
 from rest_auth.models.abc import IKeyChain
-from rest_auth.models import User, Action, Plugin, Permit, AccessRule, Role, Group, IAuthCovered, KeyChainModel
+from rest_auth.models import User, Action, Plugin, Permit, AccessRule, Role, Group, IAuthCovered, SecurityZone
 from rest_auth.authorization import (
    auth_covered_method, auth_covered_func, AccessDeniedError
 )
@@ -156,9 +156,16 @@ class TestPluginAuthCoveredModelClass(APITestCase):
         g, created = Group.objects.get_or_create(name=role_name)
         user.groups.add(g)
 
-    def _create_permission_for_actions(self, role_name, *action_names, allow=True, keychain: 'IKeyChain'=None):
+    def _create_permission_for_role_and_actions(self, role_name, *action_names, allow=True, keychain: 'IKeyChain'=None):
         r = Role.objects.get(name=role_name)
 
+        permit = self._create_permission_for_actions(*action_names, allow=allow)
+
+        r.permits.add(permit)
+        if keychain:
+            keychain.add_permission(permit)
+
+    def _create_permission_for_actions(self, *action_names, allow=True) -> Permit:
         permit = Permit(plugin=self.plugin)
         permit.save()
 
@@ -170,10 +177,7 @@ class TestPluginAuthCoveredModelClass(APITestCase):
                 rule=allow,
             )
             access_rule.save()
-
-        r.permits.add(permit)
-        if keychain:
-            keychain.add_permission(permit)
+        return permit
 
     def test_plugin_url(self):
         client = APIClient()
@@ -210,7 +214,7 @@ class TestPluginAuthCoveredModelClass(APITestCase):
         # add access to user role
         user_role = self._create_role('test_user')
         self._add_role_to_user(test_user, 'test_user')
-        self._create_permission_for_actions('test_user', 'test.protected_action1')
+        self._create_permission_for_role_and_actions('test_user', 'test.protected_action1')
 
         # now user has access
         obj.test_method1()
@@ -230,13 +234,13 @@ class TestPluginAuthCoveredModelClass(APITestCase):
         user_role = self._create_role('test_user')
         self._add_role_to_user(test_user, 'test_user')
 
-        self._create_permission_for_actions('test_user', 'test.protected_action1')
+        self._create_permission_for_role_and_actions('test_user', 'test.protected_action1')
 
         obj.test_method1()
 
         keychain = PluginKeychain()
         keychain.save()
-        self._create_permission_for_actions('test_user', 'test.protected_action1', allow=False, keychain=keychain)
+        self._create_permission_for_role_and_actions('test_user', 'test.protected_action1', allow=False, keychain=keychain)
         obj.keychain = keychain
         obj.save()
 
@@ -244,3 +248,24 @@ class TestPluginAuthCoveredModelClass(APITestCase):
         with self.assertRaises(AccessDeniedError):
             obj.test_method1()
 
+    def test_security_zone_permissions(self):
+        test_user = self.test_users[1]
+        global_vars.set_current_user(test_user)
+        obj = SomePluginAuthCoveredModel.objects.all().first()
+
+        with self.assertRaises(AccessDeniedError):
+            obj.test_method1()
+
+        zone = SecurityZone(name='test_zone1')
+        zone.save()
+
+        permit = self._create_permission_for_actions('test.protected_action1', allow=True)
+        zone.permits.add(permit)
+        keychain = PluginKeychain()
+        keychain.zone = zone
+        keychain.save()
+        role = self._create_role('test_role1')
+        role.permits.add(permit)
+        self._add_role_to_user(test_user, 'test_role1')
+
+        obj.test_method1()
