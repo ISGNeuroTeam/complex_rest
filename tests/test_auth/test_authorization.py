@@ -259,13 +259,23 @@ class TestPluginAuthCoveredModelClass(APITestCase):
         zone = SecurityZone(name='test_zone1')
         zone.save()
 
-        permit = self._create_permission_for_actions('test.protected_action1', allow=True)
-        zone.permits.add(permit)
         keychain = PluginKeychain()
         keychain.zone = zone
         keychain.save()
+
+        obj.keychain = keychain
+
+        permit = self._create_permission_for_actions('test.protected_action1', allow=True)
+
+        # add permit to role
         role = self._create_role('test_role1')
         role.permits.add(permit)
         self._add_role_to_user(test_user, 'test_role1')
+
+        # role has access but security zone and keychain don't
+        with self.assertRaises(AccessDeniedError):
+            obj.test_method1()
+
+        zone.permits.add(permit)
 
         obj.test_method1()
