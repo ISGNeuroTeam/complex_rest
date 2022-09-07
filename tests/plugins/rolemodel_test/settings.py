@@ -41,7 +41,7 @@ ROLE_MODEL_ACTIONS = {
         'owner_applicability': True,  # default True
     },
     'test.protected_action1': {
-            'default_rule': True,  # allow or deny True or False, default True,
+            'default_rule': False,  # allow or deny True or False, default True,
             'owner_applicability': True,  # default True
     },
     'test.protected_action2': {

@@ -22,11 +22,12 @@ def has_perm(user: User, action: Action, obj: IAuthCovered) -> bool:
         key_chain_permits = obj.keychain.permissions
 
         # union with security zone permissions
-        return key_chain_permits.permits.all().union(
+        permits = key_chain_permits.union(
             obj.keychain.zone.effective_permissions if obj.keychain.zone else Permit.objects.none()
         )
 
     else:
+
         permits = Permit.objects.filter(
             actions=action,
             roles__in=Role.objects.filter(groups__in=user.groups.all())
