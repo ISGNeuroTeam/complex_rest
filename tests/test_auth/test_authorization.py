@@ -279,3 +279,44 @@ class TestPluginAuthCoveredModelClass(APITestCase):
         zone.permits.add(permit)
 
         obj.test_method1()
+
+    def test_inherited_security_zone(self):
+        test_user = self.test_users[1]
+        global_vars.set_current_user(test_user)
+        obj = SomePluginAuthCoveredModel.objects.all().first()
+
+        parent_zone = SecurityZone(name='test_zone1')
+        parent_zone.save()
+        child_security_zone = SecurityZone(name='child')
+        child_security_zone.parent = parent_zone
+        child_security_zone.save()
+
+        keychain = PluginKeychain()
+        keychain.zone = child_security_zone
+        keychain.save()
+
+        obj.keychain = keychain
+
+        permit = self._create_permission_for_actions('test.protected_action1', allow=True)
+
+        # add permit to role
+        role = self._create_role('test_role1')
+        role.permits.add(permit)
+        self._add_role_to_user(test_user, 'test_role1')
+
+        # role has access but security zone and keychain don't
+        with self.assertRaises(AccessDeniedError):
+            obj.test_method1()
+
+        parent_zone.permits.add(permit)
+
+        obj.test_method1()
+
+        # child security zone prohibit access now
+        permit = self._create_permission_for_actions('test.protected_action1', allow=False)
+        child_security_zone.permits.add(permit)
+        role.permits.add(permit)
+
+        with self.assertRaises(AccessDeniedError):
+            obj.test_method1()
+
