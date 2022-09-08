@@ -12,10 +12,8 @@ all:
  dev - deploy for developing \n\
 "
 
-GENERATE_VERSION = $(shell cat setup.py | grep __version__ | head -n 1 | sed -re 's/[^"]+//' | sed -re 's/"//g' )
-GENERATE_BRANCH = $(shell git name-rev $$(git rev-parse HEAD) | cut -d\  -f2 | sed -re 's/^(remotes\/)?origin\///' | tr '/' '_')
-SET_VERSION = $(eval VERSION=$(GENERATE_VERSION))
-SET_BRANCH = $(eval BRANCH=$(GENERATE_BRANCH))
+VERSION := $(shell cat setup.py | grep version | head -n 1 | sed -re "s/[^\"']+//" | sed -re "s/[\"',]//g")
+BRANCH := $(shell git name-rev $$(git rev-parse HEAD) | cut -d\  -f2 | sed -re 's/^(remotes\/)?origin\///' | tr '/' '_')
 
 define clean_docker_containers
 	@echo "Stopping and removing docker containers"
@@ -24,8 +22,6 @@ define clean_docker_containers
 endef
 
 pack: make_build
-	$(SET_VERSION)
-	$(SET_BRANCH)
 	rm -f complex_rest-*.tar.gz
 	echo Create archive \"complex_rest-$(VERSION)-$(BRANCH).tar.gz\"
 	cd make_build; tar czf ../complex_rest-$(VERSION)-$(BRANCH).tar.gz complex_rest
@@ -46,6 +42,11 @@ make_build: venv.tar.gz
 	# required section
 	echo make_build
 	mkdir -p make_build/complex_rest
+
+	cp ./*.md make_build/complex_rest/
+
+	echo $(BRANCH) > make_build/complex_rest/.commit
+	git rev-parse --verify HEAD >> make_build/complex_rest/.commit
 
 	cp -R ./complex_rest make_build/complex_rest
 	cp ./docs/deploy/rest.conf make_build/complex_rest/complex_rest/rest.conf
