@@ -165,7 +165,7 @@ class TestPluginAuthCoveredModelClass(APITestCase):
         if keychain:
             keychain.add_permission(permit)
 
-    def _create_permission_for_actions(self, *action_names, allow=True) -> Permit:
+    def _create_permission_for_actions(self, *action_names, allow=True, by_owner_only=False) -> Permit:
         permit = Permit(plugin=self.plugin)
         permit.save()
 
@@ -175,6 +175,7 @@ class TestPluginAuthCoveredModelClass(APITestCase):
                 action=action,
                 permit=permit,
                 rule=allow,
+                by_owner_only=by_owner_only
             )
             access_rule.save()
         return permit
@@ -319,4 +320,29 @@ class TestPluginAuthCoveredModelClass(APITestCase):
 
         with self.assertRaises(AccessDeniedError):
             obj.test_method1()
+
+    def test_owner_rule(self):
+        owner_user = self.test_users[1]
+        not_owner_user = self.test_users[2]
+
+        obj = SomePluginAuthCoveredModel.objects.all().first()
+        obj.owner = owner_user
+
+        # add permit to role
+
+        permit = self._create_permission_for_actions('test.protected_action1', allow=True, by_owner_only=True)
+        role = self._create_role('test_role1')
+        role.permits.add(permit)
+        self._add_role_to_user(owner_user, 'test_role1')
+        self._add_role_to_user(not_owner_user, 'test_role1')
+
+        # check not owner has no access
+        global_vars.set_current_user(not_owner_user)
+
+        with self.assertRaises(AccessDeniedError):
+            obj.test_method1()
+
+        # owner has access
+        global_vars.set_current_user(owner_user)
+        obj.test_method1()
 
