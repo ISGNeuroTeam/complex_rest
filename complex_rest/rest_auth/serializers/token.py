@@ -9,8 +9,8 @@ from rest_framework import exceptions, serializers
 
 from rest.serializers import ResponseSerializer
 
-from .settings import api_settings
-from .tokens import AccessToken
+from ..settings import api_settings
+from ..tokens import AccessToken
 
 
 User = get_user_model()
@@ -75,10 +75,6 @@ class AccessTokenSerializer(TokenSerializer):
         return data
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = '__all__'
 
     @staticmethod
     def _make_password_hash(validated_data):

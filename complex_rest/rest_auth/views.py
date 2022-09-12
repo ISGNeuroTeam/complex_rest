@@ -12,6 +12,7 @@ from .apidoc import login_api_doc, logout_api_doc
 from .authentication import AUTH_HEADER_TYPES
 from .exceptions import InvalidToken, TokenError
 from .settings import api_settings
+from .models import Group, User
 
 
 class Login(generics.GenericAPIView):
@@ -80,6 +81,11 @@ User = get_user_model()
 
 
 class UserViewSet(ModelViewSet):
-    permission_classes = (IsAdminUser, )
     serializer_class = serializers.UserSerializer
     queryset = User.objects.all()
+
+
+class GroupViewSet(ModelViewSet):
+    permission_classes = (AllowAny,)
+    serializer_class = serializers.GroupSerializer
+    queryset = Group.objects.all()
