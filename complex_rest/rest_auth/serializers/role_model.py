@@ -13,12 +13,19 @@ class UserSerializer(serializers.ModelSerializer):
 
 class GroupSerializer(serializers.ModelSerializer):
     users = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=User.objects.all(), source='user_set'
+        many=True, queryset=User.objects.all(), source='user_set', allow_null=True
+    )
+
+    roles = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Role.objects.all(), allow_null=True
     )
 
     class Meta:
         model = Group
-        fields = ['name', 'users']
+        fields = ['name', 'users', 'roles']
 
 
-
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        fields = '__all__'

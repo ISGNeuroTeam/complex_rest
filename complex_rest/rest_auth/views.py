@@ -85,6 +85,7 @@ User = get_user_model()
 
 
 class UserViewSet(ModelViewSet):
+    permission_classes = (IsAdminUser, )
     serializer_class = serializers.UserSerializer
     queryset = User.objects.all()
 
@@ -140,3 +141,43 @@ class GroupUserViewSet(ViewSet):
         return SuccessResponse()
 
 
+class GroupRoleViewSet(ViewSet):
+    permission_classes = (AllowAny,)
+    serializer_class = serializers.RoleSerializer
+
+    def list(self, request, group_id: int):
+        roles = Group.objects.get(pk=group_id).roles.all()
+        return Response(serializers.RoleSerializer(roles, many=True).data)
+
+    def _group_roles_id_decor(f):
+        """
+        Decorator extract group and roles_ids
+        """
+        @wraps(f)
+        def wrapper(self, request, group_id):
+            body = json.loads(request.body)
+            roles_ids = body['roles_ids']
+            try:
+                group = Group.objects.get(pk=group_id)
+            except Group.DoesNotExist:
+                return ErrorResponse(http_status=404, error_message='Group not found')
+            return f(self, group, roles_ids)
+        return wrapper
+
+    @_group_roles_id_decor
+    def update(self, group: Group, roles_ids: List[int]):
+        group.roles.delete()
+        group.roles.add(*roles_ids)
+        return SuccessResponse()
+
+    @action(detail=False, methods=['POST'])
+    @_group_roles_id_decor
+    def add_roles(self, group: Group, roles_ids: List[int]):
+        group.roles.add(*roles_ids)
+        return SuccessResponse()
+
+    @action(detail=False, methods=['DELETE'])
+    @_group_roles_id_decor
+    def remove_roles(self, group: Group, roles_ids: List[int]):
+        group.roles.remove(*roles_ids)
+        return SuccessResponse()
