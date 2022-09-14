@@ -5,7 +5,10 @@ from rest_auth.models import User, Group, Role, Permit
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = (
+            "id", "is_superuser", "username", "first_name", "last_name",
+            "is_staff", "is_active", "guid", "email", "phone", "photo", "groups",
+        )
 
 
 class GroupSerializer(serializers.ModelSerializer):

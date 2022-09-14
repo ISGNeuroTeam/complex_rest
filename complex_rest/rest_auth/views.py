@@ -1,10 +1,14 @@
+import json
+
+from typing import List
+from functools import wraps
 from django.contrib.auth import get_user_model
 from rest_framework import generics, status
-from rest.response import SuccessResponse
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
+from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
 from rest.views import APIView
-from rest.response import Response
+from rest.response import Response, SuccessResponse, ErrorResponse
 
 
 from . import serializers
@@ -89,3 +93,50 @@ class GroupViewSet(ModelViewSet):
     permission_classes = (AllowAny,)
     serializer_class = serializers.GroupSerializer
     queryset = Group.objects.all()
+
+
+class GroupUserViewSet(ViewSet):
+    permission_classes = (AllowAny,)
+    serializer_class = serializers.UserSerializer
+
+    def get_query_set(self, group_id: int):
+        return  Group.objects.get(pk=group_id).user_set.all()
+
+    def list(self, request, group_id: int):
+        users = Group.objects.get(pk=group_id).user_set.all()
+        return Response(serializers.UserSerializer(users, many=True).data)
+
+    def _group_users_id_decor(f):
+        """
+        Decorator extract group and user_ids
+        """
+        @wraps(f)
+        def wrapper(self, request, group_id):
+            body = json.loads(request.body)
+            user_ids = body['user_ids']
+            try:
+                group = Group.objects.get(pk=group_id)
+            except Group.DoesNotExist:
+                return ErrorResponse(http_status=404, error_message='Group not found')
+            return f(self, group, user_ids)
+        return wrapper
+
+    @_group_users_id_decor
+    def update(self, group: Group, user_ids: List[int]):
+        group.user_set.delete()
+        group.user_set.add(*user_ids)
+        return SuccessResponse()
+
+    @action(detail=False, methods=['POST'])
+    @_group_users_id_decor
+    def add_users(self, group: Group, user_ids: List[int]):
+        group.user_set.add(*user_ids)
+        return SuccessResponse()
+
+    @action(detail=False, methods=['DELETE'])
+    @_group_users_id_decor
+    def remove_users(self, group: Group, user_ids: List[int]):
+        group.user_set.remove(*user_ids)
+        return SuccessResponse()
+
+

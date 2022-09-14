@@ -1,3 +1,5 @@
+import json
+
 from rest.test import APITestCase, create_test_users
 from rest_auth.models import Group, User
 
@@ -46,3 +48,28 @@ class GroupApiTest(APITestCase):
         response = self.client.get('/auth/groups/3/')
         self.assertEquals(response.data['name'], 'new_group')
         self.assertListEqual(response.data['users'], [2, 3, 4, 5])
+
+    def test_add_users(self):
+        response = self.client.post(
+            '/auth/groups/1/users/add_users/',
+            data={
+                'user_ids': [2, 3, 4]
+            }
+        )
+        self.assertEquals(response.status_code, 200, 'Users successfully added to admin group')
+        response = self.client.get('/auth/groups/1/users/')
+        self.assertEquals(response.status_code, 200, 'User list request successful')
+        self.assertEquals(len(response.data), 4, '4 users in admin group')
+
+    def test_remove_users(self):
+        response = self.client.delete(
+            f'/auth/groups/{self.ordinary_group.pk}/users/remove_users/',
+            {"user_ids": [2, 3, 4]},
+            format='json'
+        )
+        self.assertEquals(response.status_code, 200)
+        response = self.client.get(
+            f'/auth/groups/{self.ordinary_group.pk}/users/'
+        )
+        self.assertEquals(response.status_code, 200, 'User list request successful')
+        self.assertEquals(len(response.data), 7, '7 users in ordinary group')
