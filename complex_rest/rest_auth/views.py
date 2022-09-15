@@ -17,7 +17,7 @@ from .apidoc import login_api_doc, logout_api_doc
 from .authentication import AUTH_HEADER_TYPES
 from .exceptions import InvalidToken, TokenError
 from .settings import api_settings
-from .models import Group, Permit
+from .models import Group, Permit, SecurityZone
 
 
 class Login(generics.GenericAPIView):
@@ -88,13 +88,17 @@ User = get_user_model()
 class UserViewSet(ModelViewSet):
     permission_classes = (IsAdminUser, )
     serializer_class = serializers.UserSerializer
-    queryset = User.objects.all()
+
+    def get_queryset(self):
+        return User.objects.all()
 
 
 class GroupViewSet(ModelViewSet):
     permission_classes = (AllowAny,)
     serializer_class = serializers.GroupSerializer
-    queryset = Group.objects.all()
+
+    def get_queryset(self):
+        return Group.objects.all()
 
 
 class GroupUserViewSet(ViewSet):
@@ -190,18 +194,25 @@ class ActionView(APIView):
     def get(self, request, plugin_name=None):
         if plugin_name:
             actions = Action.objects.filter(plugin__name=plugin_name)
-            print(f'plugin_name={plugin_name}')
         else:
             actions = Action.objects.all()
-            print('!!!!')
-        print(actions)
         action_serializers = serializers.ActionSerializer(actions, many=True)
         return Response(action_serializers.data)
+
+
+class SecurityZoneViewSet(ModelViewSet):
+    permission_classes = (AllowAny, )
+    serializer_class = serializers.SecurityZoneSerializer
+
+    def get_queryset(self):
+        return SecurityZone.objects.all()
 
 
 class PermitViewSet(ModelViewSet):
     serializer_class = serializers.PermitSerializer
     permission_classes = (AllowAny, )
-    queryset = Permit.objects.all()
+
+    def get_queryset(self):
+        return Permit.objects.all()
 
 

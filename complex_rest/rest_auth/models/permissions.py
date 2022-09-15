@@ -68,4 +68,4 @@ class Permit(TimeStampedModel):
             return all(results)
 
     def __str__(self):
-        return f'{self.plugin} [{", ".join((act.name for act in self.actions.all()))}]'
+        return f'[{", ".join((act.name for act in self.actions.all()))}]'

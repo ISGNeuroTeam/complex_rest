@@ -1,5 +1,5 @@
 from  rest_framework import serializers
-from rest_auth.models import User, Group, Role, Permit, Action, AccessRule
+from rest_auth.models import User, Group, Role, Permit, Action, AccessRule, SecurityZone
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -40,17 +40,34 @@ class ActionSerializer(serializers.ModelSerializer):
 
 
 class AccessRuleSerializer(serializers.ModelSerializer):
+    action = serializers.PrimaryKeyRelatedField(
+        queryset=Action.objects.all()
+    )
 
     class Meta:
         model = AccessRule
-        fields = '__all__'
+        fields = ('id', 'action', 'rule', 'by_owner_only')
 
 
 class PermitSerializer(serializers.ModelSerializer):
     roles = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Role.objects.all()
     )
+    access_rules = AccessRuleSerializer(many=True)
+
+    def create(self, validated_data):
+        pass
 
     class Meta:
         model = Permit
         fields = '__all__'
+
+
+class SecurityZoneSerializer(serializers.ModelSerializer):
+    parent = serializers.PrimaryKeyRelatedField(
+        queryset=SecurityZone.objects.all(), allow_null=True
+    )
+
+    class Meta:
+        model = SecurityZone
+        fields = ('id', 'name', 'parent')
