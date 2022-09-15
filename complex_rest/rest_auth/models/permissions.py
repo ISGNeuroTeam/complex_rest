@@ -38,7 +38,6 @@ class AccessRule(models.Model):
 
 
 class Permit(TimeStampedModel):
-    plugin = models.ForeignKey(Plugin, on_delete=models.CASCADE, related_name='permits')
     actions = models.ManyToManyField(Action,
                                      related_name='permit',
                                      through=AccessRule,

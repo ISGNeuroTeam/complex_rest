@@ -10,13 +10,14 @@ from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
 from rest.views import APIView
 from rest.response import Response, SuccessResponse, ErrorResponse
 
+from rest_auth.models import Action
 
 from . import serializers
 from .apidoc import login_api_doc, logout_api_doc
 from .authentication import AUTH_HEADER_TYPES
 from .exceptions import InvalidToken, TokenError
 from .settings import api_settings
-from .models import Group, User
+from .models import Group, Permit
 
 
 class Login(generics.GenericAPIView):
@@ -181,3 +182,26 @@ class GroupRoleViewSet(ViewSet):
     def remove_roles(self, group: Group, roles_ids: List[int]):
         group.roles.remove(*roles_ids)
         return SuccessResponse()
+
+
+class ActionView(APIView):
+    permission_classes = (AllowAny, )
+
+    def get(self, request, plugin_name=None):
+        if plugin_name:
+            actions = Action.objects.filter(plugin__name=plugin_name)
+            print(f'plugin_name={plugin_name}')
+        else:
+            actions = Action.objects.all()
+            print('!!!!')
+        print(actions)
+        action_serializers = serializers.ActionSerializer(actions, many=True)
+        return Response(action_serializers.data)
+
+
+class PermitViewSet(ModelViewSet):
+    serializer_class = serializers.PermitSerializer
+    permission_classes = (AllowAny, )
+    queryset = Permit.objects.all()
+
+
