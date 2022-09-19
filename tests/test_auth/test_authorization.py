@@ -44,7 +44,7 @@ class TestSimpleAuthProtection(TestCase):
         user_role.save()
         user_role.groups.add(user_group)
 
-        permit = Permit(plugin=self.plugin)
+        permit = Permit()
         permit.save()
 
         # allow
@@ -126,7 +126,7 @@ class TestPluginAuthCoveredModelClass(APITestCase):
 
         self._add_role_to_user(self.admin, 'admin')
 
-        admin_permit = Permit(plugin=self.plugin)
+        admin_permit = Permit()
         admin_permit.save()
 
         # for each action create access rule for admit permit
@@ -166,7 +166,7 @@ class TestPluginAuthCoveredModelClass(APITestCase):
             keychain.add_permission(permit)
 
     def _create_permission_for_actions(self, *action_names, allow=True, by_owner_only=False) -> Permit:
-        permit = Permit(plugin=self.plugin)
+        permit = Permit()
         permit.save()
 
         for action_name in action_names:

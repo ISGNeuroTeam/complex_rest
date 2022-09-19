@@ -55,8 +55,27 @@ class PermitSerializer(serializers.ModelSerializer):
     )
     access_rules = AccessRuleSerializer(many=True)
 
+    security_zone_name = serializers.CharField(default=None, allow_null=True)
+
+    keychain_plugin = serializers.CharField(default=None, allow_null=True)
+    keychain_id = serializers.CharField(default=None, allow_null=True)
+
     def create(self, validated_data):
-        pass
+        permit_instance = super().create(validated_data)
+
+        # save access rules for permit
+        for access_rule in validated_data['access_rules']:
+            access_rule_model = AccessRule(**access_rule)
+            access_rule_model.permit = permit_instance
+            access_rule_model.save()
+
+        security_zone_name = validated_data.get('security_zone_name', None)
+        if security_zone_name:
+            security_zone = SecurityZone.objects.get(name=security_zone_name)
+            security_zone.permits.add(permit_instance)
+
+
+
 
     class Meta:
         model = Permit
