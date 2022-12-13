@@ -80,9 +80,18 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
 
+    @staticmethod
+    def _make_password_hash(validated_data):
+        if 'password' in validated_data:
+            validated_data['password'] = make_password(validated_data['password'])
+
     def create(self, validated_data):
-        validated_data['password'] = make_password(validated_data['password'])
+        self._make_password_hash(validated_data)
         return super(UserSerializer, self).create(validated_data)
+
+    def update(self, instance, validated_data):
+        self._make_password_hash(validated_data)
+        return super(UserSerializer, self).update(instance, validated_data)
 
 
 class TokenResponseSerializer(ResponseSerializer):
