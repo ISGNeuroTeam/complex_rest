@@ -1,4 +1,10 @@
 {
+    "settings": {
+        "http": {
+            "large_header_buffer_size": 16777216,
+            "max_body_size": 33554432
+        }
+    },
     "listeners": {
         "*:55555": {
             "pass": "routes"

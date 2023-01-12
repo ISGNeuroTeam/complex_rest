@@ -2,6 +2,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.1.6]- 2022-12-29
+### Changed
+- Change nginx unit version, current version is 1.29.0
+### Added
+- Add `max_body_size` and `large_header_buffer_size` to nginx unit config
+
 ## [1.1.5] - 2022-12-09
 ## Fixed
 - Fix user password hash in `/auth/users/` for PUT
