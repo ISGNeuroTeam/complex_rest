@@ -81,3 +81,14 @@ class IAuthCovered:
         sets keychain
         """
         raise NotImplementedError
+
+    @classmethod
+    @abstractmethod
+    def get_objects(cls, keychain: Optional[bool] = None) -> List['IAuthCovered']:
+        """
+        Returns list of objects.
+        keychain is True returns only objects with keychain.
+        keychain is False returns only objects without keychain
+        keychain is None returns all objects
+        """
+        raise NotImplementedError

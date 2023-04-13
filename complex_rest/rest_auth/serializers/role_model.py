@@ -85,9 +85,6 @@ class PermitSerializer(serializers.ModelSerializer):
             security_zone = SecurityZone.objects.get(name=security_zone_name)
             security_zone.permits.add(permit_instance)
 
-
-
-
     class Meta:
         model = Permit
         fields = '__all__'

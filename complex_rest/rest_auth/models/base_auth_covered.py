@@ -1,6 +1,6 @@
 import logging
 
-from typing import Optional
+from typing import Optional, List
 
 from django.db import models
 from rest_auth.authentication import User
@@ -51,5 +51,20 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
             self._owner_id = None
         self.save()
 
+    @classmethod
+    def get_objects(cls, keychain: bool = None) -> List['AuthCoveredModel']:
+        all_objects = cls.objects.all()
+        if keychain is None:
+            return list(all_objects)
+        if keychain:
+            return list(
+                all_objects.filter(_keychain_id__isnull=False)
+            )
+        else:
+            return list(
+                all_objects.filter(_keychain_id__isnull=True)
+            )
+
     class Meta:
         abstract = True
+

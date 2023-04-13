@@ -1,6 +1,6 @@
 import logging
 
-from typing import Any
+from typing import Any, List
 from django.core.exceptions import ObjectDoesNotExist
 from core.globals import global_vars
 from rest_auth.models.abc import IKeyChain
@@ -44,6 +44,19 @@ def has_perm(user: User, action: Action, obj: IAuthCovered) -> bool:
             return True
     else:
         return action.default_rule
+
+
+def get_allowed_objects_list(user: User, action: Action, obj_class) -> List[IAuthCovered]:
+    """
+    Return list of objects allowed for User to do action
+    """
+    # get objects with keychains
+    # for every keychain get permits
+    # for every keychain add objects if permits allows
+
+    # get objects without keychains
+    # find every permits with user and action
+    # if allow add all objects
 
 
 def check_authorization(obj: IAuthCovered, action_name: str):
