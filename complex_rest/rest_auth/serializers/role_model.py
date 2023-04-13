@@ -1,14 +1,25 @@
 from  rest_framework import serializers
 from rest_auth.models import User, Group, Role, Permit, Action, AccessRule, SecurityZone
+from django.contrib.auth.hashers import make_password
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = (
-            "id", "is_superuser", "username", "first_name", "last_name",
-            "is_staff", "is_active", "guid", "email", "phone", "photo", "groups",
-        )
+        fields = '__all__'
+
+    @staticmethod
+    def _make_password_hash(validated_data):
+        if 'password' in validated_data:
+            validated_data['password'] = make_password(validated_data['password'])
+
+    def create(self, validated_data):
+        self._make_password_hash(validated_data)
+        return super(UserSerializer, self).create(validated_data)
+
+    def update(self, instance, validated_data):
+        self._make_password_hash(validated_data)
+        return super(UserSerializer, self).update(instance, validated_data)
 
 
 class GroupSerializer(serializers.ModelSerializer):
