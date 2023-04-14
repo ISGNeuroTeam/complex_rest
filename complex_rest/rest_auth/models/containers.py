@@ -1,5 +1,6 @@
 import logging
 
+from typing import Iterable, Optional
 from django.db import models
 from django.core.validators import int_list_validator
 from mptt.models import MPTTModel, TreeForeignKey
@@ -27,6 +28,12 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
     _permits = models.CharField(
         max_length=1024, validators=[int_list_validator(sep=','), ]
     )
+
+    def get_object(cls, obj_id) -> Optional['IKeyChain']:
+        return cls.objects.get(id=obj_id)
+
+    def get_objects(cls) -> Iterable['IKeyChain']:
+        return cls.objects.all()
 
     @property
     def zone(self) -> SecurityZone:

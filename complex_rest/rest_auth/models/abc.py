@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Union, List, Optional, TYPE_CHECKING
+from typing import Union, List, Optional, TYPE_CHECKING, Iterable
 from django.db.models import QuerySet
 
 
@@ -10,13 +10,29 @@ if TYPE_CHECKING:  # circular import protection
 
 
 class IKeyChain:
+    @classmethod
+    @abstractmethod
+    def get_object(cls, obj_id) -> Optional['IKeyChain']:
+        """
+        Returns keychain by id or None
+        """
+        raise NotImplementedError
+
+    @classmethod
+    @abstractmethod
+    def get_objects(cls) -> Iterable['IKeyChain']:
+        """
+        Returns all keychains
+        """
+        raise NotImplementedError
+
     @property
     @abstractmethod
     def zone(self) -> Optional['SecurityZone']:
         """
         Returns security zone
         """
-        pass
+        raise NotImplementedError
 
     @zone.setter
     @abstractmethod
@@ -84,7 +100,15 @@ class IAuthCovered:
 
     @classmethod
     @abstractmethod
-    def get_objects(cls, keychain: Optional[bool] = None) -> List['IAuthCovered']:
+    def get_object(cls, obj_id) -> Optional['IAuthCovered']:
+        """
+        Returns object with id or None
+        """
+        raise NotImplementedError
+
+    @classmethod
+    @abstractmethod
+    def get_objects(cls, keychain: Optional[bool] = None) -> Iterable['IAuthCovered']:
         """
         Returns list of objects.
         keychain is True returns only objects with keychain.

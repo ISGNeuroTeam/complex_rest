@@ -65,6 +65,10 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
                 all_objects.filter(_keychain_id__isnull=True)
             )
 
+    @classmethod
+    def get_object(cls, obj_id) -> 'IAuthCovered':
+        return cls.objects.get(id=obj_id)
+
     class Meta:
         abstract = True
 
