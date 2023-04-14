@@ -1,7 +1,6 @@
 import importlib
 
 from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import update_last_login
 from django.utils.translation import gettext_lazy as _
 
@@ -9,8 +8,8 @@ from rest_framework import exceptions, serializers
 
 from rest.serializers import ResponseSerializer
 
-from .settings import api_settings
-from .tokens import AccessToken
+from ..settings import api_settings
+from ..tokens import AccessToken
 
 
 User = get_user_model()
@@ -73,25 +72,6 @@ class AccessTokenSerializer(TokenSerializer):
             update_last_login(None, self.user)
 
         return data
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = '__all__'
-
-    @staticmethod
-    def _make_password_hash(validated_data):
-        if 'password' in validated_data:
-            validated_data['password'] = make_password(validated_data['password'])
-
-    def create(self, validated_data):
-        self._make_password_hash(validated_data)
-        return super(UserSerializer, self).create(validated_data)
-
-    def update(self, instance, validated_data):
-        self._make_password_hash(validated_data)
-        return super(UserSerializer, self).update(instance, validated_data)
 
 
 class TokenResponseSerializer(ResponseSerializer):

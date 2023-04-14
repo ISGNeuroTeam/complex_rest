@@ -1,17 +1,14 @@
-from django.contrib.auth import get_user_model
 from rest_framework import generics, status
-from rest.response import SuccessResponse
-from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
 from rest.views import APIView
-from rest.response import Response
+from rest.response import Response, SuccessResponse, ErrorResponse
 
 
-from . import serializers
-from .apidoc import login_api_doc, logout_api_doc
-from .authentication import AUTH_HEADER_TYPES
-from .exceptions import InvalidToken, TokenError
-from .settings import api_settings
+from .. import serializers
+from ..apidoc import login_api_doc, logout_api_doc
+from ..authentication import AUTH_HEADER_TYPES
+from ..exceptions import InvalidToken, TokenError
+from ..settings import api_settings
 
 
 class Login(generics.GenericAPIView):
@@ -74,12 +71,3 @@ class IsLoggedIn(APIView):
             },
             status.HTTP_200_OK
         )
-
-
-User = get_user_model()
-
-
-class UserViewSet(ModelViewSet):
-    permission_classes = (IsAdminUser, )
-    serializer_class = serializers.UserSerializer
-    queryset = User.objects.all()
