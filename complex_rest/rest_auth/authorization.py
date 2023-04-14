@@ -1,15 +1,53 @@
 import logging
 
 from typing import Any, List
+
 from django.core.exceptions import ObjectDoesNotExist
 from core.globals import global_vars
 from rest_auth.models.abc import IKeyChain
 from .exceptions import AccessDeniedError
-from .models import User, Action, Role, Permit, Plugin
+from .models import User, Action, Role, Permit, Plugin, AccessRule
 from .models.abc import IAuthCovered
 
 
 log = logging.getLogger('root')
+
+
+def _get_permissions_for_user_and_action(user: User, action: Action):
+    return Permit.objects.filter(
+        actions=action,
+        roles__in=Role.objects.filter(groups__in=user.groups.all())
+    )
+
+
+def _get_keychain_permissions(keychain: IKeyChain):
+    key_chain_permits = keychain.permissions
+    # union with security zone permissions
+    if keychain.zone:
+        return list(key_chain_permits) + list(keychain.zone.effective_permissions)
+    else:
+        return list(key_chain_permits)
+
+
+def _user_allowed_to_do_action(permits, action, user):
+    """
+    Returns true if user allowed to do action
+    """
+    # filter if they affects on user
+    permits = map(
+        lambda permit: permit.affects_on(user),
+        permits
+    )
+
+    rules = AccessRule.objects.filter(action=action, permit__in=permits)
+
+    # if deny rule exist action not allowed
+    if rules.filter(rule=False):
+        return False
+
+    # if allow rule exist or default rule is allow then action allowed
+    if rules.filter(rule=True) or action.default_rule:
+        return True
 
 
 def has_perm(user: User, action: Action, obj: IAuthCovered) -> bool:
@@ -19,19 +57,9 @@ def has_perm(user: User, action: Action, obj: IAuthCovered) -> bool:
     is_owner = user == obj.owner if obj.owner else None
 
     if obj.keychain:
-        key_chain_permits = obj.keychain.permissions
-
-        # union with security zone permissions
-        permits = key_chain_permits.union(
-            obj.keychain.zone.effective_permissions if obj.keychain.zone else Permit.objects.none()
-        )
-
+        permits = _get_keychain_permissions(obj.keychain)
     else:
-
-        permits = Permit.objects.filter(
-            actions=action,
-            roles__in=Role.objects.filter(groups__in=user.groups.all())
-        )
+        permits = _get_permissions_for_user_and_action(user, action)
 
     permissions = (
         {
@@ -46,17 +74,36 @@ def has_perm(user: User, action: Action, obj: IAuthCovered) -> bool:
         return action.default_rule
 
 
-def get_allowed_objects_list(user: User, action: Action, obj_class) -> List[IAuthCovered]:
+def get_allowed_object_ids_list(user: User, action: Action, obj_class):
     """
-    Return list of objects allowed for User to do action
+    Return list of objects id allowed for User to do action
     """
-    # get objects with keychains
-    # for every keychain get permits
-    # for every keychain add objects if permits allows
+    objects_with_keychain = obj_class.get_objects(keychain=True)
+    keychain_ids = set()
+    allowed_objects_ids = set()
+    for obj in objects_with_keychain:
+        keychain = obj.keychain
+        if [keychain.id] in keychain_ids:
+            allowed_objects_ids.add(obj.id)
+            continue
+        permits: List[Permit] = _get_keychain_permissions(keychain)
 
-    # get objects without keychains
-    # find every permits with user and action
-    # if allow add all objects
+        if not _user_allowed_to_do_action(permits, action, user):
+            continue
+        else:
+            allowed_objects_ids.add(obj.id)
+            keychain_ids.add(keychain.id)
+
+    objects_without_keychain = obj_class.get_objects(keychain=False)
+    objects_without_keychain_ids = map(
+        lambda x: x.id, objects_without_keychain
+    )
+    permits = _get_permissions_for_user_and_action(user, action)
+    if _user_allowed_to_do_action(permits, action, user):
+        allowed_objects_ids.union(set(objects_without_keychain_ids))
+
+    # todo exclude objects which not allowed with access rules for owner
+    return list(allowed_objects_ids)
 
 
 def check_authorization(obj: IAuthCovered, action_name: str):
