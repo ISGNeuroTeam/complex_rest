@@ -1,6 +1,6 @@
 import uuid
 from django.db import models
-from django.contrib.auth.models import AbstractUser, Group as DjangoGroup, Permission as DjangoPermission
+from django.contrib.auth.models import AbstractUser, Group, Permission as DjangoPermission
 from mixins.models import TimeStampedModel, NamedModel
 
 
@@ -14,11 +14,6 @@ class User(AbstractUser):
         if self.email == '':
             self.email = None
         super().save()
-
-
-class Group(DjangoGroup):
-    class Meta:
-        proxy = True
 
 
 class Permission(DjangoPermission):
