@@ -3,18 +3,22 @@ from rest_auth.models import User, Group, Role, Permit, Action, AccessRule, Secu
 from django.contrib.auth.hashers import make_password
 
 
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        fields = '__all__'
+
+
 class GroupSerializer(serializers.ModelSerializer):
     users = serializers.PrimaryKeyRelatedField(
         many=True, queryset=User.objects.all(), source='user_set', allow_null=True
     )
-
-    roles = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Role.objects.all(), allow_null=True
-    )
+    roles = RoleSerializer(many=True, read_only=True)
 
     class Meta:
         model = Group
         fields = ['id', 'name', 'users', 'roles']
+        extra_kwargs = {'users': {'required': False}, 'roles': {'required': False}}
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -37,11 +41,10 @@ class UserSerializer(serializers.ModelSerializer):
         self._make_password_hash(validated_data)
         return super(UserSerializer, self).update(instance, validated_data)
 
-
-class RoleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Role
-        fields = '__all__'
+        extra_kwargs = {'groups': {'required': False}}
+
+
 
 
 class ActionSerializer(serializers.ModelSerializer):

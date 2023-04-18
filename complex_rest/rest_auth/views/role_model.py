@@ -46,7 +46,7 @@ class GroupUserViewSet(ViewSet):
     serializer_class = serializers.UserSerializer
 
     def get_query_set(self, group_id: int):
-        return  Group.objects.get(pk=group_id).user_set.all()
+        return Group.objects.get(pk=group_id).user_set.all()
 
     def list(self, request, group_id: int):
         users = Group.objects.get(pk=group_id).user_set.all()
