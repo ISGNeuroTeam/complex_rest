@@ -12,7 +12,7 @@ from rest.response import Response, SuccessResponse, ErrorResponse
 from rest_auth.models import Action
 
 from .. import serializers
-from ..models import Group, Permit, SecurityZone
+from ..models import Group, Permit, SecurityZone, Role
 
 User = get_user_model()
 
@@ -26,15 +26,23 @@ class UserViewSet(ModelViewSet):
 
 
 class GroupViewSet(ModelViewSet):
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAdminUser,)
     serializer_class = serializers.GroupSerializer
 
     def get_queryset(self):
         return Group.objects.all()
 
 
+class RoleViewSet(ModelViewSet):
+    permission_classes = (IsAdminUser, )
+    serializer_class = serializers.RoleSerializer
+
+    def get_queryset(self):
+        return Role.objects.all()
+
+
 class GroupUserViewSet(ViewSet):
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAdminUser,)
     serializer_class = serializers.UserSerializer
 
     def get_query_set(self, group_id: int):
@@ -79,7 +87,7 @@ class GroupUserViewSet(ViewSet):
 
 
 class GroupRoleViewSet(ViewSet):
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAdminUser, )
     serializer_class = serializers.RoleSerializer
 
     def list(self, request, group_id: int):
