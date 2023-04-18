@@ -59,7 +59,7 @@ def main():
                 },
 
                 "action": {
-                    "share": str(STATIC_ROOT.parent)
+                    "share": str(STATIC_ROOT.parent) + "/$uri"
                 }
             },
             {
@@ -69,7 +69,7 @@ def main():
                     ]
                 },
                 "action": {
-                    "share": str(MEDIA_ROOT.parent)
+                    "share": str(MEDIA_ROOT.parent) + "/$uri"
                 }
             }
         ]
