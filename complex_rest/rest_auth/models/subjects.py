@@ -1,7 +1,13 @@
 import uuid
 from django.db import models
-from django.contrib.auth.models import AbstractUser, Group, Permission as DjangoPermission
+from django.contrib.auth.models import AbstractUser, Group as DjangoGroup, Permission as DjangoPermission
+from django.utils.translation import gettext_lazy as _
 from mixins.models import TimeStampedModel, NamedModel
+
+
+class Group(DjangoGroup):
+    class Meta:
+        proxy = True
 
 
 class User(AbstractUser):
@@ -9,6 +15,18 @@ class User(AbstractUser):
     email = models.EmailField('email address', unique=True, blank=True, null=True, default=None)
     phone = models.CharField('phone', unique=True, max_length=150, blank=True, null=True)
     photo = models.TextField('photo', max_length=12000000, blank=True, null=True)
+
+    groups = models.ManyToManyField(
+        Group,
+        verbose_name=_('groups'),
+        blank=True,
+        help_text=_(
+            'The groups this user belongs to. A user will get all permissions '
+            'granted to each of their groups.'
+        ),
+        related_name="user_set",
+        related_query_name="user",
+    )
 
     def save(self, *args, **kwargs):
         if self.email == '':
