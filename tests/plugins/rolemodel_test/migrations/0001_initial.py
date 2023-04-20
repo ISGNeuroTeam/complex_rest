@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('created_time', models.DateTimeField(auto_now_add=True, verbose_name='Creation date')),
                 ('modified_time', models.DateTimeField(auto_now=True, verbose_name='Modification date')),
                 ('_zone', models.IntegerField(blank=True, null=True)),
-                ('_permits', models.CharField(max_length=1024, validators=[django.core.validators.RegexValidator(re.compile('^\\d+(?:,\\d+)*\\Z'), code='invalid', message=None)])),
+                ('_permits', models.CharField(blank=True, null=True, max_length=1024, validators=[django.core.validators.RegexValidator(re.compile('^\\d+(?:,\\d+)*\\Z'), code='invalid', message=None)])),
             ],
             options={
                 'abstract': False,

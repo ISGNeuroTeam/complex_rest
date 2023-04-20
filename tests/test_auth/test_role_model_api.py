@@ -3,6 +3,8 @@ from core.globals import global_vars
 from rest.test import APITestCase, create_test_users
 from rest_auth.models import Group, User, Role
 
+from rolemodel_test.models import SomePluginAuthCoveredModel, PluginKeychain
+
 
 class GroupApiTest(APITestCase):
     def setUp(self):
@@ -115,3 +117,28 @@ class GroupApiTest(APITestCase):
         )
         self.assertEquals(response.status_code, 200, 'Role list request successful')
         self.assertEquals(len(response.data), 2, '2 roles in ordinary group')
+
+
+class KeyChainApiTest(APITestCase):
+    def setUp(self):
+        self.admin, self.test_users = create_test_users(1)
+        # create 2 groups
+        self.admin_group = Group(name='admin')
+        self.admin_group.save()
+
+        self.admin.groups.add(self.admin_group)
+        global_vars.set_current_user(self.admin)
+        for _ in range(5):
+            keychain = PluginKeychain()
+            keychain.save()
+        self.login('admin', 'admin')
+
+    def test_key_chain_object_list(self):
+        keychain_class = 'rolemodel_test.models.PluginKeychain'
+        response = self.client.get(
+            f'/auth/keychains/{keychain_class}/',
+            format='json'
+        )
+        self.assertEquals(response.status_code, 200)
+        keychain_ids_list = response.data
+        self.assertEquals(len(keychain_ids_list), 5)

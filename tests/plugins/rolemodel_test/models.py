@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from django.db import models
 from django.utils import timezone
 
@@ -8,7 +10,9 @@ from rest_auth.models import KeyChainModel, AuthCoveredModel
 
 
 class PluginKeychain(KeyChainModel):
-    pass
+    @classmethod
+    def get_objects(cls) -> Iterable['IKeyChain']:
+        return cls.objects.all()
 
 
 class SomePluginAuthCoveredModel(AuthCoveredModel):

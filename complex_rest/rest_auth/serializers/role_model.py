@@ -45,8 +45,6 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {'groups': {'required': False}}
 
 
-
-
 class ActionSerializer(serializers.ModelSerializer):
     plugin_name = serializers.CharField(source='plugin.name')
 
@@ -56,25 +54,20 @@ class ActionSerializer(serializers.ModelSerializer):
 
 
 class AccessRuleSerializer(serializers.ModelSerializer):
-    action = serializers.PrimaryKeyRelatedField(
-        queryset=Action.objects.all()
-    )
 
     class Meta:
         model = AccessRule
         fields = ('id', 'action', 'rule', 'by_owner_only')
+        extra_kwargs = {'action': {'required': True}}
 
 
 class PermitSerializer(serializers.ModelSerializer):
-    roles = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Role.objects.all()
-    )
     access_rules = AccessRuleSerializer(many=True)
 
     security_zone_name = serializers.CharField(default=None, allow_null=True)
 
-    keychain_plugin = serializers.CharField(default=None, allow_null=True)
-    keychain_id = serializers.CharField(default=None, allow_null=True)
+    # keychain_plugin = serializers.CharField(default=None, allow_null=True)
+    # keychain_id = serializers.CharField(default=None, allow_null=True)
 
     def create(self, validated_data):
         permit_instance = super().create(validated_data)
@@ -93,6 +86,7 @@ class PermitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permit
         fields = '__all__'
+        extra_kwargs = {'roles': {'required': True}}
 
 
 class SecurityZoneSerializer(serializers.ModelSerializer):
@@ -103,3 +97,13 @@ class SecurityZoneSerializer(serializers.ModelSerializer):
     class Meta:
         model = SecurityZone
         fields = ('id', 'name', 'parent')
+
+
+class KeyChainSerializer(serializers.Serializer):
+    security_zone = serializers.PrimaryKeyRelatedField(
+        queryset=SecurityZone.objects.all(), allow_null=True
+    )
+    permits = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Permit.objects.all(), allow_null=True
+    )
+

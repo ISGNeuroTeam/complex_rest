@@ -6,10 +6,13 @@ from django.contrib.auth import get_user_model
 from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
+
+from core.load_plugins import import_string
 from rest.views import APIView
 from rest.response import Response, SuccessResponse, ErrorResponse
 
 from rest_auth.models import Action
+from rest_auth.models.abc import IKeyChain
 
 from .. import serializers
 from ..models import Group, Permit, SecurityZone, Role
@@ -155,4 +158,45 @@ class PermitViewSet(ModelViewSet):
     def get_queryset(self):
         return Permit.objects.all()
 
+
+class KeychainViewSet(ViewSet):
+    """
+    Keychain crud
+    obj_class - string that specify object class
+    """
+    permission_classes = (IsAdminUser, )
+
+    def list(self, request, obj_class: str):
+        """
+        Args:
+            obj_class - dotted path to class
+        Returns list of keychain ids
+        """
+        try:
+            key_chain_class: IKeyChain = import_string(obj_class)
+        except ImportError as err:
+            return ErrorResponse(error_message=str(err))
+
+        return Response(data=list(map(lambda x: x.id, key_chain_class.get_objects())))
+
+    def create(self, request, obj_class: str):
+        """
+        Create new keychain
+        """
+        pass
+
+    def retrieve(self, request, pk=None):
+        """
+        Returns keychain with id and with objects ids
+        """
+        pass
+
+    def update(self, request, pk=None):
+        pass
+
+    def partial_update(self, request, pk=None):
+        pass
+
+    def destroy(self, request, pk=None):
+        pass
 

@@ -26,7 +26,8 @@ class SecurityZone(NamedModel, TimeStampedModel, MPTTModel):
 class KeyChainModel(IKeyChain, TimeStampedModel):
     _zone = models.IntegerField(null=True, blank=True)
     _permits = models.CharField(
-        max_length=1024, validators=[int_list_validator(sep=','), ]
+        max_length=1024, validators=[int_list_validator(sep=','), ],
+        blank=True, null=True
     )
 
     def get_object(cls, obj_id) -> Optional['IKeyChain']:
