@@ -1,6 +1,6 @@
 import json
 
-from typing import List
+from typing import List, Iterable
 from functools import wraps
 from django.contrib.auth import get_user_model
 from rest_framework.decorators import action
@@ -9,10 +9,9 @@ from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
 
 from core.load_plugins import import_string
 from rest.views import APIView
-from rest.response import Response, SuccessResponse, ErrorResponse
+from rest.response import Response, SuccessResponse, ErrorResponse, status
 
-from rest_auth.models import Action
-from rest_auth.models.abc import IKeyChain
+from rest_auth.models import Action, IAuthCovered, IKeyChain
 
 from .. import serializers
 from ..models import Group, Permit, SecurityZone, Role
@@ -166,18 +165,40 @@ class KeychainViewSet(ViewSet):
     """
     permission_classes = (IsAdminUser, )
 
-    def list(self, request, obj_class: str):
+    def list(self, request, auth_covered_class: str):
         """
         Args:
             obj_class - dotted path to class
         Returns list of keychain ids
         """
         try:
-            key_chain_class: IKeyChain = import_string(obj_class)
+            auth_covered_class = import_string(auth_covered_class)
         except ImportError as err:
             return ErrorResponse(error_message=str(err))
+        auth_covered_objects: Iterable[IAuthCovered] = auth_covered_class.get_objects()
+        result_keychain_dict = dict()
 
-        return Response(data=list(map(lambda x: x.id, key_chain_class.get_objects())))
+        for auth_covered_object in auth_covered_objects:
+            keychain = auth_covered_object.keychain
+            if keychain.id in result_keychain_dict:
+                # add object
+                result_keychain_dict[keychain.id]['auth_covered_objects'].append(auth_covered_object.id)
+            else:
+                # add keychain object
+                result_keychain_dict[keychain.id] = {
+                    'permits':    serializers.PermitSerializer(keychain.permissions, many=True).data,
+                    'security_zone': keychain.zone.id if keychain.zone else None,
+                    'id': keychain.id,
+                    'auth_covered_objects': [auth_covered_object.id, ]
+                }
+
+        result_data = serializers.KeyChainSerializer(
+            map(
+                lambda x: result_keychain_dict[x],
+                result_keychain_dict.keys()
+            ), many=True
+        ).data
+        return Response(data=result_data)
 
     def create(self, request, obj_class: str):
         """
@@ -185,11 +206,38 @@ class KeychainViewSet(ViewSet):
         """
         pass
 
-    def retrieve(self, request, pk=None):
+    def retrieve(self, request, auth_covered_class: str, pk=None):
         """
         Returns keychain with id and with objects ids
         """
-        pass
+        try:
+            auth_covered_class = import_string(auth_covered_class)
+        except ImportError as err:
+            return ErrorResponse(error_message=str(err))
+        auth_covered_objects: Iterable[IAuthCovered] = auth_covered_class.get_objects()
+        keychain = None
+        keychain_auth_covered_objects = []
+        for auth_covered_object in auth_covered_objects:
+            if str(auth_covered_object.keychain.id) == pk:
+                if keychain is None:
+                    keychain = auth_covered_object.keychain
+                keychain_auth_covered_objects.append(auth_covered_object.id)
+        if keychain is None:
+            return ErrorResponse(
+                http_status=status.HTTP_404_NOT_FOUND,
+                error_message=f'Keychain with id={pk} not found'
+            )
+
+        return Response(
+            data=serializers.KeyChainSerializer(
+                {
+                    'permits': serializers.PermitSerializer(keychain.permissions, many=True).data,
+                    'security_zone': keychain.zone.id if keychain.zone else None,
+                    'id': keychain.id,
+                    'auth_covered_objects': keychain_auth_covered_objects
+                }
+            ).data
+        )
 
     def update(self, request, pk=None):
         pass

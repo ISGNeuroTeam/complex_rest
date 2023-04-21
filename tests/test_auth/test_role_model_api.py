@@ -120,6 +120,8 @@ class GroupApiTest(APITestCase):
 
 
 class KeyChainApiTest(APITestCase):
+    auth_covered_object_class = 'rolemodel_test.models.SomePluginAuthCoveredModel'
+
     def setUp(self):
         self.admin, self.test_users = create_test_users(1)
         # create 2 groups
@@ -131,14 +133,29 @@ class KeyChainApiTest(APITestCase):
         for _ in range(5):
             keychain = PluginKeychain()
             keychain.save()
+            for _ in range(5):
+                auth_covered_object = SomePluginAuthCoveredModel()
+                auth_covered_object.keychain = keychain
+                auth_covered_object.save()
+
         self.login('admin', 'admin')
 
     def test_key_chain_object_list(self):
-        keychain_class = 'rolemodel_test.models.PluginKeychain'
         response = self.client.get(
-            f'/auth/keychains/{keychain_class}/',
+            f'/auth/keychains/{self.auth_covered_object_class}/',
             format='json'
         )
         self.assertEquals(response.status_code, 200)
-        keychain_ids_list = response.data
-        self.assertEquals(len(keychain_ids_list), 5)
+        keychain_list = response.data
+        self.assertEquals(len(keychain_list), 5)
+
+    def test_key_chain_object_retrieve(self):
+        keychain_id = PluginKeychain.objects.all().first().id
+        response = self.client.get(
+            f'/auth/keychains/{self.auth_covered_object_class}/{keychain_id}/',
+            format='json'
+        )
+        self.assertEquals(response.status_code, 200)
+        keychain = response.data
+        auth_covered_objects_ids = keychain['auth_covered_objects']
+        self.assertListEqual(auth_covered_objects_ids, [1,2,3,4,5])

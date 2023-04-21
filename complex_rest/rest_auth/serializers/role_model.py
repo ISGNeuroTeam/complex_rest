@@ -3,6 +3,22 @@ from rest_auth.models import User, Group, Role, Permit, Action, AccessRule, Secu
 from django.contrib.auth.hashers import make_password
 
 
+class StrOrIntField(serializers.Field):
+    def to_representation(self, value):
+        if isinstance(value, int):
+            return value
+        elif isinstance(value, str) and value.isdigit():
+            return value
+        raise serializers.ValidationError('Error')
+
+    def to_internal_value(self, data):
+        if isinstance(data, int):
+            return data
+        elif isinstance(data, str) and data.isdigit():
+            return data
+        raise serializers.ValidationError('Error')
+
+
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
@@ -100,10 +116,13 @@ class SecurityZoneSerializer(serializers.ModelSerializer):
 
 
 class KeyChainSerializer(serializers.Serializer):
+    id = StrOrIntField()
     security_zone = serializers.PrimaryKeyRelatedField(
         queryset=SecurityZone.objects.all(), allow_null=True
     )
     permits = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Permit.objects.all(), allow_null=True
     )
+    auth_covered_objects = serializers.ListField(child=StrOrIntField(), allow_empty=True)
+
 

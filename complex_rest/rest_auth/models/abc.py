@@ -64,6 +64,13 @@ class IKeyChain:
         """
         raise NotImplementedError
 
+    # @abstractmethod
+    # def get_auth_covered_objects(self) -> Iterable['IAuthCovered']:
+    #     """
+    #     Returns all auth covered objects in keychain
+    #     """
+    #     raise NotImplementedError
+
 
 class IAuthCovered:
     @property

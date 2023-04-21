@@ -14,7 +14,7 @@ router.register(r'groups/(?P<group_id>[^/.]+)/users/?', GroupUserViewSet, basena
 router.register(r'groups/(?P<group_id>[^/.]+)/roles/?', GroupRoleViewSet, basename='group_roles')
 router.register(r'permits', PermitViewSet, basename='permit')
 router.register(r'security_zones', SecurityZoneViewSet, basename='security_zone')
-router.register(r'keychains/(?P<obj_class>[\w_\.]+)/?', KeychainViewSet, basename='keychains')
+router.register(r'keychains/(?P<auth_covered_class>[\w_\.]+)/?', KeychainViewSet, basename='keychains')
 
 # plugins/
 # roles/ CRUD  для ролей
