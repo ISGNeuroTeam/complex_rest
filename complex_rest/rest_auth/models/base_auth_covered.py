@@ -20,25 +20,30 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
     # must be set by child class
     keychain_model = None
 
+    def __init__(self, *args, **kwargs):
+        super(TimeStampedModel, self).__init__(*args, **kwargs)
+        super(TimeStampedModel, self).save()
+
     @property
     def keychain(self) -> KeyChainModel:
         try:
             if self._keychain_id:
-                return self.keychain_model.objects.get(id=self._keychain_id)
+                keychain = self.keychain_model.objects.get(id=self._keychain_id)
+                return keychain
         except self.keychain_model.DoesNotExist:
             log.error(f'Not found KeyChain with id = {self._keychain_id}')
         return None
 
     @keychain.setter
     def keychain(self, keychain: KeyChainModel):
-        self._keychain_id = keychain.pk
-        self.save()
+        self._keychain_id = keychain.id
+        super(TimeStampedModel, self).save()
 
     @property
     def owner(self) -> User:
         try:
             if self._owner_id:
-                return User.objects.get(pk=self._owner_id)
+                return User.objects.get(id=self._owner_id)
         except User.DoesNotExist:
             log.error(f'Not found owner with id = {self._owner_id}')
         return None
@@ -46,7 +51,7 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
     @owner.setter
     def owner(self, user: Optional[User]):
         if user:
-            self._owner_id = user.pk
+            self._owner_id = user.id
         else:
             self._owner_id = None
         self.save()
@@ -67,7 +72,7 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
 
     @classmethod
     def get_object(cls, obj_id) -> 'IAuthCovered':
-        return cls.objects.get(id=obj_id)
+        return cls.objects.get(pk=obj_id)
 
     class Meta:
         abstract = True

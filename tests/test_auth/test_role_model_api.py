@@ -1,7 +1,7 @@
 import json
 from core.globals import global_vars
-from rest.test import APITestCase, create_test_users
-from rest_auth.models import Group, User, Role
+from rest.test import APITestCase, create_test_users, TransactionTestCase
+from rest_auth.models import Group, User, Role, SecurityZone
 
 from rolemodel_test.models import SomePluginAuthCoveredModel, PluginKeychain
 
@@ -27,6 +27,7 @@ class GroupApiTest(APITestCase):
         self.admin.groups.add(self.admin_group)
 
         global_vars.set_current_user(self.admin)
+        self.login('admin', 'admin')
 
     def test_get(self):
         response = self.client.get('/auth/groups/')
@@ -119,7 +120,7 @@ class GroupApiTest(APITestCase):
         self.assertEquals(len(response.data), 2, '2 roles in ordinary group')
 
 
-class KeyChainApiTest(APITestCase):
+class KeyChainApiTest(TransactionTestCase, APITestCase):
     auth_covered_object_class = 'rolemodel_test.models.SomePluginAuthCoveredModel'
 
     def setUp(self):
@@ -132,11 +133,9 @@ class KeyChainApiTest(APITestCase):
         global_vars.set_current_user(self.admin)
         for _ in range(5):
             keychain = PluginKeychain()
-            keychain.save()
             for _ in range(5):
                 auth_covered_object = SomePluginAuthCoveredModel()
                 auth_covered_object.keychain = keychain
-                auth_covered_object.save()
 
         self.login('admin', 'admin')
 
@@ -158,4 +157,31 @@ class KeyChainApiTest(APITestCase):
         self.assertEquals(response.status_code, 200)
         keychain = response.data
         auth_covered_objects_ids = keychain['auth_covered_objects']
-        self.assertListEqual(auth_covered_objects_ids, [1,2,3,4,5])
+        self.assertListEqual(auth_covered_objects_ids, [1, 2, 3, 4, 5])
+
+    def test_key_chain_object_create(self):
+        zone = SecurityZone(name='test_zone1')
+        zone.save()
+        new_auth_covered_objects_ids = list()
+        for _ in range(5):
+            auth_covered_object = SomePluginAuthCoveredModel()
+            auth_covered_object = SomePluginAuthCoveredModel.objects.get(id=auth_covered_object.id)
+            new_auth_covered_objects_ids.append(auth_covered_object.id)
+
+        response = self.client.post(
+            f'/auth/keychains/{self.auth_covered_object_class}/',
+            {
+                'security_zone': zone.id,
+                'auth_covered_objects': new_auth_covered_objects_ids
+            },
+            format='json'
+
+        )
+        new_keychain_id = response.data['id']
+        self.assertEquals(response.status_code, 201)
+        for obj_id in new_auth_covered_objects_ids:
+            obj = SomePluginAuthCoveredModel.objects.get(id=obj_id)
+            self.assertEquals(obj.keychain.id, new_keychain_id)
+
+    def test_key_chain_object_delete(self):
+        pass

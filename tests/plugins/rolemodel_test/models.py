@@ -10,16 +10,11 @@ from rest_auth.models import KeyChainModel, AuthCoveredModel
 
 
 class PluginKeychain(KeyChainModel):
-    @classmethod
-    def get_objects(cls) -> Iterable['IKeyChain']:
-        return cls.objects.all()
+    pass
 
 
 class SomePluginAuthCoveredModel(AuthCoveredModel):
     keychain_model = PluginKeychain
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
     @auth_covered_method(action_name='test.protected_action1')
     def test_method1(self):

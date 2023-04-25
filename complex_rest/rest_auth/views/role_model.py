@@ -200,11 +200,50 @@ class KeychainViewSet(ViewSet):
         ).data
         return Response(data=result_data)
 
-    def create(self, request, obj_class: str):
+    def create(self, request, auth_covered_class: str, *args, **kwargs):
         """
         Create new keychain
         """
-        pass
+        try:
+            auth_covered_class = import_string(auth_covered_class)
+        except ImportError as err:
+            return ErrorResponse(error_message=str(err))
+        key_chain_serializer = serializers.KeyChainSerializer(data=request.data)
+        if not key_chain_serializer.is_valid():
+            return ErrorResponse(
+                error_message=str(key_chain_serializer.error_messages), http_status=status.HTTP_400_BAD_REQUEST
+            )
+
+        auth_covered_objects_ids = key_chain_serializer.validated_data['auth_covered_objects']
+        new_keychain: IKeyChain = auth_covered_class.keychain_model()
+
+        for auth_covered_object_id in auth_covered_objects_ids:
+            auth_covered_object = auth_covered_class.get_object(auth_covered_object_id)
+            auth_covered_object.keychain = new_keychain
+        permits_ids = key_chain_serializer.validated_data['permits']
+
+        # add permissions to keychain
+        if permits_ids:
+            for permit_id in permits_ids:
+                try:
+                    permit = Permit.obects.get(permit_id)
+                except Permit.DoesNotExist:
+                    return ErrorResponse(
+                        error_message=f'Permit with id={permit_id} doesn\'t exist', http_status=status.HTTP_400_BAD_REQUEST
+                    )
+                new_keychain.add_permission(permit)
+
+        if key_chain_serializer.validated_data['security_zone']:
+            new_keychain.zone = key_chain_serializer.validated_data['security_zone']
+
+        return Response(
+            data={
+                'id': new_keychain.id,
+                'permits': permits_ids,
+                'auth_covered_objects': auth_covered_objects_ids,
+            },
+            status=status.HTTP_201_CREATED
+        )
 
     def retrieve(self, request, auth_covered_class: str, pk=None):
         """

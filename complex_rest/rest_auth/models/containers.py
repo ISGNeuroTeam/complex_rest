@@ -24,6 +24,11 @@ class SecurityZone(NamedModel, TimeStampedModel, MPTTModel):
 
 
 class KeyChainModel(IKeyChain, TimeStampedModel):
+
+    def __init__(self, *args, **kwargs):
+        super(TimeStampedModel, self).__init__(*args, **kwargs)
+        super(TimeStampedModel, self).save()
+
     _zone = models.IntegerField(null=True, blank=True)
     _permits = models.CharField(
         max_length=1024, validators=[int_list_validator(sep=','), ],

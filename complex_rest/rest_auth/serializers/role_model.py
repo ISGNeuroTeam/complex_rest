@@ -40,10 +40,6 @@ class GroupSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     groups = GroupSerializer(many=True, read_only=True)
 
-    class Meta:
-        model = User
-        fields = '__all__'
-
     @staticmethod
     def _make_password_hash(validated_data):
         if 'password' in validated_data:
@@ -58,6 +54,8 @@ class UserSerializer(serializers.ModelSerializer):
         return super(UserSerializer, self).update(instance, validated_data)
 
     class Meta:
+        model = User
+        fields = '__all__'
         extra_kwargs = {'groups': {'required': False}}
 
 
@@ -116,13 +114,13 @@ class SecurityZoneSerializer(serializers.ModelSerializer):
 
 
 class KeyChainSerializer(serializers.Serializer):
-    id = StrOrIntField()
+    id = StrOrIntField(allow_null=True, default=None)
     security_zone = serializers.PrimaryKeyRelatedField(
-        queryset=SecurityZone.objects.all(), allow_null=True
+        queryset=SecurityZone.objects.all(), allow_null=True, default=None
     )
     permits = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Permit.objects.all(), allow_null=True
+        many=True, queryset=Permit.objects.all(), allow_null=True, default=None
     )
-    auth_covered_objects = serializers.ListField(child=StrOrIntField(), allow_empty=True)
+    auth_covered_objects = serializers.ListField(child=StrOrIntField(), allow_empty=True, allow_null=True)
 
 
