@@ -187,7 +187,7 @@ class KeychainViewSet(ViewSet):
                 # add keychain object
                 result_keychain_dict[keychain.id] = {
                     'permits':    serializers.PermitSerializer(keychain.permissions, many=True).data,
-                    'security_zone': keychain.zone.id if keychain.zone else None,
+                    'security_zone': keychain.zone if keychain.zone else None,
                     'id': keychain.id,
                     'auth_covered_objects': [auth_covered_object.id, ]
                 }
@@ -199,6 +199,27 @@ class KeychainViewSet(ViewSet):
             ), many=True
         ).data
         return Response(data=result_data)
+
+    def _update_keychain(
+            self, keychain, auth_covered_class,
+            permits: Iterable[Permit] = None, security_zone: SecurityZone=None,
+            auth_covered_objects_ids: Iterable = None
+    ):
+
+        if auth_covered_objects_ids is None:
+            auth_covered_objects_ids = []
+
+        for auth_covered_object_id in auth_covered_objects_ids:
+            auth_covered_object = auth_covered_class.get_object(auth_covered_object_id)
+            auth_covered_object.keychain = keychain
+
+        # add permissions to keychain
+        if permits:
+            for permit in permits:
+                keychain.add_permission(permit)
+
+        if security_zone:
+            keychain.zone = security_zone
 
     def create(self, request, auth_covered_class: str, *args, **kwargs):
         """
@@ -214,33 +235,20 @@ class KeychainViewSet(ViewSet):
                 error_message=str(key_chain_serializer.error_messages), http_status=status.HTTP_400_BAD_REQUEST
             )
 
-        auth_covered_objects_ids = key_chain_serializer.validated_data['auth_covered_objects']
         new_keychain: IKeyChain = auth_covered_class.keychain_model()
 
-        for auth_covered_object_id in auth_covered_objects_ids:
-            auth_covered_object = auth_covered_class.get_object(auth_covered_object_id)
-            auth_covered_object.keychain = new_keychain
-        permits_ids = key_chain_serializer.validated_data['permits']
+        auth_covered_objects_ids = key_chain_serializer.validated_data['auth_covered_objects']
+        security_zone = key_chain_serializer.validated_data['security_zone']
+        permits = key_chain_serializer.validated_data['permits']
 
-        # add permissions to keychain
-        if permits_ids:
-            for permit_id in permits_ids:
-                try:
-                    permit = Permit.obects.get(permit_id)
-                except Permit.DoesNotExist:
-                    return ErrorResponse(
-                        error_message=f'Permit with id={permit_id} doesn\'t exist', http_status=status.HTTP_400_BAD_REQUEST
-                    )
-                new_keychain.add_permission(permit)
-
-        if key_chain_serializer.validated_data['security_zone']:
-            new_keychain.zone = key_chain_serializer.validated_data['security_zone']
+        self._update_keychain(new_keychain, auth_covered_class, permits, security_zone, auth_covered_objects_ids)
 
         return Response(
             data={
                 'id': new_keychain.id,
-                'permits': permits_ids,
+                'permits': map(lambda p: p.id, permits) if permits else [],
                 'auth_covered_objects': auth_covered_objects_ids,
+                'security_zone': new_keychain.zone.id
             },
             status=status.HTTP_201_CREATED
         )
@@ -254,36 +262,123 @@ class KeychainViewSet(ViewSet):
         except ImportError as err:
             return ErrorResponse(error_message=str(err))
         auth_covered_objects: Iterable[IAuthCovered] = auth_covered_class.get_objects()
-        keychain = None
-        keychain_auth_covered_objects = []
-        for auth_covered_object in auth_covered_objects:
-            if str(auth_covered_object.keychain.id) == pk:
-                if keychain is None:
-                    keychain = auth_covered_object.keychain
-                keychain_auth_covered_objects.append(auth_covered_object.id)
-        if keychain is None:
+
+        try:
+            keychain = auth_covered_class.keychain_model.get_object(pk)
+        except Exception:
             return ErrorResponse(
                 http_status=status.HTTP_404_NOT_FOUND,
                 error_message=f'Keychain with id={pk} not found'
             )
 
+        keychain_auth_covered_objects_ids = []
+        for auth_covered_object in auth_covered_objects:
+            if auth_covered_object.keychain and str(auth_covered_object.keychain.id) == pk:
+                keychain_auth_covered_objects_ids.append(auth_covered_object.id)
+
         return Response(
-            data=serializers.KeyChainSerializer(
-                {
-                    'permits': serializers.PermitSerializer(keychain.permissions, many=True).data,
+            data={
+                    'permits': map(
+                        lambda p: p.id,
+                        keychain.permissions
+                    ),
                     'security_zone': keychain.zone.id if keychain.zone else None,
                     'id': keychain.id,
-                    'auth_covered_objects': keychain_auth_covered_objects
+                    'auth_covered_objects': keychain_auth_covered_objects_ids
                 }
-            ).data
         )
 
-    def update(self, request, pk=None):
-        pass
+    def partial_update(self, request, auth_covered_class: str, pk=None):
+        try:
+            auth_covered_class = import_string(auth_covered_class)
+        except ImportError as err:
+            return ErrorResponse(error_message=str(err))
 
-    def partial_update(self, request, pk=None):
-        pass
+        keychain = auth_covered_class.keychain_model.get_object(pk)
 
-    def destroy(self, request, pk=None):
-        pass
+        key_chain_serializer = serializers.KeyChainSerializer(data=request.data)
+        if not key_chain_serializer.is_valid():
+            return ErrorResponse(
+                error_message=str(key_chain_serializer.error_messages), http_status=status.HTTP_400_BAD_REQUEST
+            )
+
+        auth_covered_objects_ids = key_chain_serializer.validated_data['auth_covered_objects']
+        security_zone = key_chain_serializer.validated_data['security_zone']
+        permits = key_chain_serializer.validated_data['permits']
+
+        self._update_keychain(keychain, auth_covered_class, permits, security_zone, auth_covered_objects_ids)
+
+        # remove keychain from objects than is not in the list
+        for obj in auth_covered_class.get_objects():
+            if obj.id not in auth_covered_objects_ids:
+                obj.keychain = None
+
+        return Response(
+            data={
+                'id': keychain.id,
+                'permits': map(lambda p: p.id, permits) if permits else [],
+                'auth_covered_objects': auth_covered_objects_ids,
+                'security_zone': keychain.zone.id if keychain.zone else None
+            },
+            status=status.HTTP_200_OK
+        )
+
+    def update(self, request, auth_covered_class, pk=None):
+        try:
+            auth_covered_class = import_string(auth_covered_class)
+        except ImportError as err:
+            return ErrorResponse(error_message=str(err))
+
+        keychain = auth_covered_class.keychain_model.get_object(pk)
+
+        key_chain_serializer = serializers.KeyChainSerializer(data=request.data)
+        if not key_chain_serializer.is_valid():
+            return ErrorResponse(
+                error_message=str(key_chain_serializer.error_messages), http_status=status.HTTP_400_BAD_REQUEST
+            )
+
+        auth_covered_objects_ids = key_chain_serializer.validated_data['auth_covered_objects']
+        security_zone = key_chain_serializer.validated_data['security_zone']
+        permits = key_chain_serializer.validated_data['permits']
+
+        if auth_covered_objects_ids is None:
+            auth_covered_objects_ids = []
+
+        for auth_covered_object_id in auth_covered_objects_ids:
+            auth_covered_object = auth_covered_class.get_object(auth_covered_object_id)
+            auth_covered_object.keychain = keychain
+
+        # add permissions to keychain
+        keychain.remove_permissions()
+        if permits:
+            for permit in permits:
+                keychain.add_permission(permit)
+
+        keychain.zone = security_zone
+
+        # remove keychain from objects than is not in the list
+        for obj in auth_covered_class.get_objects():
+            if obj.id not in auth_covered_objects_ids:
+                obj.keychain = None
+
+        return Response(
+            data={
+                'id': keychain.id,
+                'permits': map(lambda p: p.id, permits) if permits else [],
+                'auth_covered_objects': auth_covered_objects_ids,
+                'security_zone': keychain.zone.id if keychain.zone else None
+            },
+            status=status.HTTP_200_OK
+        )
+
+    def destroy(self, request, auth_covered_class: str, pk=None):
+        try:
+            auth_covered_class = import_string(auth_covered_class)
+        except ImportError as err:
+            return ErrorResponse(error_message=str(err))
+        auth_covered_class.keychain_model.delete_object(pk)
+        for obj in auth_covered_class.get_objects():
+            if obj.keychain and obj.keychain.id == pk:
+                obj.keychain = None
+        return SuccessResponse(http_status=status.HTTP_200_OK)
 

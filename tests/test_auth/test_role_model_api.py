@@ -131,8 +131,11 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
 
         self.admin.groups.add(self.admin_group)
         global_vars.set_current_user(self.admin)
+        zone = SecurityZone(name='main_zone')
+        zone.save()
         for _ in range(5):
             keychain = PluginKeychain()
+            keychain.zone = zone
             for _ in range(5):
                 auth_covered_object = SomePluginAuthCoveredModel()
                 auth_covered_object.keychain = keychain
@@ -168,20 +171,85 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
             auth_covered_object = SomePluginAuthCoveredModel.objects.get(id=auth_covered_object.id)
             new_auth_covered_objects_ids.append(auth_covered_object.id)
 
+        zone = SecurityZone(name='test_zone1')
+        zone.save()
         response = self.client.post(
             f'/auth/keychains/{self.auth_covered_object_class}/',
             {
                 'security_zone': zone.id,
-                'auth_covered_objects': new_auth_covered_objects_ids
+                'auth_covered_objects': new_auth_covered_objects_ids,
             },
             format='json'
-
         )
         new_keychain_id = response.data['id']
         self.assertEquals(response.status_code, 201)
         for obj_id in new_auth_covered_objects_ids:
             obj = SomePluginAuthCoveredModel.objects.get(id=obj_id)
             self.assertEquals(obj.keychain.id, new_keychain_id)
+            self.assertEquals(obj.keychain.zone.id, zone.id)
+
+    def test_key_chain_object_update(self):
+        keychain = PluginKeychain.objects.all().first()
+        self.assertEquals(keychain.zone.name, 'main_zone')
+        zone = SecurityZone(name='test_zone1')
+        zone.save()
+        new_auth_covered_objects_ids = list()
+        for _ in range(5):
+            auth_covered_object = SomePluginAuthCoveredModel()
+            auth_covered_object = SomePluginAuthCoveredModel.objects.get(id=auth_covered_object.id)
+            new_auth_covered_objects_ids.append(auth_covered_object.id)
+        response = self.client.get(
+            f'/auth/keychains/{self.auth_covered_object_class}/{str(keychain.id)}/',
+        )
+        self.assertEquals(response.status_code, 200)
+        keychain_data = response.data
+        auth_covered_objects_ids = keychain_data['auth_covered_objects']
+        self.assertListEqual(auth_covered_objects_ids, [1, 2, 3, 4, 5])
+        # replace security zone and keychains
+        response = self.client.put(
+            f'/auth/keychains/{self.auth_covered_object_class}/{keychain.id}/',
+            {
+                'security_zone': zone.id,
+                'auth_covered_objects': new_auth_covered_objects_ids,
+            },
+            format='json'
+        )
+        response = self.client.get(
+            f'/auth/keychains/{self.auth_covered_object_class}/{keychain.id}/',
+        )
+        # check that security zone and keychain updated
+        self.assertEquals(response.status_code, 200)
+        keychain_data = response.data
+        auth_covered_objects_ids = keychain_data['auth_covered_objects']
+        security_zone_id = keychain_data['security_zone']
+        self.assertEqual(security_zone_id, zone.id)
+        self.assertListEqual(auth_covered_objects_ids, new_auth_covered_objects_ids)
+
+        # delete security zones and objects from keychain
+        response = self.client.put(
+            f'/auth/keychains/{self.auth_covered_object_class}/{keychain.id}/',
+            {
+                'security_zone': None,
+                'auth_covered_objects': None,
+            },
+            format='json'
+        )
+        response = self.client.get(
+            f'/auth/keychains/{self.auth_covered_object_class}/{keychain.id}/',
+        )
+        # check that security zone and keychain updated
+        self.assertEquals(response.status_code, 200)
+        keychain_data = response.data
+        auth_covered_objects_ids = keychain_data['auth_covered_objects']
+        security_zone_id = keychain_data['security_zone']
+        self.assertIsNone(security_zone_id)
+        self.assertListEqual(auth_covered_objects_ids, [])
 
     def test_key_chain_object_delete(self):
-        pass
+        keychain_id = PluginKeychain.objects.all().first().id
+        response = self.client.delete(
+            f'/auth/keychains/{self.auth_covered_object_class}/{keychain_id}/',
+        )
+        self.assertEquals(response.status_code, 200)
+        with self.assertRaises(PluginKeychain.DoesNotExist):
+            PluginKeychain.objects.get(id=keychain_id)

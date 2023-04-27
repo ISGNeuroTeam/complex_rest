@@ -26,6 +26,14 @@ class IKeyChain:
         """
         raise NotImplementedError
 
+    @classmethod
+    @abstractmethod
+    def delete_object(cls, obj_id):
+        """
+        Delete object with id
+        """
+        raise NotImplementedError
+
     @property
     @abstractmethod
     def zone(self) -> Optional['SecurityZone']:
@@ -36,7 +44,7 @@ class IKeyChain:
 
     @zone.setter
     @abstractmethod
-    def zone(self, zone: 'SecurityZone'):
+    def zone(self, zone: Optional['SecurityZone']=None):
         """
         Sets security zone
         """
@@ -61,6 +69,12 @@ class IKeyChain:
     def remove_permission(self, permission: 'Permit'):
         """
         Removes permission
+        """
+        raise NotImplementedError
+
+    def remove_permissions(self):
+        """
+        Removes all permisisons
         """
         raise NotImplementedError
 

@@ -35,11 +35,17 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
         blank=True, null=True
     )
 
+    @classmethod
     def get_object(cls, obj_id) -> Optional['IKeyChain']:
         return cls.objects.get(id=obj_id)
 
+    @classmethod
     def get_objects(cls) -> Iterable['IKeyChain']:
         return cls.objects.all()
+
+    @classmethod
+    def delete_object(cls, obj_id):
+        cls.objects.filter(id=obj_id).delete()
 
     @property
     def zone(self) -> SecurityZone:
@@ -53,7 +59,10 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
 
     @zone.setter
     def zone(self, zone: SecurityZone):
-        self._zone = zone.pk
+        if zone:
+            self._zone = zone.pk
+        else:
+            self._zone = None
         self.save()
 
     @property
@@ -77,6 +86,10 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
         permit_ids = set(self._permits.split(','))
         permit_ids.remove(permission.pk)
         self._permits = ','.join(permit_ids)
+        self.save()
+
+    def remove_permissions(self):
+        self._permits = ''
         self.save()
 
     def __str__(self):

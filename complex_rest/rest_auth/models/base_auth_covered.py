@@ -36,7 +36,10 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
 
     @keychain.setter
     def keychain(self, keychain: KeyChainModel):
-        self._keychain_id = keychain.id
+        if keychain:
+            self._keychain_id = keychain.id
+        else:
+            self._keychain_id = None
         super(TimeStampedModel, self).save()
 
     @property
