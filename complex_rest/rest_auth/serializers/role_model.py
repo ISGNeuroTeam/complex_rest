@@ -116,11 +116,11 @@ class SecurityZoneSerializer(serializers.ModelSerializer):
 class KeyChainSerializer(serializers.Serializer):
     id = StrOrIntField(allow_null=True, default=None)
     security_zone = serializers.PrimaryKeyRelatedField(
-        queryset=SecurityZone.objects.all(), allow_null=True, default=None
+        queryset=SecurityZone.objects.all(), required=False, allow_null=True
     )
     permits = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Permit.objects.all(), allow_null=True, default=None
+        many=True, queryset=Permit.objects.all(), required=False, allow_null=True,
     )
-    auth_covered_objects = serializers.ListField(child=StrOrIntField(), allow_empty=True, allow_null=True)
+    auth_covered_objects = serializers.ListField(child=StrOrIntField(), allow_empty=True, required=False)
 
 
