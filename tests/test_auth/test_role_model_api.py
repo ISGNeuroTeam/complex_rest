@@ -1,8 +1,8 @@
 import json
 from core.globals import global_vars
 from rest.test import APITestCase, create_test_users, TransactionTestCase
-from rest_auth.models import Group, User, Role, SecurityZone
-
+from rest_auth.models import Group, User, Role, SecurityZone, Action, Plugin
+from rest_auth.apps import on_ready_actions as rest_auth_on_ready_actions
 from rolemodel_test.models import SomePluginAuthCoveredModel, PluginKeychain
 
 
@@ -308,3 +308,42 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
         self.assertEquals(response.status_code, 200)
         with self.assertRaises(PluginKeychain.DoesNotExist):
             PluginKeychain.objects.get(id=keychain_id)
+
+
+class PermissionApiTest(TransactionTestCase, APITestCase):
+    auth_covered_object_class = 'rolemodel_test.models.SomePluginAuthCoveredModel'
+
+    def setUp(self):
+        self.admin, self.test_users = create_test_users(1)
+        # create 2 groups
+        self.admin_group = Group(name='admin')
+        self.admin_group.save()
+        global_vars.set_current_user(self.admin)
+        self.login('admin', 'admin')
+        rest_auth_on_ready_actions()
+
+    def test_create_permission(self):
+        action_create = Action.objects.get(plugin__name='rolemodel_test', name='test.create')
+        user = User.objects.get(username='test_user1')
+        group = Group(name='test_group')
+        group.save()
+        role = Role(name='test_role')
+        role.save()
+        role.groups.add(group)
+        user.groups.add(group)
+
+        response = self.client.post(
+            f'/auth/permits/{self.auth_covered_object_class}/',
+            {
+                'access_rules': [
+                    {
+                        'action': action_create.id,
+                        'rule': True,
+                        'by_owner_only': False
+                    }, ],
+                'roles': [role.id, ]
+
+            },
+            format='json'
+        )
+        self.assertEquals(response.status_code, 201)

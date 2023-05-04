@@ -1,6 +1,8 @@
 from  rest_framework import serializers
 from rest_auth.models import User, Group, Role, Permit, Action, AccessRule, SecurityZone
 from django.contrib.auth.hashers import make_password
+from rest_framework.exceptions import ValidationError
+from core.load_plugins import import_string
 
 
 class StrOrIntField(serializers.Field):
@@ -77,30 +79,44 @@ class AccessRuleSerializer(serializers.ModelSerializer):
 
 class PermitSerializer(serializers.ModelSerializer):
     access_rules = AccessRuleSerializer(many=True)
-
+    roles = serializers.PrimaryKeyRelatedField(many=True, queryset=Role.objects.all())
+    keychain_id = serializers.CharField(default=None, allow_null=True)
     security_zone_name = serializers.CharField(default=None, allow_null=True)
 
-    # keychain_plugin = serializers.CharField(default=None, allow_null=True)
-    # keychain_id = serializers.CharField(default=None, allow_null=True)
-
     def create(self, validated_data):
+
+        access_rules_data = validated_data.pop('access_rules')
+        security_zone_name = validated_data.pop('security_zone_name')
+        keychain_id = validated_data.pop('keychain_id')
         permit_instance = super().create(validated_data)
 
         # save access rules for permit
-        for access_rule in validated_data['access_rules']:
+        for access_rule in access_rules_data:
             access_rule_model = AccessRule(**access_rule)
             access_rule_model.permit = permit_instance
             access_rule_model.save()
 
-        security_zone_name = validated_data.get('security_zone_name', None)
+        if keychain_id and security_zone_name:
+            raise ValidationError('Only keychain id or security zone')
+
+        if keychain_id:
+            auth_covered_class = self.context['auth_covered_class']
+            try:
+                auth_covered_class = import_string(auth_covered_class)
+            except ImportError as err:
+                raise ValidationError(error_message=str(err))
+            keychain = auth_covered_class.keychain_model.get_object(keychain_id)
+            keychain.add_permission(permit_instance)
+
         if security_zone_name:
             security_zone = SecurityZone.objects.get(name=security_zone_name)
             security_zone.permits.add(permit_instance)
 
+        return permit_instance
+
     class Meta:
         model = Permit
         fields = '__all__'
-        extra_kwargs = {'roles': {'required': True}}
 
 
 class SecurityZoneSerializer(serializers.ModelSerializer):

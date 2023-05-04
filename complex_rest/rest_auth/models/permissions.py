@@ -27,8 +27,8 @@ class Action(TimeStampedModel, NamedModel):
 
 
 class AccessRule(models.Model):
-    action = models.ForeignKey(Action, on_delete=models.CASCADE)
-    permit = models.ForeignKey('Permit', on_delete=models.CASCADE)
+    action = models.ForeignKey(Action, on_delete=models.CASCADE, related_name='access_rules')
+    permit = models.ForeignKey('Permit', on_delete=models.CASCADE, related_name='access_rules')
     rule = models.BooleanField(choices=ALLOW_OR_DENY, null=False, blank=False)
     by_owner_only = models.BooleanField(null=False, default=False, blank=False)
 
@@ -39,7 +39,7 @@ class AccessRule(models.Model):
 
 class Permit(TimeStampedModel):
     actions = models.ManyToManyField(Action,
-                                     related_name='permit',
+                                     related_name='permits',
                                      through=AccessRule,
                                      through_fields=('permit', 'action'))
 

@@ -154,7 +154,15 @@ class PermitViewSet(ModelViewSet):
     serializer_class = serializers.PermitSerializer
     permission_classes = (AllowAny, )
 
-    def get_queryset(self):
+    def get_serializer_context(self):
+        """
+        pass kwargs from url to permit serializer
+        """
+        context = super().get_serializer_context()
+        context.update(self.kwargs)
+        return context
+
+    def get_queryset(self, *args, **kwargs):
         return Permit.objects.all()
 
 
