@@ -8,6 +8,15 @@ from typing import Dict, List
 log = logging.getLogger('root')
 
 
+def _create_auth_covered_classes_in_db(plugin: 'Plugin', classes_import_str: List[str]):
+    from rest_auth.models import AuthCoveredClass
+    for class_import_str in classes_import_str:
+        auth_covered_class, created = AuthCoveredClass.objects.get_or_create(
+            class_import_str=class_import_str, plugin=plugin
+        )
+        return auth_covered_class
+
+
 def _create_plugin_in_db(plugin_name: str):
     from rest_auth.models import Plugin
     return Plugin.objects.get_or_create(name=plugin_name)[0]
@@ -35,6 +44,8 @@ def on_ready_actions():
             plugin_actions = getattr(plugin_settings, 'ROLE_MODEL_ACTIONS', None)
             if plugin_actions is not None:
                 _create_actions_in_db(plugin, plugin_actions)
+            auth_covered_classes = getattr(plugin_settings, 'ROLE_MODEL_AUTH_COVERED_CLASSES')
+            _create_auth_covered_classes_in_db(plugin, auth_covered_classes)
         except Exception as err:  # ignore all other errors. Otherwise, it is not possible to do migrations
             log.error(str(err))
 

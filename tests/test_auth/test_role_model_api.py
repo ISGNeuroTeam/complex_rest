@@ -1,7 +1,7 @@
 import json
 from core.globals import global_vars
 from rest.test import APITestCase, create_test_users, TransactionTestCase
-from rest_auth.models import Group, User, Role, SecurityZone, Action, Plugin
+from rest_auth.models import Group, User, Role, SecurityZone, Action, Plugin, Permit
 from rest_auth.apps import on_ready_actions as rest_auth_on_ready_actions
 from rolemodel_test.models import SomePluginAuthCoveredModel, PluginKeychain
 
@@ -332,6 +332,12 @@ class PermissionApiTest(TransactionTestCase, APITestCase):
         role.groups.add(group)
         user.groups.add(group)
 
+        keychain = PluginKeychain()
+        keychain.save()
+        obj = SomePluginAuthCoveredModel()
+        obj.keychain = keychain
+        obj.save()
+
         response = self.client.post(
             f'/auth/permits/{self.auth_covered_object_class}/',
             {
@@ -341,9 +347,13 @@ class PermissionApiTest(TransactionTestCase, APITestCase):
                         'rule': True,
                         'by_owner_only': False
                     }, ],
-                'roles': [role.id, ]
+                'roles': [role.id, ],
+                'keychain_id': str(keychain.id),
+
 
             },
             format='json'
         )
         self.assertEquals(response.status_code, 201)
+        permit = Permit.objects.all().first()
+        self.assertEquals(permit.roles.all().first().id, role.id)

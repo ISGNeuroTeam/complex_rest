@@ -16,6 +16,14 @@ class Plugin(TimeStampedModel):
         return self.name
 
 
+class AuthCoveredClass(TimeStampedModel):
+    class_import_str = models.CharField(max_length=1024)  # dotted path for import
+    plugin = models.ForeignKey(Plugin, on_delete=models.CASCADE, related_name='auth_covered_classes')
+
+    def __str__(self):
+        return self.class_import_str
+
+
 class Action(TimeStampedModel, NamedModel):
     default_rule = models.BooleanField(choices=ALLOW_OR_DENY, default=True)
     # define whether by_owner_only field in AccessRule is used
