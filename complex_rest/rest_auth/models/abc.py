@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from typing import Union, List, Optional, TYPE_CHECKING, Iterable
 from django.db.models import QuerySet
+from .permissions import PermitKeychain
 
 
 if TYPE_CHECKING:  # circular import protection
@@ -10,6 +11,9 @@ if TYPE_CHECKING:  # circular import protection
 
 
 class IKeyChain:
+    # must be set by a child class
+    auth_covered_class_import_str = None
+
     @classmethod
     @abstractmethod
     def get_object(cls, obj_id) -> Optional['IKeyChain']:
@@ -51,39 +55,20 @@ class IKeyChain:
         raise NotImplementedError
 
     @property
-    @abstractmethod
     def permissions(self) -> Union[QuerySet, List['Permit']]:
-        """
-        Returns permissions
-        """
-        raise NotImplementedError
+        return PermitKeychain.get_keychain_permits(self.auth_covered_class_import_str, str(self.id))
 
-    @abstractmethod
     def add_permission(self, permission: 'Permit'):
         """
         Add permission to keychain
         """
-        raise NotImplementedError
-
-    @abstractmethod
-    def remove_permission(self, permission: 'Permit'):
-        """
-        Removes permission
-        """
-        raise NotImplementedError
+        return PermitKeychain.add_permit_to_keychain(self.auth_covered_class_import_str, str(self.id), permission)
 
     def remove_permissions(self):
         """
         Removes all permisisons
         """
-        raise NotImplementedError
-
-    # @abstractmethod
-    # def get_auth_covered_objects(self) -> Iterable['IAuthCovered']:
-    #     """
-    #     Returns all auth covered objects in keychain
-    #     """
-    #     raise NotImplementedError
+        return PermitKeychain.delete_permissions(self.auth_covered_class_import_str, str(self.id))
 
 
 class IAuthCovered:

@@ -45,6 +45,51 @@ class AccessRule(models.Model):
         return self.rule
 
 
+class PermitKeychain(models.Model):
+    keychain_id = models.CharField(
+        max_length=256
+    )
+    auth_covered_class = models.ForeignKey(AuthCoveredClass, on_delete=models.CASCADE, related_name='permit_keychain')
+    permit = models.ForeignKey('rest_auth.Permit', on_delete=models.CASCADE, related_name='permit_keychain')
+
+    @classmethod
+    def add_permit_to_keychain(cls, auth_covered_class: str, keychain_id: str, permit: 'Permit'):
+        auth_covered_class = AuthCoveredClass.objects.get(class_import_str=auth_covered_class)
+        permit_keychain, created = PermitKeychain.objects.get_or_create(
+                auth_covered_class=auth_covered_class,
+                keychain_id=keychain_id,
+                permit=permit
+        )
+
+    @classmethod
+    def get_keychain_permits(cls, auth_covered_class: str, keychain_id: str):
+        permit_keychains = PermitKeychain.objects.filter(
+            auth_covered_class__class_import_str=auth_covered_class,
+            keychain_id=keychain_id
+        )
+        return list(map(
+            lambda permit_keychain: permit_keychain.permit,
+            permit_keychains
+        ))
+
+    @classmethod
+    def get_permit_keychains(cls, auth_covered_class: str, permit: 'Permit'):
+        permit_keychains = PermitKeychain.objects.filter(
+            permit=permit, auth_covered_class__class_import_str=auth_covered_class
+        )
+        return list(map(
+            lambda permit_keychain: permit_keychain.keychain_id,
+            permit_keychains
+            )
+        )
+
+    @classmethod
+    def delete_permissions(cls, auth_covered_class: str, keychain_id: str):
+        PermitKeychain.objects.filter(
+            keychain_id=keychain_id, auth_covered_class__class_import_str=auth_covered_class
+        ).delete()
+
+
 class Permit(TimeStampedModel):
     actions = models.ManyToManyField(Action,
                                      related_name='permits',

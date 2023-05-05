@@ -30,10 +30,6 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
         super(TimeStampedModel, self).save()
 
     _zone = models.IntegerField(null=True, blank=True)
-    _permits = models.CharField(
-        max_length=1024, validators=[int_list_validator(sep=','), ],
-        blank=True, null=True
-    )
 
     @classmethod
     def get_object(cls, obj_id) -> Optional['IKeyChain']:
@@ -63,33 +59,6 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
             self._zone = zone.pk
         else:
             self._zone = None
-        self.save()
-
-    @property
-    def permissions(self):
-        if self._permits:
-            return Permit.objects.filter(id__in=self._permits.split(','))
-        else:
-            return Permit.objects.none()
-
-    def add_permission(self, permission: 'Permit'):
-        if self._permits:
-            permit_ids = set(self._permits.split(','))
-        else:
-            permit_ids = set()
-
-        permit_ids.add(str(permission.pk))
-        self._permits = ','.join(permit_ids)
-        self.save()
-
-    def remove_permission(self, permission: 'Permit'):
-        permit_ids = set(self._permits.split(','))
-        permit_ids.remove(permission.pk)
-        self._permits = ','.join(permit_ids)
-        self.save()
-
-    def remove_permissions(self):
-        self._permits = ''
         self.save()
 
     def __str__(self):

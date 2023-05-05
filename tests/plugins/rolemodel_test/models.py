@@ -10,7 +10,7 @@ from rest_auth.models import KeyChainModel, AuthCoveredModel
 
 
 class PluginKeychain(KeyChainModel):
-    pass
+    auth_covered_class_import_str = 'rolemodel_test.models.SomePluginAuthCoveredModel'
 
 
 class SomePluginAuthCoveredModel(AuthCoveredModel):

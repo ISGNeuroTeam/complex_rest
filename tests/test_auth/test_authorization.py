@@ -11,6 +11,7 @@ from rest_auth.models import User, Action, Plugin, Permit, AccessRule, Role, Gro
 from rest_auth.authorization import (
    auth_covered_method, auth_covered_func, AccessDeniedError
 )
+from rest_auth.apps import on_ready_actions as rest_auth_on_ready_actions
 
 from rolemodel_test.models import SomePluginAuthCoveredModel, PluginKeychain
 
@@ -30,6 +31,8 @@ class TestSimpleAuthProtection(TestCase):
 
         self.action = Action(name='test_action', plugin=self.plugin, default_rule=False)
         self.action.save()
+
+        rest_auth_on_ready_actions()
 
     def tearDown(self):
         global_vars.delete_all()
@@ -120,6 +123,8 @@ class TestPluginAuthCoveredModelClass(APITestCase):
         for i in range(10):
             obj = SomePluginAuthCoveredModel()
             obj.save()
+
+        rest_auth_on_ready_actions()
 
     def _admin_permits(self):
         admin_role = self._create_role('admin')
