@@ -295,7 +295,7 @@ class KeychainViewSet(ViewSet):
         keychain_auth_covered_objects_ids = []
         for auth_covered_object in auth_covered_objects:
             if auth_covered_object.keychain and str(auth_covered_object.keychain.id) == pk:
-                keychain_auth_covered_objects_ids.append(auth_covered_object.id)
+                keychain_auth_covered_objects_ids.append(str(auth_covered_object.id))
 
         return Response(
             data={
@@ -304,7 +304,7 @@ class KeychainViewSet(ViewSet):
                         keychain.permissions
                     ),
                     'security_zone': keychain.zone.id if keychain.zone else None,
-                    'id': keychain.id,
+                    'id': str(keychain.id),
                     'auth_covered_objects': keychain_auth_covered_objects_ids
                 }
         )
@@ -331,11 +331,12 @@ class KeychainViewSet(ViewSet):
                 for auth_covered_object_id in auth_covered_objects_ids:
                     auth_covered_object = auth_covered_class.get_object(auth_covered_object_id)
                     auth_covered_object.keychain = keychain
+                    auth_covered_object.save()
 
             # remove keychain from objects than is not in the list
             if auth_covered_objects_ids:
                 for obj in auth_covered_class.get_objects():
-                    if obj.keychain and obj.keychain.id == keychain.id and obj.id not in auth_covered_objects_ids:
+                    if obj.keychain and obj.keychain.id == keychain.id and str(obj.id) not in auth_covered_objects_ids:
                         obj.keychain = None
 
         # add permissions to keychain
@@ -349,7 +350,6 @@ class KeychainViewSet(ViewSet):
         if 'security_zone' in key_chain_serializer.validated_data:
             security_zone = key_chain_serializer.validated_data['security_zone']
             keychain.zone = security_zone
-
         return Response(
             data={
                 'id': keychain.id,

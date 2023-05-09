@@ -73,9 +73,9 @@ class PermitKeychain(models.Model):
         ))
 
     @classmethod
-    def get_permit_keychains(cls, auth_covered_class: str, permit: 'Permit'):
+    def get_permit_keychains(cls,  permit: 'Permit'):
         permit_keychains = PermitKeychain.objects.filter(
-            permit=permit, auth_covered_class__class_import_str=auth_covered_class
+            permit=permit,
         )
         return list(map(
             lambda permit_keychain: permit_keychain.keychain_id,
@@ -95,6 +95,10 @@ class Permit(TimeStampedModel):
                                      related_name='permits',
                                      through=AccessRule,
                                      through_fields=('permit', 'action'))
+
+    @property
+    def keychain_ids(self):
+        return PermitKeychain.get_permit_keychains(self)
 
     def affects_on(self, user: User):
         for role in self.roles.all():

@@ -32,16 +32,16 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
     _zone = models.IntegerField(null=True, blank=True)
 
     @classmethod
-    def get_object(cls, obj_id) -> Optional['IKeyChain']:
-        return cls.objects.get(id=obj_id)
+    def get_object(cls, obj_id: str) -> Optional['IKeyChain']:
+        return cls.objects.get(id=int(obj_id))
 
     @classmethod
     def get_objects(cls) -> Iterable['IKeyChain']:
         return cls.objects.all()
 
     @classmethod
-    def delete_object(cls, obj_id):
-        cls.objects.filter(id=obj_id).delete()
+    def delete_object(cls, obj_id: str):
+        cls.objects.filter(id=int(obj_id)).delete()
 
     @property
     def zone(self) -> SecurityZone:
@@ -62,7 +62,7 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
         self.save()
 
     def __str__(self):
-        return f'{self.keychain_id}'
+        return f'{self.id}'
 
     class Meta:
         abstract = True

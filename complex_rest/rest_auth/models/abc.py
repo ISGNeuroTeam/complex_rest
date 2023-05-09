@@ -16,7 +16,7 @@ class IKeyChain:
 
     @classmethod
     @abstractmethod
-    def get_object(cls, obj_id) -> Optional['IKeyChain']:
+    def get_object(cls, obj_id: str) -> Optional['IKeyChain']:
         """
         Returns keychain by id or None
         """
@@ -32,7 +32,7 @@ class IKeyChain:
 
     @classmethod
     @abstractmethod
-    def delete_object(cls, obj_id):
+    def delete_object(cls, obj_id: str):
         """
         Delete object with id
         """
@@ -106,7 +106,7 @@ class IAuthCovered:
 
     @classmethod
     @abstractmethod
-    def get_object(cls, obj_id) -> Optional['IAuthCovered']:
+    def get_object(cls, obj_id: str) -> Optional['IAuthCovered']:
         """
         Returns object with id or None
         """

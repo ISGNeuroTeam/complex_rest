@@ -160,7 +160,7 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
         self.assertEquals(response.status_code, 200)
         keychain = response.data
         auth_covered_objects_ids = keychain['auth_covered_objects']
-        self.assertListEqual(auth_covered_objects_ids, [1, 2, 3, 4, 5])
+        self.assertListEqual(auth_covered_objects_ids, ['1', '2', '3', '4', '5'])
 
     def test_key_chain_object_create(self):
         zone = SecurityZone(name='test_zone1')
@@ -169,7 +169,7 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
         for _ in range(5):
             auth_covered_object = SomePluginAuthCoveredModel()
             auth_covered_object = SomePluginAuthCoveredModel.objects.get(id=auth_covered_object.id)
-            new_auth_covered_objects_ids.append(auth_covered_object.id)
+            new_auth_covered_objects_ids.append(str(auth_covered_object.id))
 
         zone = SecurityZone(name='test_zone1')
         zone.save()
@@ -197,14 +197,14 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
         for _ in range(5):
             auth_covered_object = SomePluginAuthCoveredModel()
             auth_covered_object = SomePluginAuthCoveredModel.objects.get(id=auth_covered_object.id)
-            new_auth_covered_objects_ids.append(auth_covered_object.id)
+            new_auth_covered_objects_ids.append(str(auth_covered_object.id))
         response = self.client.get(
             f'/auth/keychains/{self.auth_covered_object_class}/{str(keychain.id)}/',
         )
         self.assertEquals(response.status_code, 200)
         keychain_data = response.data
         auth_covered_objects_ids = keychain_data['auth_covered_objects']
-        self.assertListEqual(auth_covered_objects_ids, [1, 2, 3, 4, 5])
+        self.assertListEqual(auth_covered_objects_ids, ['1', '2', '3', '4', '5'])
         # replace security zone and keychains
         response = self.client.put(
             f'/auth/keychains/{self.auth_covered_object_class}/{keychain.id}/',
@@ -253,14 +253,14 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
         for _ in range(5):
             auth_covered_object = SomePluginAuthCoveredModel()
             auth_covered_object = SomePluginAuthCoveredModel.objects.get(id=auth_covered_object.id)
-            new_auth_covered_objects_ids.append(auth_covered_object.id)
+            new_auth_covered_objects_ids.append(str(auth_covered_object.id))
         response = self.client.get(
             f'/auth/keychains/{self.auth_covered_object_class}/{str(keychain.id)}/',
         )
         self.assertEquals(response.status_code, 200)
         keychain_data = response.data
         auth_covered_objects_ids = keychain_data['auth_covered_objects']
-        self.assertListEqual(auth_covered_objects_ids, [1, 2, 3, 4, 5])
+        self.assertListEqual(auth_covered_objects_ids, ['1', '2', '3', '4', '5'])
         # replace security zone and keychains
         response = self.client.patch(
             f'/auth/keychains/{self.auth_covered_object_class}/{keychain.id}/',
@@ -276,6 +276,7 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
         # check that security zone and keychain updated
         self.assertEquals(response.status_code, 200)
         keychain_data = response.data
+
         auth_covered_objects_ids = keychain_data['auth_covered_objects']
         security_zone_id = keychain_data['security_zone']
         self.assertEqual(security_zone_id, zone.id)
@@ -348,7 +349,7 @@ class PermissionApiTest(TransactionTestCase, APITestCase):
                         'by_owner_only': False
                     }, ],
                 'roles': [role.id, ],
-                'keychain_id': str(keychain.id),
+                'keychain_ids': [str(keychain.id), ],
 
 
             },
@@ -357,3 +358,4 @@ class PermissionApiTest(TransactionTestCase, APITestCase):
         self.assertEquals(response.status_code, 201)
         permit = Permit.objects.all().first()
         self.assertEquals(permit.roles.all().first().id, role.id)
+        self.assertEquals(permit.keychain_ids, [str(keychain.id), ])

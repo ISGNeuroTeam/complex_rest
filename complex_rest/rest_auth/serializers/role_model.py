@@ -5,22 +5,6 @@ from rest_framework.exceptions import ValidationError
 from core.load_plugins import import_string
 
 
-class StrOrIntField(serializers.Field):
-    def to_representation(self, value):
-        if isinstance(value, int):
-            return value
-        elif isinstance(value, str) and value.isdigit():
-            return value
-        raise serializers.ValidationError('Error')
-
-    def to_internal_value(self, data):
-        if isinstance(data, int):
-            return data
-        elif isinstance(data, str) and data.isdigit():
-            return data
-        raise serializers.ValidationError('Error')
-
-
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
@@ -80,14 +64,18 @@ class AccessRuleSerializer(serializers.ModelSerializer):
 class PermitSerializer(serializers.ModelSerializer):
     access_rules = AccessRuleSerializer(many=True)
     roles = serializers.PrimaryKeyRelatedField(many=True, queryset=Role.objects.all())
-    keychain_id = serializers.CharField(default=None, allow_null=True)
+    keychain_ids = serializers.ListField(child=serializers.CharField(), allow_empty=True, required=False)
     security_zone_name = serializers.CharField(default=None, allow_null=True)
 
     def create(self, validated_data):
 
         access_rules_data = validated_data.pop('access_rules')
         security_zone_name = validated_data.pop('security_zone_name')
-        keychain_id = validated_data.pop('keychain_id')
+        if 'keychain_ids' in validated_data:
+            keychain_ids = validated_data.pop('keychain_ids')
+        else:
+            keychain_ids = None
+
         permit_instance = super().create(validated_data)
 
         # save access rules for permit
@@ -96,17 +84,19 @@ class PermitSerializer(serializers.ModelSerializer):
             access_rule_model.permit = permit_instance
             access_rule_model.save()
 
-        if keychain_id and security_zone_name:
+        if keychain_ids and security_zone_name:
             raise ValidationError('Only keychain id or security zone')
 
-        if keychain_id:
-            auth_covered_class = self.context['auth_covered_class']
-            try:
-                auth_covered_class = import_string(auth_covered_class)
-            except ImportError as err:
-                raise ValidationError(error_message=str(err))
-            keychain = auth_covered_class.keychain_model.get_object(keychain_id)
-            keychain.add_permission(permit_instance)
+        auth_covered_class = self.context['auth_covered_class']
+        try:
+            auth_covered_class = import_string(auth_covered_class)
+        except ImportError as err:
+            raise ValidationError(error_message=str(err))
+
+        if keychain_ids:
+            for keychain_id in keychain_ids:
+                keychain = auth_covered_class.keychain_model.get_object(keychain_id)
+                keychain.add_permission(permit_instance)
 
         if security_zone_name:
             security_zone = SecurityZone.objects.get(name=security_zone_name)
@@ -130,13 +120,13 @@ class SecurityZoneSerializer(serializers.ModelSerializer):
 
 
 class KeyChainSerializer(serializers.Serializer):
-    id = StrOrIntField(allow_null=True, default=None)
+    id = serializers.CharField(allow_null=True, default=None)
     security_zone = serializers.PrimaryKeyRelatedField(
         queryset=SecurityZone.objects.all(), required=False, allow_null=True
     )
     permits = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Permit.objects.all(), required=False, allow_null=True,
     )
-    auth_covered_objects = serializers.ListField(child=StrOrIntField(), allow_empty=True, required=False)
+    auth_covered_objects = serializers.ListField(child=serializers.CharField(), allow_empty=True, required=False)
 
 
