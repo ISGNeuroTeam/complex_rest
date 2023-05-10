@@ -3,7 +3,7 @@ from django.urls import re_path
 
 from .views import (
     UserViewSet, GroupViewSet, RoleViewSet, GroupUserViewSet, GroupRoleViewSet, Login, Logout, IsLoggedIn,
-    PermitViewSet, ActionView, SecurityZoneViewSet, KeychainViewSet
+    PermitViewSet, ActionView, SecurityZoneViewSet, KeychainViewSet, AuthCoveredClassView
 )
 
 router = DefaultRouter()
@@ -32,6 +32,8 @@ urlpatterns = [
     re_path(r'^logout/?$', Logout.as_view()),
     re_path(r'^actions/?$', ActionView.as_view()),
     re_path(r'^actions/(?P<plugin_name>[\w_-]+)/?$', ActionView.as_view()),
+    re_path(r'^auth_covered_classes/?$', AuthCoveredClassView.as_view()),
+    re_path(r'^auth_covered_classes/(?P<plugin_name>[\w_-]+)/?$', AuthCoveredClassView.as_view()),
 ]
 
 urlpatterns += router.urls

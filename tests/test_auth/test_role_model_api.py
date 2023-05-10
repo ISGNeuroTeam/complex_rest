@@ -359,3 +359,21 @@ class PermissionApiTest(TransactionTestCase, APITestCase):
         permit = Permit.objects.all().first()
         self.assertEquals(permit.roles.all().first().id, role.id)
         self.assertEquals(permit.keychain_ids, [str(keychain.id), ])
+
+
+class AuthCoveredClassApiTest(TransactionTestCase, APITestCase):
+    def setUp(self):
+        self.admin, self.test_users = create_test_users(1)
+        # create 2 groups
+        self.admin_group = Group(name='admin')
+        self.admin_group.save()
+        global_vars.set_current_user(self.admin)
+        self.login('admin', 'admin')
+        rest_auth_on_ready_actions()
+
+    def test_auth_covered_classes_list(self):
+        response = self.client.get(
+            f'/auth/auth_covered_classes/rolemodel_test/'
+        )
+        auth_covered_class = response.data[0]
+        self.assertEquals(auth_covered_class['class_import_str'], 'rolemodel_test.models.SomePluginAuthCoveredModel')

@@ -1,5 +1,5 @@
 from  rest_framework import serializers
-from rest_auth.models import User, Group, Role, Permit, Action, AccessRule, SecurityZone
+from rest_auth.models import User, Group, Role, Permit, Action, AccessRule, SecurityZone, AuthCoveredClass
 from django.contrib.auth.hashers import make_password
 from rest_framework.exceptions import ValidationError
 from core.load_plugins import import_string
@@ -9,6 +9,17 @@ class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
         fields = '__all__'
+
+
+class AuthCoveredClassSerializer(serializers.ModelSerializer):
+    plugin = serializers.SerializerMethodField('plugin_name')
+
+    def plugin_name(self, acc):
+        return acc.plugin.name
+
+    class Meta:
+        model = AuthCoveredClass
+        fields = ['id', 'plugin', 'class_import_str']
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -76,6 +87,9 @@ class PermitSerializer(serializers.ModelSerializer):
         else:
             keychain_ids = None
 
+        if keychain_ids and security_zone_name:
+            raise ValidationError('Only keychain id or security zone')
+
         permit_instance = super().create(validated_data)
 
         # save access rules for permit
@@ -83,9 +97,6 @@ class PermitSerializer(serializers.ModelSerializer):
             access_rule_model = AccessRule(**access_rule)
             access_rule_model.permit = permit_instance
             access_rule_model.save()
-
-        if keychain_ids and security_zone_name:
-            raise ValidationError('Only keychain id or security zone')
 
         auth_covered_class = self.context['auth_covered_class']
         try:
@@ -101,6 +112,44 @@ class PermitSerializer(serializers.ModelSerializer):
         if security_zone_name:
             security_zone = SecurityZone.objects.get(name=security_zone_name)
             security_zone.permits.add(permit_instance)
+
+        return permit_instance
+
+    def update(self, instance, validated_data):
+        super().update(instance, validated_data)
+        permit_instance = instance
+
+        if 'access_rules' in validated_data:
+            access_rules_data = validated_data['access_rules']
+            permit_instance.access_rules.delete()
+            # save access rules for permit
+            for access_rule in access_rules_data:
+                access_rule_model = AccessRule(**access_rule)
+                access_rule_model.permit = permit_instance
+                access_rule_model.save()
+
+        auth_covered_class = self.context['auth_covered_class']
+        try:
+            auth_covered_class = import_string(auth_covered_class)
+        except ImportError as err:
+            raise ValidationError(error_message=str(err))
+
+        if 'keychain_ids' in validated_data:
+            permit_instance.delete_keychains()
+            keychain_ids = validated_data['keychain_ids']
+        else:
+            keychain_ids = None
+
+        if keychain_ids:
+            for keychain_id in keychain_ids:
+                keychain = auth_covered_class.keychain_model.get_object(keychain_id)
+                keychain.add_permission(permit_instance)
+
+        if 'security_zone_name' in validated_data:
+            security_zone_name = validated_data['security_zone_name']
+            if security_zone_name:
+                security_zone = SecurityZone.objects.get(name=security_zone_name)
+                security_zone.permits.add(permit_instance)
 
         return permit_instance
 

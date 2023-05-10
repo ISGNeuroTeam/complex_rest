@@ -89,6 +89,12 @@ class PermitKeychain(models.Model):
             keychain_id=keychain_id, auth_covered_class__class_import_str=auth_covered_class
         ).delete()
 
+    @classmethod
+    def delete_keychains(cls, permit: 'Permit'):
+        PermitKeychain.objects.filter(
+            permit=permit
+        ).delete()
+
 
 class Permit(TimeStampedModel):
     actions = models.ManyToManyField(Action,
@@ -99,6 +105,9 @@ class Permit(TimeStampedModel):
     @property
     def keychain_ids(self):
         return PermitKeychain.get_permit_keychains(self)
+
+    def delete_keychains(self):
+        return PermitKeychain.delete_keychains(self)
 
     def affects_on(self, user: User):
         for role in self.roles.all():

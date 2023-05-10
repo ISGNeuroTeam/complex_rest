@@ -11,7 +11,7 @@ from core.load_plugins import import_string
 from rest.views import APIView
 from rest.response import Response, SuccessResponse, ErrorResponse, status
 
-from rest_auth.models import Action, IAuthCovered, IKeyChain
+from rest_auth.models import Action, IAuthCovered, IKeyChain, AuthCoveredClass
 
 from .. import serializers
 from ..models import Group, Permit, SecurityZone, Role
@@ -131,7 +131,7 @@ class GroupRoleViewSet(ViewSet):
 
 
 class ActionView(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAdminUser, )
 
     def get(self, request, plugin_name=None):
         if plugin_name:
@@ -142,9 +142,21 @@ class ActionView(APIView):
         return Response(action_serializers.data)
 
 
+class AuthCoveredClassView(APIView):
+    permission_classes = (IsAdminUser, )
+
+    def get(self, request, plugin_name=None):
+        if plugin_name:
+            acc = AuthCoveredClass.objects.filter(plugin__name=plugin_name)
+        else:
+            acc = AuthCoveredClass.objects.all()
+        acc_serializres = serializers.AuthCoveredClassSerializer(acc, many=True)
+        return Response(acc_serializres.data)
+
+
 class SecurityZoneViewSet(ModelViewSet):
-    permission_classes = (AllowAny, )
-    serializer_class = serializers.SecurityZoneSerializer
+    permission_classes = (IsAdminUser, )
+    serializer_class = serializers.SecurityZone
 
     def get_queryset(self):
         return SecurityZone.objects.all()
