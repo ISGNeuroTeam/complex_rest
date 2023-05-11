@@ -14,7 +14,6 @@ def _create_auth_covered_classes_in_db(plugin: 'Plugin', classes_import_str: Lis
         auth_covered_class, created = AuthCoveredClass.objects.get_or_create(
             class_import_str=class_import_str, plugin=plugin
         )
-        return auth_covered_class
 
 
 def _create_plugin_in_db(plugin_name: str):

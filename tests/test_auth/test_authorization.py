@@ -195,7 +195,7 @@ class TestPluginAuthCoveredModelClass(APITestCase):
     def test_role_model_init(self):
         self.assertListEqual(
             settings.ROLE_MODEL_AUTH_COVERED_CLASSES,
-            ['rolemodel_test.models.SomePluginAuthCoveredModel', ]
+            ['rolemodel_test.models.SomePluginAuthCoveredModel', 'rolemodel_test.models.SomePluginAuthCoveredModelUUID']
         )
 
         self.assertListEqual(

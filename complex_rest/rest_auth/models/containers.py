@@ -27,7 +27,8 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
 
     def __init__(self, *args, **kwargs):
         super(TimeStampedModel, self).__init__(*args, **kwargs)
-        super(TimeStampedModel, self).save()
+        if not self.id:
+            self.save()
 
     _zone = models.IntegerField(null=True, blank=True)
 
@@ -50,7 +51,6 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
                 return SecurityZone.objects.get(id=self._zone) if self._zone else None
             except SecurityZone.DoesNotExist:
                 log.error(f'Not found security zone with id {self._zone}')
-
         return None
 
     @zone.setter

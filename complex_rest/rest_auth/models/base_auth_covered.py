@@ -22,7 +22,8 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
 
     def __init__(self, *args, **kwargs):
         super(TimeStampedModel, self).__init__(*args, **kwargs)
-        super(TimeStampedModel, self).save()
+        if not self.id:
+            self.save()
 
     @property
     def keychain(self) -> KeyChainModel:
@@ -40,7 +41,7 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
             self._keychain_id = keychain.id
         else:
             self._keychain_id = None
-        super(TimeStampedModel, self).save()
+        self.save()
 
     @property
     def owner(self) -> User:
