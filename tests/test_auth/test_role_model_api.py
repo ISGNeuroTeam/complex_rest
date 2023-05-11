@@ -360,6 +360,70 @@ class PermissionApiTest(TransactionTestCase, APITestCase):
         self.assertEquals(permit.roles.all().first().id, role.id)
         self.assertEquals(permit.keychain_ids, [str(keychain.id), ])
 
+    def test_update_permission(self):
+        self.test_create_permission()
+        action_2 = Action.objects.get(plugin__name='rolemodel_test', name='test.protected_action1')
+        permit = Permit.objects.all().first()
+        role = Role(name='test_role_update')
+        role.save()
+        response = self.client.put(
+            f'/auth/permits/{self.auth_covered_object_class}/{permit.id}/',
+            {
+                'access_rules': [
+                    {
+                        'action': action_2.id,
+                        'rule': False,
+                        'by_owner_only': False
+                    }, ],
+                'roles': [role.id, ],
+                'keychain_ids': [],
+            },
+            format='json'
+        )
+        self.assertEquals(permit.actions.all().first().name, 'test.protected_action1')
+        self.assertListEqual(permit.keychain_ids, [])
+        self.assertEquals(permit.roles.all().first().id, role.id)
+
+    def test_partial_update(self):
+        self.test_create_permission()
+        action_2 = Action.objects.get(plugin__name='rolemodel_test', name='test.protected_action1')
+        permit = Permit.objects.all().first()
+        role = Role.objects.get(name='test_role')
+        response = self.client.patch(
+            f'/auth/permits/{self.auth_covered_object_class}/{permit.id}/',
+            {
+                'access_rules': [
+                    {
+                        'action': action_2.id,
+                        'rule': False,
+                        'by_owner_only': False
+                    }, ],
+            },
+            format='json'
+        )
+        # check that updated only actions
+        self.assertEquals(permit.actions.all().first().name, 'test.protected_action1')
+        self.assertEquals(len(permit.keychain_ids), 1)
+        self.assertEquals(permit.roles.all().first().id, role.id)
+
+        # remove keychains
+        response = self.client.patch(
+            f'/auth/permits/{self.auth_covered_object_class}/{permit.id}/',
+            {
+                'keychain_ids': []
+            },
+            format='json'
+        )
+        self.assertEquals(len(permit.keychain_ids), 0)
+
+    def test_delete(self):
+        self.test_create_permission()
+        permit = Permit.objects.all().first()
+        response = self.client.delete(
+            f'/auth/permits/{self.auth_covered_object_class}/{permit.id}/',
+        )
+        self.assertEquals(Permit.objects.all().count(), 0)
+
 
 class AuthCoveredClassApiTest(TransactionTestCase, APITestCase):
     def setUp(self):

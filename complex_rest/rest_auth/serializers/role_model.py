@@ -116,12 +116,14 @@ class PermitSerializer(serializers.ModelSerializer):
         return permit_instance
 
     def update(self, instance, validated_data):
+        access_rules_data = validated_data.pop('access_rules', None)
+        keychain_ids = validated_data.pop('keychain_ids', None)
+        security_zone_name = validated_data.pop('keychain_ids', None)
         super().update(instance, validated_data)
         permit_instance = instance
 
-        if 'access_rules' in validated_data:
-            access_rules_data = validated_data['access_rules']
-            permit_instance.access_rules.delete()
+        if access_rules_data is not None:
+            permit_instance.access_rules.all().delete()
             # save access rules for permit
             for access_rule in access_rules_data:
                 access_rule_model = AccessRule(**access_rule)
@@ -134,22 +136,17 @@ class PermitSerializer(serializers.ModelSerializer):
         except ImportError as err:
             raise ValidationError(error_message=str(err))
 
-        if 'keychain_ids' in validated_data:
+        if keychain_ids is not None:
             permit_instance.delete_keychains()
-            keychain_ids = validated_data['keychain_ids']
-        else:
-            keychain_ids = None
 
         if keychain_ids:
             for keychain_id in keychain_ids:
                 keychain = auth_covered_class.keychain_model.get_object(keychain_id)
                 keychain.add_permission(permit_instance)
 
-        if 'security_zone_name' in validated_data:
-            security_zone_name = validated_data['security_zone_name']
-            if security_zone_name:
-                security_zone = SecurityZone.objects.get(name=security_zone_name)
-                security_zone.permits.add(permit_instance)
+        if security_zone_name is not None:
+            security_zone = SecurityZone.objects.get(name=security_zone_name)
+            security_zone.permits.add(permit_instance)
 
         return permit_instance
 
