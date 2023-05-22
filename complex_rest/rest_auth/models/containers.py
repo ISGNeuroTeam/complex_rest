@@ -27,7 +27,7 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
 
     def __init__(self, *args, **kwargs):
         super(TimeStampedModel, self).__init__(*args, **kwargs)
-        if not self.id:
+        if self._state.adding:
             self.save()
 
     _zone = models.IntegerField(null=True, blank=True)

@@ -22,7 +22,7 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
 
     def __init__(self, *args, **kwargs):
         super(TimeStampedModel, self).__init__(*args, **kwargs)
-        if not self.id:
+        if self._state.adding:
             self.save()
 
     @property
