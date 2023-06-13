@@ -27,7 +27,7 @@ class PluginKeychainUUID(KeyChainModel):
     id = models.UUIDField(primary_key=True, editable=False)
 
     @classmethod
-    def get_object(cls, obj_id: str) -> Optional['IKeyChain']:
+    def get_keychain(cls, obj_id: str) -> Optional['IKeyChain']:
         return cls.objects.get(id=obj_id)
 
     @classmethod
@@ -55,7 +55,7 @@ class SomePluginAuthCoveredModelUUID(AuthCoveredModel):
         print('calling test auth covered method2')
 
     @classmethod
-    def get_object(cls, obj_id: str) -> 'IAuthCovered':
+    def get_auth_object(cls, obj_id: str) -> 'IAuthCovered':
         return cls.objects.get(pk=obj_id)
 
     def save(self, *args, **kwargs):

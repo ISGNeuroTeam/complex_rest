@@ -32,12 +32,16 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
 
     _zone = models.IntegerField(null=True, blank=True)
 
+    @property
+    def auth_id(self) -> str:
+        return self.id
+
     @classmethod
-    def get_object(cls, obj_id: str) -> Optional['IKeyChain']:
+    def get_keychain(cls, obj_id: str) -> Optional['IKeyChain']:
         return cls.objects.get(id=int(obj_id))
 
     @classmethod
-    def get_objects(cls) -> Iterable['IKeyChain']:
+    def get_keychains(cls) -> Iterable['IKeyChain']:
         return cls.objects.all()
 
     @classmethod

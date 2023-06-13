@@ -26,6 +26,10 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
             self.save()
 
     @property
+    def auth_id(self) -> str:
+        return str(self.id)
+
+    @property
     def keychain(self) -> KeyChainModel:
         try:
             if self._keychain_id:
@@ -61,7 +65,7 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
         self.save()
 
     @classmethod
-    def get_objects(cls, keychain: bool = None) -> List['AuthCoveredModel']:
+    def get_auth_objects(cls, keychain: bool = None) -> List['AuthCoveredModel']:
         all_objects = cls.objects.all()
         if keychain is None:
             return list(all_objects)
@@ -75,7 +79,7 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
             )
 
     @classmethod
-    def get_object(cls, obj_id: str) -> 'IAuthCovered':
+    def get_auth_object(cls, obj_id: str) -> 'IAuthCovered':
         return cls.objects.get(pk=int(obj_id))
 
     class Meta:

@@ -14,9 +14,17 @@ class IKeyChain:
     # must be set by a child class
     auth_covered_class_import_str = None
 
+    @property
+    @abstractmethod
+    def auth_id(self) -> str:
+        """
+        Return unique str for keychain
+        """
+        raise NotImplementedError
+
     @classmethod
     @abstractmethod
-    def get_object(cls, obj_id: str) -> Optional['IKeyChain']:
+    def get_keychain(cls, obj_id: str) -> Optional['IKeyChain']:
         """
         Returns keychain by id or None
         """
@@ -24,7 +32,7 @@ class IKeyChain:
 
     @classmethod
     @abstractmethod
-    def get_objects(cls) -> Iterable['IKeyChain']:
+    def get_keychains(cls) -> Iterable['IKeyChain']:
         """
         Returns all keychains
         """
@@ -72,6 +80,15 @@ class IKeyChain:
 
 
 class IAuthCovered:
+
+    @property
+    @abstractmethod
+    def auth_id(self) -> str:
+        """
+        Returns unique string for auth covered object
+        """
+        raise NotImplementedError
+
     @property
     @abstractmethod
     def owner(self) -> Optional['User']:
@@ -106,7 +123,7 @@ class IAuthCovered:
 
     @classmethod
     @abstractmethod
-    def get_object(cls, obj_id: str) -> Optional['IAuthCovered']:
+    def get_auth_object(cls, auth_id: str) -> Optional['IAuthCovered']:
         """
         Returns object with id or None
         """
@@ -114,7 +131,7 @@ class IAuthCovered:
 
     @classmethod
     @abstractmethod
-    def get_objects(cls, keychain: Optional[bool] = None) -> Iterable['IAuthCovered']:
+    def get_auth_objects(cls, keychain: Optional[bool] = None) -> Iterable['IAuthCovered']:
         """
         Returns list of objects.
         keychain is True returns only objects with keychain.

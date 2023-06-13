@@ -106,7 +106,7 @@ class PermitSerializer(serializers.ModelSerializer):
 
         if keychain_ids:
             for keychain_id in keychain_ids:
-                keychain = auth_covered_class.keychain_model.get_object(keychain_id)
+                keychain = auth_covered_class.keychain_model.get_keychain(keychain_id)
                 keychain.add_permission(permit_instance)
 
         if security_zone_name:
@@ -141,7 +141,7 @@ class PermitSerializer(serializers.ModelSerializer):
 
         if keychain_ids:
             for keychain_id in keychain_ids:
-                keychain = auth_covered_class.keychain_model.get_object(keychain_id)
+                keychain = auth_covered_class.keychain_model.get_keychain(keychain_id)
                 keychain.add_permission(permit_instance)
 
         if security_zone_name is not None:

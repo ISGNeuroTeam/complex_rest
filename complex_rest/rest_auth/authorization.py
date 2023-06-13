@@ -78,7 +78,7 @@ def get_allowed_object_ids_list(user: User, action: Action, obj_class):
     """
     Return list of objects id allowed for User to do action
     """
-    objects_with_keychain = obj_class.get_objects(keychain=True)
+    objects_with_keychain = obj_class.get_keychains(keychain=True)
     keychain_ids = set()
     allowed_objects_ids = set()
     for obj in objects_with_keychain:
@@ -94,7 +94,7 @@ def get_allowed_object_ids_list(user: User, action: Action, obj_class):
             allowed_objects_ids.add(obj.id)
             keychain_ids.add(keychain.id)
 
-    objects_without_keychain = obj_class.get_objects(keychain=False)
+    objects_without_keychain = obj_class.get_keychains(keychain=False)
     objects_without_keychain_ids = map(
         lambda x: x.id, objects_without_keychain
     )
