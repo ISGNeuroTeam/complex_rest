@@ -1,8 +1,8 @@
 from abc import abstractmethod
-from typing import Union, List, Optional, TYPE_CHECKING, Iterable
+from typing import Union, List, Optional, TYPE_CHECKING, Iterable, Any
 from django.db.models import QuerySet
 from .permissions import PermitKeychain
-
+from core.load_plugins import import_string
 
 if TYPE_CHECKING:  # circular import protection
     from .subjects import User
@@ -13,6 +13,10 @@ if TYPE_CHECKING:  # circular import protection
 class IKeyChain:
     # must be set by a child class
     auth_covered_class_import_str = None
+
+    @classmethod
+    def get_auth_covered_class(cls):
+        return import_string(cls.auth_covered_class_import_str)
 
     @property
     @abstractmethod
@@ -77,6 +81,19 @@ class IKeyChain:
         Removes all permisisons
         """
         return PermitKeychain.delete_permissions(self.auth_covered_class_import_str, str(self.id))
+
+    def add_auth_object(self, auth_obj: Any[List['IAuthCovered'], 'IAuthCovered']):
+        raise NotImplementedError
+
+    def remove_auth_object(self, auth_obj: Any[List['IAuthCovered'], 'IAuthCovered']):
+        raise NotImplementedError
+
+    def get_auth_objects(self) -> list['IAuthCovered']:
+        """
+        return list of auth covered objects
+        """
+        pass
+
 
 
 class IAuthCovered:

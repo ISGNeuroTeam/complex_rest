@@ -1,6 +1,6 @@
 import logging
 
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Any, List
 from django.db import models
 from django.core.validators import int_list_validator
 from mptt.models import MPTTModel, TreeForeignKey
@@ -8,7 +8,7 @@ from mixins.models import NamedModel, TimeStampedModel
 from rest_auth.authentication import User
 
 from .permissions import Permit, Action
-from .abc import IKeyChain
+from .abc import IKeyChain, IAuthCovered
 
 
 log = logging.getLogger('root.rest_auth')
@@ -31,6 +31,7 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
             self.save()
 
     _zone = models.IntegerField(null=True, blank=True)
+    _auth_objects = models.TextField() # ',' split ids string
 
     @property
     def auth_id(self) -> str:
@@ -45,8 +46,54 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
         return cls.objects.all()
 
     @classmethod
-    def delete_object(cls, obj_id: str):
-        cls.objects.filter(id=int(obj_id)).delete()
+    def delete_object(cls, keychain_id: str):
+        keychain: 'KeyChainModel' = cls.objects.get(id=int(keychain_id))
+        # todo remove keychains
+        for obj in keychain.get_auth_objects():
+            obj.keychain = None
+        keychain.delete()
+
+    def add_auth_object(self, auth_obj: Any[List['IAuthCovered'], 'IAuthCovered']):
+        if isinstance(auth_obj, list):
+            for obj in auth_obj:
+                obj.keychain = self
+            update_set = set(
+                map(
+                    lambda x: x.auth_id,
+                    auth_obj
+                )
+            )
+        else:
+            update_set = {auth_obj.auth_id}
+        s = set(self._auth_objects.split(','))
+        s.update(update_set)
+        self._auth_objects = ','.join(s)
+        self.save()
+
+    def remove_auth_object(self, auth_obj: Any[List['IAuthCovered'], 'IAuthCovered']):
+        if isinstance(auth_obj, list):
+            for obj in auth_obj:
+                obj.keychain = None
+            update_set = set(
+                map(
+                    lambda x: x.auth_id,
+                    auth_obj
+                )
+            )
+        else:
+            update_set = {auth_obj.auth_id}
+        s = set(self._auth_objects.split(','))
+        s.difference_update(update_set)
+        self._auth_objects = ','.join(s)
+        self.save()
+
+    def get_auth_objects(self) -> list['IAuthCovered']:
+        return list(
+            map(
+                lambda auth_obj_id: self.get_auth_covered_class().get_auth_object(auth_obj_id),
+                self._auth_objects.split(',')
+            )
+        )
 
     @property
     def zone(self) -> SecurityZone:

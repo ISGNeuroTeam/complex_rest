@@ -195,22 +195,16 @@ class KeychainViewSet(ViewSet):
             auth_covered_class = import_string(auth_covered_class)
         except ImportError as err:
             return ErrorResponse(error_message=str(err))
-        auth_covered_objects: Iterable[IAuthCovered] = auth_covered_class.get_auth_objects()
-        result_keychain_dict = dict()
 
-        for auth_covered_object in auth_covered_objects:
-            keychain = auth_covered_object.keychain
-            if keychain.auth_id in result_keychain_dict:
-                # add object
-                result_keychain_dict[keychain.auth_id]['auth_covered_objects'].append(auth_covered_object.auth_id)
-            else:
-                # add keychain object
-                result_keychain_dict[keychain.auth_id] = {
-                    'permits':    serializers.PermitSerializer(keychain.permissions, many=True).data,
-                    'security_zone': keychain.zone if keychain.zone else None,
-                    'id': keychain.auth_id,
-                    'auth_covered_objects': [auth_covered_object.auth_id, ]
-                }
+        keychains = auth_covered_class.keychain_model.get_keychains()
+        result_keychain_dict = {}
+        for keychain in keychains:
+            result_keychain_dict[keychain.auth_id] = {
+                'permits':    serializers.PermitSerializer(keychain.permissions, many=True).data,
+                'security_zone': keychain.zone if keychain.zone else None,
+                'id': keychain.auth_id,
+                'auth_covered_objects': list(map(lambda x: x.auth_id, keychain.get_auth_objects()))
+            }
 
         result_data = serializers.KeyChainSerializer(
             map(
@@ -433,8 +427,5 @@ class KeychainViewSet(ViewSet):
         except ImportError as err:
             return ErrorResponse(error_message=str(err))
         auth_covered_class.keychain_model.delete_object(pk)
-        for obj in auth_covered_class.get_auth_objects():
-            if obj.keychain and obj.keychain.auth_id == pk:
-                obj.keychain = None
         return SuccessResponse(http_status=status.HTTP_200_OK)
 
