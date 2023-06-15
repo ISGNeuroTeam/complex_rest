@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Union, List, Optional, TYPE_CHECKING, Iterable, Any
+from typing import Union, List, Optional, TYPE_CHECKING, Iterable, Union
 from django.db.models import QuerySet
 from .permissions import PermitKeychain
 from core.load_plugins import import_string
@@ -82,10 +82,10 @@ class IKeyChain:
         """
         return PermitKeychain.delete_permissions(self.auth_covered_class_import_str, str(self.id))
 
-    def add_auth_object(self, auth_obj: Any[List['IAuthCovered'], 'IAuthCovered']):
+    def add_auth_object(self, auth_obj: Union[List['IAuthCovered'], 'IAuthCovered'], replace=False):
         raise NotImplementedError
 
-    def remove_auth_object(self, auth_obj: Any[List['IAuthCovered'], 'IAuthCovered']):
+    def remove_auth_object(self, auth_obj: Union[List['IAuthCovered'], 'IAuthCovered']):
         raise NotImplementedError
 
     def get_auth_objects(self) -> list['IAuthCovered']:
@@ -146,13 +146,3 @@ class IAuthCovered:
         """
         raise NotImplementedError
 
-    @classmethod
-    @abstractmethod
-    def get_auth_objects(cls, keychain: Optional[bool] = None) -> Iterable['IAuthCovered']:
-        """
-        Returns list of objects.
-        keychain is True returns only objects with keychain.
-        keychain is False returns only objects without keychain
-        keychain is None returns all objects
-        """
-        raise NotImplementedError

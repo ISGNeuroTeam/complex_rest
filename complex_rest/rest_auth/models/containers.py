@@ -1,6 +1,6 @@
 import logging
 
-from typing import Iterable, Optional, Any, List
+from typing import Iterable, Optional, Union, List
 from django.db import models
 from django.core.validators import int_list_validator
 from mptt.models import MPTTModel, TreeForeignKey
@@ -31,7 +31,7 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
             self.save()
 
     _zone = models.IntegerField(null=True, blank=True)
-    _auth_objects = models.TextField() # ',' split ids string
+    _auth_objects = models.TextField(default='')  # ',' split ids string
 
     @property
     def auth_id(self) -> str:
@@ -53,7 +53,11 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
             obj.keychain = None
         keychain.delete()
 
-    def add_auth_object(self, auth_obj: Any[List['IAuthCovered'], 'IAuthCovered']):
+    def add_auth_object(self, auth_obj: Union[List['IAuthCovered'], 'IAuthCovered'], replace=False):
+        if replace:
+            for obj in self.get_auth_objects():
+                obj.keychain = None
+            self._auth_objects = ''
         if isinstance(auth_obj, list):
             for obj in auth_obj:
                 obj.keychain = self
@@ -64,13 +68,15 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
                 )
             )
         else:
+            auth_obj.keychain = self
             update_set = {auth_obj.auth_id}
-        s = set(self._auth_objects.split(','))
+
+        s = set(self._auth_objects.split(',')) if self._auth_objects else set()
         s.update(update_set)
         self._auth_objects = ','.join(s)
         self.save()
 
-    def remove_auth_object(self, auth_obj: Any[List['IAuthCovered'], 'IAuthCovered']):
+    def remove_auth_object(self, auth_obj: Union[List['IAuthCovered'], 'IAuthCovered']):
         if isinstance(auth_obj, list):
             for obj in auth_obj:
                 obj.keychain = None
@@ -81,8 +87,10 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
                 )
             )
         else:
+            auth_obj.keychain = None
             update_set = {auth_obj.auth_id}
-        s = set(self._auth_objects.split(','))
+
+        s = set(self._auth_objects.split(',')) if self._auth_objects else set()
         s.difference_update(update_set)
         self._auth_objects = ','.join(s)
         self.save()
@@ -91,7 +99,7 @@ class KeyChainModel(IKeyChain, TimeStampedModel):
         return list(
             map(
                 lambda auth_obj_id: self.get_auth_covered_class().get_auth_object(auth_obj_id),
-                self._auth_objects.split(',')
+                self._auth_objects.split(',') if self._auth_objects else set()
             )
         )
 

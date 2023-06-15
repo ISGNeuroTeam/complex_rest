@@ -65,20 +65,6 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
         self.save()
 
     @classmethod
-    def get_auth_objects(cls, keychain: bool = None) -> List['AuthCoveredModel']:
-        all_objects = cls.objects.all()
-        if keychain is None:
-            return list(all_objects)
-        if keychain:
-            return list(
-                all_objects.filter(_keychain_id__isnull=False)
-            )
-        else:
-            return list(
-                all_objects.filter(_keychain_id__isnull=True)
-            )
-
-    @classmethod
     def get_auth_object(cls, obj_id: str) -> 'IAuthCovered':
         return cls.objects.get(pk=int(obj_id))
 

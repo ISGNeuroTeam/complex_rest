@@ -141,8 +141,8 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
             keychain.zone = zone
             for _ in range(5):
                 auth_covered_object = self.auth_covered_class()
-                auth_covered_object.keychain = keychain
-                self.test_auth_covered_object_ids[keychain.id].add(str(auth_covered_object.id))
+                keychain.add_auth_object(auth_covered_object)
+                self.test_auth_covered_object_ids[keychain.auth_id].add(str(auth_covered_object.auth_id))
 
         self.login('admin', 'admin')
 
@@ -200,15 +200,17 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
         new_auth_covered_objects_ids = list()
         for _ in range(5):
             auth_covered_object = self.auth_covered_class()
+
             auth_covered_object = self.auth_covered_class.objects.get(id=auth_covered_object.id)
-            new_auth_covered_objects_ids.append(str(auth_covered_object.id))
+            new_auth_covered_objects_ids.append(auth_covered_object.auth_id)
         response = self.client.get(
             f'/auth/keychains/{self.auth_covered_class_import_str}/{str(keychain.id)}/',
         )
         self.assertEquals(response.status_code, 200)
         keychain_data = response.data
         auth_covered_objects_ids = keychain_data['auth_covered_objects']
-        self.assertSetEqual(set(auth_covered_objects_ids), set(self.test_auth_covered_object_ids[keychain.id]))
+
+        self.assertSetEqual(set(auth_covered_objects_ids), set(self.test_auth_covered_object_ids[keychain.auth_id]))
         # replace security zone and keychains
         response = self.client.put(
             f'/auth/keychains/{self.auth_covered_class_import_str}/{keychain.id}/',
@@ -227,7 +229,7 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
         auth_covered_objects_ids = keychain_data['auth_covered_objects']
         security_zone_id = keychain_data['security_zone']
         self.assertEqual(security_zone_id, zone.id)
-        self.assertListEqual(auth_covered_objects_ids, new_auth_covered_objects_ids)
+        self.assertSetEqual(set(auth_covered_objects_ids), set(new_auth_covered_objects_ids))
         # delete security zones and objects from keychain
         response = self.client.put(
             f'/auth/keychains/{self.auth_covered_class_import_str}/{keychain.id}/',
@@ -284,7 +286,7 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
         auth_covered_objects_ids = keychain_data['auth_covered_objects']
         security_zone_id = keychain_data['security_zone']
         self.assertEqual(security_zone_id, zone.id)
-        self.assertListEqual(auth_covered_objects_ids, new_auth_covered_objects_ids)
+        self.assertSetEqual(set(auth_covered_objects_ids), set(new_auth_covered_objects_ids))
 
         # delete security zones and objects from keychain
         response = self.client.patch(
@@ -346,7 +348,7 @@ class PermissionApiTest(TransactionTestCase, APITestCase):
         keychain = self.auth_covered_class.keychain_model()
         keychain.save()
         obj = self.auth_covered_class()
-        obj.keychain = keychain
+        keychain.add_auth_object(obj)
         obj.save()
 
         response = self.client.post(

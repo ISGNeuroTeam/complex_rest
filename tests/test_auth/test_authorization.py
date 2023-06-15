@@ -247,7 +247,7 @@ class TestPluginAuthCoveredModelClass(APITestCase):
         keychain = PluginKeychain()
         keychain.save()
         self._create_permission_for_role_and_actions('test_user', 'test.protected_action1', allow=False, keychain=keychain)
-        obj.keychain = keychain
+        keychain.add_auth_object(obj)
         obj.save()
 
         # now obj has keychain with no access
@@ -269,8 +269,7 @@ class TestPluginAuthCoveredModelClass(APITestCase):
         keychain.zone = zone
         keychain.save()
 
-        obj.keychain = keychain
-
+        keychain.add_auth_object(obj)
         permit = self._create_permission_for_actions('test.protected_action1', allow=True)
 
         # add permit to role
@@ -301,7 +300,7 @@ class TestPluginAuthCoveredModelClass(APITestCase):
         keychain.zone = child_security_zone
         keychain.save()
 
-        obj.keychain = keychain
+        keychain.add_auth_object(obj)
 
         permit = self._create_permission_for_actions('test.protected_action1', allow=True)
 
