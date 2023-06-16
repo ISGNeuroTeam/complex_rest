@@ -1,6 +1,6 @@
 import threading
 from collections import defaultdict
-from django.contrib.auth.models import AnonymousUser
+from rest_auth.models import AnonymousUser
 from rest_auth.models import User
 
 

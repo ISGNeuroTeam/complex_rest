@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
-from django.contrib.auth.models import AbstractUser, Group as DjangoGroup, Permission as DjangoPermission
+from django.contrib.auth.models import AbstractUser, Group as DjangoGroup,\
+    Permission as DjangoPermission, AnonymousUser as DjangoAnonymousUser
 from django.utils.translation import gettext_lazy as _
 from mixins.models import TimeStampedModel, NamedModel
 
@@ -32,6 +33,13 @@ class User(AbstractUser):
         if self.email == '':
             self.email = None
         super().save()
+
+
+class AnonymousUser(DjangoAnonymousUser):
+    guid = uuid.UUID('00000000-0000-0000-0000-000000000000')
+    email = ''
+    phone = ''
+    photo = ''
 
 
 class Permission(DjangoPermission):

@@ -95,8 +95,8 @@ class IKeyChain:
         pass
 
 
-
 class IAuthCovered:
+    keychain_model: IKeyChain = None
 
     @property
     @abstractmethod
