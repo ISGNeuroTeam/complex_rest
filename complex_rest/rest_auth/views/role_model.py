@@ -275,7 +275,7 @@ class KeychainViewSet(ViewSet):
                 'id': new_keychain.auth_id,
                 'permits': map(lambda p: p.id, permits) if permits else [],
                 'auth_covered_objects': auth_covered_objects_ids,
-                'security_zone': new_keychain.zone.id
+                'security_zone': new_keychain.zone.id if new_keychain.zone else None
             },
             status=status.HTTP_201_CREATED
         )
