@@ -136,9 +136,11 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
         zone = SecurityZone(name='main_zone')
         zone.save()
         self.test_auth_covered_object_ids = defaultdict(set)
-        for _ in range(5):
+        for i in range(5):
             keychain = self.auth_covered_class.keychain_model()
+            keychain.name = f'test_keychaon_{i}'
             keychain.zone = zone
+
             for _ in range(5):
                 auth_covered_object = self.auth_covered_class()
                 keychain.add_auth_object(auth_covered_object)
@@ -181,6 +183,7 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
             f'/auth/keychains/{self.auth_covered_class_import_str}/',
             {
                 'security_zone': zone.id,
+                'name': 'test_name',
                 'auth_covered_objects': new_auth_covered_objects_ids,
             },
             format='json'
@@ -191,6 +194,7 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
             obj = self.auth_covered_class.objects.get(id=obj_id)
             self.assertEquals(obj.keychain.id, new_keychain_id)
             self.assertEquals(obj.keychain.zone.id, zone.id)
+            self.assertEquals(obj.keychain.name, 'test_name')
 
     def test_key_chain_object_update(self):
         keychain = self.auth_covered_class.keychain_model.objects.all().first()

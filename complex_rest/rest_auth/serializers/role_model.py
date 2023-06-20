@@ -167,6 +167,7 @@ class SecurityZoneSerializer(serializers.ModelSerializer):
 
 class KeyChainSerializer(serializers.Serializer):
     id = serializers.CharField(allow_null=True, default=None)
+    name = serializers.CharField(allow_null=True, required=False)
     security_zone = serializers.PrimaryKeyRelatedField(
         queryset=SecurityZone.objects.all(), required=False, allow_null=True
     )

@@ -24,14 +24,23 @@ class SecurityZone(NamedModel, TimeStampedModel, MPTTModel):
 
 
 class KeyChainModel(IKeyChain, TimeStampedModel):
+    _name = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    _zone = models.IntegerField(null=True, blank=True)
+    _auth_objects = models.TextField(default='')  # ',' split ids string
 
     def __init__(self, *args, **kwargs):
         super(TimeStampedModel, self).__init__(*args, **kwargs)
         if self._state.adding:
             self.save()
 
-    _zone = models.IntegerField(null=True, blank=True)
-    _auth_objects = models.TextField(default='')  # ',' split ids string
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        self._name = name
+        self.save()
 
     @property
     def auth_id(self) -> str:

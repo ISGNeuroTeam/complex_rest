@@ -203,6 +203,7 @@ class KeychainViewSet(ViewSet):
                 'permits':    serializers.PermitSerializer(keychain.permissions, many=True).data,
                 'security_zone': keychain.zone if keychain.zone else None,
                 'id': keychain.auth_id,
+                'name': keychain.name,
                 'auth_covered_objects': list(map(lambda x: x.auth_id, keychain.get_auth_objects()))
             }
 
@@ -270,12 +271,16 @@ class KeychainViewSet(ViewSet):
             security_zone = key_chain_serializer.validated_data['security_zone']
             new_keychain.zone = security_zone
 
+        if 'name' in key_chain_serializer.validated_data:
+            new_keychain.name = key_chain_serializer.validated_data['name']
+
         return Response(
             data={
                 'id': new_keychain.auth_id,
                 'permits': map(lambda p: p.id, permits) if permits else [],
                 'auth_covered_objects': auth_covered_objects_ids,
-                'security_zone': new_keychain.zone.id if new_keychain.zone else None
+                'security_zone': new_keychain.zone.id if new_keychain.zone else None,
+                'name': new_keychain.name if new_keychain.name else None
             },
             status=status.HTTP_201_CREATED
         )
@@ -310,6 +315,7 @@ class KeychainViewSet(ViewSet):
                     ),
                     'security_zone': keychain.zone.id if keychain.zone else None,
                     'id': str(keychain.auth_id),
+                    'name': keychain.name,
                     'auth_covered_objects': keychain_auth_covered_objects_ids
                 }
         )
@@ -351,9 +357,14 @@ class KeychainViewSet(ViewSet):
         if 'security_zone' in key_chain_serializer.validated_data:
             security_zone = key_chain_serializer.validated_data['security_zone']
             keychain.zone = security_zone
+
+        if 'name' in key_chain_serializer.validated_data:
+            keychain.name = key_chain_serializer.validated_data['name']
+
         return Response(
             data={
                 'id': keychain.auth_id,
+                'name': keychain.name,
                 'permits': map(lambda p: p.id, keychain.permissions),
                 'auth_covered_objects': auth_covered_objects_ids,
                 'security_zone': keychain.zone.id if keychain.zone else None
@@ -404,9 +415,15 @@ class KeychainViewSet(ViewSet):
 
         keychain.zone = security_zone
 
+        if 'name' in key_chain_serializer.validated_data:
+            keychain.name = key_chain_serializer.validated_data['name']
+        else:
+            keychain.name = None
+
         return Response(
             data={
                 'id': keychain.auth_id,
+                'name': keychain.name,
                 'permits': map(lambda p: p.id, permits) if permits else [],
                 'auth_covered_objects': auth_covered_objects_ids,
                 'security_zone': keychain.zone.id if keychain.zone else None
