@@ -462,3 +462,38 @@ class AuthCoveredClassApiTest(TransactionTestCase, APITestCase):
         )
         auth_covered_class = response.data[0]
         self.assertEquals(auth_covered_class['class_import_str'], 'rolemodel_test.models.SomePluginAuthCoveredModel')
+
+
+class ActionApiTest(TransactionTestCase, APITestCase):
+    def setUp(self):
+        self.admin, self.test_users = create_test_users(1)
+        # create 2 groups
+        self.admin_group = Group(name='admin')
+        self.admin_group.save()
+        global_vars.set_current_user(self.admin)
+        self.login('admin', 'admin')
+        rest_auth_on_ready_actions()
+
+    def test_list(self):
+        response = self.client.get(
+            f'/auth/actions/rolemodel_test/'
+        )
+        action_names = set(
+            map(
+                lambda action: action['name'],
+                response.data,
+            )
+        )
+        self.assertSetEqual({'test.create', 'test.protected_action1', 'test.protected_action2'}, action_names)
+
+    def test_change_default_rule(self):
+        create_action = Action.objects.get(name='test.create')
+
+        response = self.client.post(
+            f'/auth/actions/{create_action.id}',
+            data={
+                'default_rule': False
+            }
+        )
+        create_action.refresh_from_db()
+        self.assertEquals(create_action.default_rule, False)

@@ -133,13 +133,27 @@ class GroupRoleViewSet(ViewSet):
 class ActionView(APIView):
     permission_classes = (IsAdminUser, )
 
-    def get(self, request, plugin_name=None):
+    def get(self, request, plugin_name=None, action_id=None):
         if plugin_name:
             actions = Action.objects.filter(plugin__name=plugin_name)
         else:
             actions = Action.objects.all()
         action_serializers = serializers.ActionSerializer(actions, many=True)
         return Response(action_serializers.data)
+
+    def post(self, request, action_id):
+        action_serializer = serializers.ActionSerializer(data=request.data, partial=True)
+        if not action_serializer.is_valid():
+            return ErrorResponse(http_status=status.HTTP_400_BAD_REQUEST)
+        try:
+            action = Action.objects.get(id=action_id)
+        except Action.DoesNotExist:
+            return ErrorResponse(
+                status=status.HTTP_404_NOT_FOUND, error_message=f'Action with id {action_id} not found'
+            )
+        action.default_rule = action_serializer.validated_data['default_rule']
+        action.save()
+        return Response(data=serializers.ActionSerializer(action).data, status=status.HTTP_200_OK)
 
 
 class AuthCoveredClassView(APIView):
