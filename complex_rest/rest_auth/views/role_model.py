@@ -164,7 +164,7 @@ class SecurityZoneViewSet(ModelViewSet):
 
 class PermitViewSet(ModelViewSet):
     serializer_class = serializers.PermitSerializer
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAdminUser, )
 
     def get_serializer_context(self):
         """

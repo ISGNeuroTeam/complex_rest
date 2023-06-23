@@ -41,15 +41,12 @@ ROLE_MODEL_AUTH_COVERED_CLASSES = [
 ROLE_MODEL_ACTIONS = {
     'test.create': {
         'default_rule': True,  # allow or deny True or False, default True,
-        'owner_applicability': True,  # default True
     },
     'test.protected_action1': {
             'default_rule': False,  # allow or deny True or False, default True,
-            'owner_applicability': True,  # default True
     },
     'test.protected_action2': {
         'default_rule': True,  # allow or deny True or False, default True,
-        'owner_applicability': True,  # default True
     },
 }
 
