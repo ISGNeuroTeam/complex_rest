@@ -269,9 +269,13 @@ class KeychainViewSet(ViewSet):
         if 'auth_covered_objects' in key_chain_serializer.validated_data:
             auth_covered_objects_ids = key_chain_serializer.validated_data['auth_covered_objects']
             if auth_covered_objects_ids:
-                for auth_covered_object_id in auth_covered_objects_ids:
-                    auth_covered_object = auth_covered_class.get_auth_object(auth_covered_object_id)
-                    auth_covered_object.keychain = new_keychain
+                auth_covered_objects = list(
+                    map(
+                        lambda auth_id: auth_covered_class.get_auth_object(auth_id),
+                        auth_covered_objects_ids
+                    )
+                )
+                new_keychain.add_auth_object(auth_covered_objects)
 
         permits = None
         if 'permits' in key_chain_serializer.validated_data:

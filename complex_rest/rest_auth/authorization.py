@@ -142,8 +142,15 @@ def auth_covered_method(action_name: str):
         Decorator returns method that do the same but checks authorization
         """
         def wrapper(*args, **kwargs):
-            # args[0] = self
-            check_authorization(args[0], action_name)
+            if 'ignore_authorization' in kwargs:
+                ignore_authorization = kwargs['ignore_authorization']
+                del kwargs['ignore_authorization']
+            else:
+                ignore_authorization = False
+            if not ignore_authorization:
+                # args[0] = self
+                check_authorization(args[0], action_name)
+
             return class_method(*args, **kwargs)
         return wrapper
     return decorator
