@@ -170,7 +170,7 @@ class AuthCoveredClassView(APIView):
 
 class SecurityZoneViewSet(ModelViewSet):
     permission_classes = (IsAdminUser, )
-    serializer_class = serializers.SecurityZone
+    serializer_class = serializers.SecurityZoneSerializer
 
     def get_queryset(self):
         return SecurityZone.objects.all()

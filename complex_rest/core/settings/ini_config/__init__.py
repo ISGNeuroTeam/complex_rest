@@ -48,18 +48,22 @@ def merge_dicts(first_dict, second_dict):
     return result_dict
 
 
-def make_abs_paths(config_dict, dict_keys_list):
+def make_abs_paths(config_dict, dict_keys_list, base_dir: Path = None):
     """
     Replace relative paths in config to absolute paths and create directories if they doesn't exist
     :param config_dict: dict config
     :param dict_keys_list: list of keys in dictionary where relative path located
+    :param base_dir: base directory to evaluate absolute path
     :return:
     """
+    if base_dir is None:
+        base_dir = BASE_DIR
+
     for section, option in dict_keys_list:
         # replace relative paths to absolute
         p = Path(config_dict[section][option])
         if not p.is_absolute():
-            dir_path = (BASE_DIR / p).resolve()
+            dir_path = (base_dir / p).resolve()
         else:
             dir_path = p
 
