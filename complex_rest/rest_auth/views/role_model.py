@@ -211,23 +211,23 @@ class KeychainViewSet(ViewSet):
             return ErrorResponse(error_message=str(err))
 
         keychains = auth_covered_class.keychain_model.get_keychains()
-        result_keychain_dict = {}
-        for keychain in keychains:
-            result_keychain_dict[keychain.auth_id] = {
-                'permits':    serializers.PermitSerializer(keychain.permissions, many=True).data,
-                'security_zone': keychain.zone if keychain.zone else None,
-                'id': keychain.auth_id,
-                'name': keychain.name,
-                'auth_covered_objects': list(map(lambda x: x.auth_id, keychain.get_auth_objects()))
-            }
 
-        result_data = serializers.KeyChainSerializer(
-            map(
-                lambda x: result_keychain_dict[x],
-                result_keychain_dict.keys()
-            ), many=True
-        ).data
-        return Response(data=result_data)
+        keychain_serializer = serializers.KeyChainSerializer(
+            list(
+                map(
+                    lambda keychain: {
+                        'permits':    keychain.permissions,
+                        'security_zone': keychain.zone if keychain.zone else None,
+                        'id': keychain.auth_id,
+                        'name': keychain.name,
+                        'auth_covered_objects': list(map(lambda x: x.auth_id, keychain.get_auth_objects()))
+                    },
+                    keychains
+                ),
+            ),
+            many=True
+        )
+        return Response(data=keychain_serializer.data)
 
     def _update_keychain(
             self, keychain, auth_covered_class,
