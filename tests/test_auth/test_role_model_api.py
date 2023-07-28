@@ -143,6 +143,7 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
 
             for _ in range(5):
                 auth_covered_object = self.auth_covered_class()
+                auth_covered_object.save()
                 keychain.add_auth_object(auth_covered_object)
                 self.test_auth_covered_object_ids[keychain.auth_id].add(str(auth_covered_object.auth_id))
 
@@ -174,7 +175,7 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
         new_auth_covered_objects_ids = list()
         for _ in range(5):
             auth_covered_object = self.auth_covered_class()
-            auth_covered_object = self.auth_covered_class.objects.get(id=auth_covered_object.id)
+            auth_covered_object.save()
             new_auth_covered_objects_ids.append(str(auth_covered_object.id))
 
         zone = SecurityZone(name='test_zone1')
@@ -204,6 +205,7 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
         new_auth_covered_objects_ids = list()
         for _ in range(5):
             auth_covered_object = self.auth_covered_class()
+            auth_covered_object.save()
 
             auth_covered_object = self.auth_covered_class.objects.get(id=auth_covered_object.id)
             new_auth_covered_objects_ids.append(auth_covered_object.auth_id)
@@ -262,7 +264,7 @@ class KeyChainApiTest(TransactionTestCase, APITestCase):
         new_auth_covered_objects_ids = list()
         for _ in range(5):
             auth_covered_object = self.auth_covered_class()
-            auth_covered_object = self.auth_covered_class.objects.get(id=auth_covered_object.id)
+            auth_covered_object.save()
             new_auth_covered_objects_ids.append(str(auth_covered_object.id))
         response = self.client.get(
             f'/auth/keychains/{self.auth_covered_class_import_str}/{str(keychain.id)}/',
@@ -352,6 +354,7 @@ class PermissionApiTest(TransactionTestCase, APITestCase):
         keychain = self.auth_covered_class.keychain_model()
         keychain.save()
         obj = self.auth_covered_class()
+        obj.save()
         keychain.add_auth_object(obj)
         obj.save()
 

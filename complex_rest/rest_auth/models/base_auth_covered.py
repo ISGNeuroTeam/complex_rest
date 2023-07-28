@@ -20,11 +20,6 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
     # must be set by child class
     keychain_model = None
 
-    def __init__(self, *args, **kwargs):
-        super(TimeStampedModel, self).__init__(*args, **kwargs)
-        if self._state.adding:
-            self.save()
-
     @property
     def auth_id(self) -> str:
         return str(self.id)
@@ -45,7 +40,7 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
             self._keychain_id = keychain.id
         else:
             self._keychain_id = None
-        self.save()
+        super(TimeStampedModel, self).save()
 
     @property
     def owner(self) -> User:
@@ -62,7 +57,7 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
             self._owner_id = user.id
         else:
             self._owner_id = None
-        self.save()
+        super(TimeStampedModel, self).save()
 
     @classmethod
     def get_auth_object(cls, obj_id: str) -> 'IAuthCovered':
