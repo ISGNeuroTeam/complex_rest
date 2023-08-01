@@ -18,8 +18,10 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 from core.load_plugins import get_plugin_base_url
+from core.views import SpectacularAPIView
 
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from drf_spectacular.views import SpectacularRedocView, SpectacularSwaggerView
+
 
 
 urlpatterns = [
