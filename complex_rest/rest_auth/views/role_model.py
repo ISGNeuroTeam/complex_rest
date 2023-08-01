@@ -14,6 +14,7 @@ from rest.response import Response, SuccessResponse, ErrorResponse, status
 from rest_auth.models import Action, IAuthCovered, IKeyChain, AuthCoveredClass
 
 from .. import serializers
+from .. import apidoc
 from ..models import Group, Permit, SecurityZone, Role
 
 User = get_user_model()
@@ -69,23 +70,27 @@ class GroupUserViewSet(ViewSet):
             return f(self, group, user_ids)
         return wrapper
 
+    @apidoc.update_users_in_group
+    @action(detail=False, methods=['POST'])
     @_group_users_id_decor
-    def update(self, group: Group, user_ids: List[int]):
+    def update_group_users(self, group: Group, user_ids: List[int]):
         group.user_set.delete()
         group.user_set.add(*user_ids)
-        return SuccessResponse()
+        return Response(serializers.GroupSerializer(group).data)
 
+    @apidoc.add_users_to_group
     @action(detail=False, methods=['POST'])
     @_group_users_id_decor
     def add_users(self, group: Group, user_ids: List[int]):
         group.user_set.add(*user_ids)
-        return SuccessResponse()
+        return Response(serializers.GroupSerializer(group).data)
 
-    @action(detail=False, methods=['DELETE'])
+    @apidoc.remove_users_from_group
+    @action(detail=False, methods=['POST'])
     @_group_users_id_decor
     def remove_users(self, group: Group, user_ids: List[int]):
         group.user_set.remove(*user_ids)
-        return SuccessResponse()
+        return Response(serializers.GroupSerializer(group).data)
 
 
 class GroupRoleViewSet(ViewSet):
@@ -111,29 +116,43 @@ class GroupRoleViewSet(ViewSet):
             return f(self, group, roles_ids)
         return wrapper
 
+    @apidoc.update_roles_in_group
     @_group_roles_id_decor
-    def update(self, group: Group, roles_ids: List[int]):
+    @action(detail=False, methods=['POST'])
+    def update_group_roles(self, group: Group, roles_ids: List[int]):
         group.roles.delete()
         group.roles.add(*roles_ids)
-        return SuccessResponse()
+        return Response(serializers.GroupSerializer(group).data)
 
+    @apidoc.add_roles_to_group
     @action(detail=False, methods=['POST'])
     @_group_roles_id_decor
     def add_roles(self, group: Group, roles_ids: List[int]):
         group.roles.add(*roles_ids)
-        return SuccessResponse()
+        return Response(serializers.GroupSerializer(group).data)
 
+    @apidoc.remove_roles_from_group
     @action(detail=False, methods=['DELETE'])
     @_group_roles_id_decor
     def remove_roles(self, group: Group, roles_ids: List[int]):
         group.roles.remove(*roles_ids)
-        return SuccessResponse()
+        return Response(serializers.GroupSerializer(group).data)
 
 
 class ActionView(APIView):
     permission_classes = (IsAdminUser, )
 
+    @apidoc.get_action
     def get(self, request, plugin_name=None, action_id=None):
+        if action_id:
+            try:
+                action = Action.objects.get(id=action_id)
+            except Action.DoesNotExist:
+                return ErrorResponse(
+                    status=status.HTTP_404_NOT_FOUND, error_message=f'Action with id {action_id} not found'
+                )
+            return Response(serializers.ActionSerializer(action).data)
+
         if plugin_name:
             actions = Action.objects.filter(plugin__name=plugin_name)
         else:
@@ -141,6 +160,7 @@ class ActionView(APIView):
         action_serializers = serializers.ActionSerializer(actions, many=True)
         return Response(action_serializers.data)
 
+    @apidoc.update_action
     def post(self, request, action_id):
         action_serializer = serializers.ActionSerializer(data=request.data, partial=True)
         if not action_serializer.is_valid():
@@ -159,6 +179,7 @@ class ActionView(APIView):
 class AuthCoveredClassView(APIView):
     permission_classes = (IsAdminUser, )
 
+    @apidoc.get_auth_covered_class
     def get(self, request, plugin_name=None):
         if plugin_name:
             acc = AuthCoveredClass.objects.filter(plugin__name=plugin_name)
@@ -191,6 +212,14 @@ class PermitViewSet(ModelViewSet):
     def get_queryset(self, *args, **kwargs):
         return Permit.objects.all()
 
+    @apidoc.create_permits
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @apidoc.get_permit
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
 
 class KeychainViewSet(ViewSet):
     """
@@ -198,7 +227,9 @@ class KeychainViewSet(ViewSet):
     obj_class - string that specify object class
     """
     permission_classes = (IsAdminUser, )
+    serializer_class = serializers.KeyChainSerializer
 
+    @apidoc.get_keychain_list
     def list(self, request, auth_covered_class: str):
         """
         Args:
@@ -250,6 +281,7 @@ class KeychainViewSet(ViewSet):
         if security_zone:
             keychain.zone = security_zone
 
+    @apidoc.create_keychain
     def create(self, request, auth_covered_class: str, *args, **kwargs):
         """
         Create new keychain
@@ -303,6 +335,7 @@ class KeychainViewSet(ViewSet):
             status=status.HTTP_201_CREATED
         )
 
+    @apidoc.get_keychain
     def retrieve(self, request, auth_covered_class: str, pk=None):
         """
         Returns keychain with id and with objects ids
@@ -338,6 +371,7 @@ class KeychainViewSet(ViewSet):
                 }
         )
 
+    @apidoc.partial_update_keychain
     def partial_update(self, request, auth_covered_class: str, pk=None):
         try:
             auth_covered_class = import_string(auth_covered_class)
@@ -384,12 +418,13 @@ class KeychainViewSet(ViewSet):
                 'id': keychain.auth_id,
                 'name': keychain.name,
                 'permits': map(lambda p: p.id, keychain.permissions),
-                'auth_covered_objects': auth_covered_objects_ids,
+                'auth_covered_objects': map(lambda o: o.auth_id, keychain.get_auth_objects()),
                 'security_zone': keychain.zone.id if keychain.zone else None
             },
             status=status.HTTP_200_OK
         )
 
+    @apidoc.update_keychain
     def update(self, request, auth_covered_class, pk=None):
         try:
             auth_covered_class = import_string(auth_covered_class)

@@ -32,7 +32,7 @@ urlpatterns = [
     re_path(r'^logout/?$', Logout.as_view()),
     re_path(r'^actions/?$', ActionView.as_view()),
     re_path(r'^actions/((?P<action_id>\d+)|(?P<plugin_name>[\w_-]+))/?$', ActionView.as_view()),
-    re_path(r'^auth_covered_classes/(?P<plugin_name>[\w_-]+)?$', AuthCoveredClassView.as_view()),
+    re_path(r'^auth_covered_classes/(?P<plugin_name>[\w_-]+)/?$', AuthCoveredClassView.as_view()),
 ]
 
 urlpatterns += router.urls

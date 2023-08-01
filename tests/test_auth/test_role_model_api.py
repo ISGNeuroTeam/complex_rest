@@ -83,7 +83,7 @@ class GroupApiTest(APITestCase):
         self.assertEquals(len(response.data), 4, '4 users in admin group')
 
     def test_remove_users(self):
-        response = self.client.delete(
+        response = self.client.post(
             f'/auth/groups/{self.ordinary_group.pk}/users/remove_users/',
             {"user_ids": [2, 3, 4]},
             format='json'
