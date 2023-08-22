@@ -357,6 +357,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissions',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_auth.authentication.KeycloakAuthentication',
         'rest_auth.authentication.JWTAuthentication',
     ],
     'DEFAULT_RENDERER_CLASSES': DEFAULT_RENDERER_CLASSES,

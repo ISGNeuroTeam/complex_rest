@@ -1,6 +1,11 @@
+import json
+
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+from rest_auth.models import Group, Role, User
+
 from rest_framework import HTTP_HEADER_ENCODING, authentication
+from keycloak.keycloak_openid import KeycloakOpenID
 
 from .exceptions import AuthenticationFailed, InvalidToken, TokenError
 from .settings import api_settings
@@ -9,6 +14,11 @@ User = get_user_model()
 
 AUTH_HEADER_TYPES = api_settings.AUTH_HEADER_TYPES
 
+SERVER_URL = 'http://keycloak:8090'
+CLIENT_ID = 'complex_rest'
+CLIENT_SECRET_KEY = 'ii0VtRpbMRsNI3qWoljw2XrJ4qX3bhr3'
+REALM_NAME = 'wdcplatform'
+
 if not isinstance(api_settings.AUTH_HEADER_TYPES, (list, tuple)):
     AUTH_HEADER_TYPES = (AUTH_HEADER_TYPES,)
 
@@ -16,6 +26,76 @@ AUTH_HEADER_TYPE_BYTES = set(
     h.encode(HTTP_HEADER_ENCODING)
     for h in AUTH_HEADER_TYPES
 )
+
+
+class KeycloakAuthentication(authentication.BaseAuthentication):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.keycloak_client = KeycloakOpenID(
+            server_url=SERVER_URL,
+            client_id=CLIENT_ID,
+            client_secret_key=CLIENT_SECRET_KEY,
+            realm_name=REALM_NAME
+        )
+        self.keycloak_token_options = {
+            "verify_signature": True, "verify_aud": False, "verify_exp": True
+        }
+
+    def authenticate(self, request):
+
+        auth_header = request.META.get('HTTP_AUTHORIZATION', b'')
+        if isinstance(auth_header, str):
+            # Work around django test client oddness
+            auth_header = auth_header.encode(HTTP_HEADER_ENCODING)
+
+        if not auth_header:
+            return None
+        token_type, access_token = auth_header.split()
+
+        KEYCLOAK_PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\n" + self.keycloak_client.public_key() + "\n-----END PUBLIC KEY-----"
+        keycloak_token = self.keycloak_client.decode_token(access_token, key=KEYCLOAK_PUBLIC_KEY, options=self.keycloak_token_options)
+        user = self._fetch_user(user_info=keycloak_token)
+
+        return user, None # authentication successful
+
+    def _keycloak_integration(self, user_info: dict) -> User:
+        """
+        Get user, groups and roles that don't exist from keycloak
+        Args:
+            user_info (dict): user info from token
+        Returns User object
+        """
+        pass
+
+    def _fetch_user(self, user_info: dict):
+        """
+        Create user from keycloak
+        """
+        print(json.dumps(user_info))
+        user_uuid = user_info['sub']
+        user_name = user_info['preferred_username']
+        try:
+            user = User.objects.get(guid=user_uuid)
+        except User.DoesNotExist as err:
+            user = User(username=user_name)
+            user.guid = user_uuid
+            user.save()
+        user = User.objects.all().first()
+        return user
+
+    def _fetch_groups(self, user_group_info: dict):
+        """
+        Get user groups from keycloak if they don't exist locally
+        """
+        pass
+
+    def _fetch_roles(self):
+        """
+        Get roles from keycloak if they don't exist locally
+        """
+        pass
+
+
 
 
 class JWTAuthentication(authentication.BaseAuthentication):

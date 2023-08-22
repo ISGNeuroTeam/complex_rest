@@ -29,6 +29,17 @@ services:
     depends_on:
       - zookeeper
 
+  keycloak:
+    build:
+      context: ./
+      dockerfile: ./docs/docker_dev/keycloak/Dockerfile
+    image: "keycloak:22.0.1"
+
+    user: ${CURRENT_UID}
+    ports:
+      - "8090:8090"
+
+
   celery-worker:
     build:
       context: ./
@@ -76,3 +87,4 @@ services:
       - postgres
       - redis
       - kafka
+      - keycloak
