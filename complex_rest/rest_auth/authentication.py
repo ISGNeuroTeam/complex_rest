@@ -2,7 +2,7 @@ import json
 
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
-from rest_auth.models import Group, Role, User
+from rest_auth.models import Group, Role, User, KeycloakUser
 
 from rest_framework import HTTP_HEADER_ENCODING, authentication
 from keycloak.keycloak_openid import KeycloakOpenID
@@ -16,8 +16,9 @@ AUTH_HEADER_TYPES = api_settings.AUTH_HEADER_TYPES
 
 SERVER_URL = 'http://keycloak:8090'
 CLIENT_ID = 'complex_rest'
-CLIENT_SECRET_KEY = 'ii0VtRpbMRsNI3qWoljw2XrJ4qX3bhr3'
+CLIENT_SECRET_KEY = 'hGrY0QMfATzbApiaoksX4dbMyY2e8lyA'
 REALM_NAME = 'wdcplatform'
+
 
 if not isinstance(api_settings.AUTH_HEADER_TYPES, (list, tuple)):
     AUTH_HEADER_TYPES = (AUTH_HEADER_TYPES,)
@@ -52,10 +53,10 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
             return None
         token_type, access_token = auth_header.split()
 
-        KEYCLOAK_PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\n" + self.keycloak_client.public_key() + "\n-----END PUBLIC KEY-----"
-        keycloak_token = self.keycloak_client.decode_token(access_token, key=KEYCLOAK_PUBLIC_KEY, options=self.keycloak_token_options)
+        keycloak_public_key = "-----BEGIN PUBLIC KEY-----\n" + self.keycloak_client.public_key() + "\n-----END PUBLIC KEY-----"
+        keycloak_token = self.keycloak_client.decode_token(access_token, key=keycloak_public_key, options=self.keycloak_token_options)
+        print(keycloak_token)
         user = self._fetch_user(user_info=keycloak_token)
-
         return user, None # authentication successful
 
     def _keycloak_integration(self, user_info: dict) -> User:
@@ -71,17 +72,8 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
         """
         Create user from keycloak
         """
-        print(json.dumps(user_info))
-        user_uuid = user_info['sub']
-        user_name = user_info['preferred_username']
-        try:
-            user = User.objects.get(guid=user_uuid)
-        except User.DoesNotExist as err:
-            user = User(username=user_name)
-            user.guid = user_uuid
-            user.save()
-        user = User.objects.all().first()
-        return user
+
+        return KeycloakUser(user_info)
 
     def _fetch_groups(self, user_group_info: dict):
         """
@@ -94,8 +86,6 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
         Get roles from keycloak if they don't exist locally
         """
         pass
-
-
 
 
 class JWTAuthentication(authentication.BaseAuthentication):

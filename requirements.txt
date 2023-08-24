@@ -14,3 +14,4 @@ PyJWT==2.3.0
 requests==2.27.1
 drf-spectacular==0.22.1
 drf-spectacular-sidecar==2022.6.1
+python-keycloak==3.3.0

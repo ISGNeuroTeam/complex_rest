@@ -44,8 +44,9 @@ class Permit(TimeStampedModel):
                                      through_fields=('permit', 'action'))
 
     def affects_on(self, user: User):
+        user_roles = user.roles()
         for role in self.roles.all():
-            if role.contains_user(user):
+            if role in user_roles:
                 return True
         return False
 
