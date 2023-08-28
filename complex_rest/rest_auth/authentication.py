@@ -2,6 +2,8 @@ import json
 
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+
+from django.conf import settings
 from rest_auth.models import Group, Role, User, KeycloakUser
 
 from rest_framework import HTTP_HEADER_ENCODING, authentication
@@ -14,10 +16,10 @@ User = get_user_model()
 
 AUTH_HEADER_TYPES = api_settings.AUTH_HEADER_TYPES
 
-SERVER_URL = 'http://keycloak:8090'
-CLIENT_ID = 'complex_rest'
-CLIENT_SECRET_KEY = 'hGrY0QMfATzbApiaoksX4dbMyY2e8lyA'
-REALM_NAME = 'wdcplatform'
+SERVER_URL = settings.KEYCLOAK_SETTINGS['server_url']
+CLIENT_ID = settings.KEYCLOAK_SETTINGS['client_id']
+CLIENT_SECRET_KEY = settings.KEYCLOAK_SETTINGS['client_secret_key']
+REALM_NAME = settings.KEYCLOAK_SETTINGS['realm_name']
 
 
 if not isinstance(api_settings.AUTH_HEADER_TYPES, (list, tuple)):

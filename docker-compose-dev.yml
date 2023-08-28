@@ -38,7 +38,8 @@ services:
     user: ${CURRENT_UID}
     ports:
       - "8090:8090"
-
+    volumes:
+      - ./:/complex_rest
 
   celery-worker:
     build:

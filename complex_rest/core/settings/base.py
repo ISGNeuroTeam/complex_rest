@@ -348,6 +348,9 @@ LOGGING = {
     },
 }
 
+KEYCLOAK_SETTINGS = ini_config['keycloak']
+KEYCLOAK_SETTINGS['enabled'] = KEYCLOAK_SETTINGS['enabled'].lower() == 'true'
+
 DEFAULT_RENDERER_CLASSES = (
     'rest_framework.renderers.JSONRenderer',
 )
@@ -356,10 +359,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissions',
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_auth.authentication.KeycloakAuthentication',
-        'rest_auth.authentication.JWTAuthentication',
-    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': ['rest_auth.authentication.KeycloakAuthentication'] if KEYCLOAK_SETTINGS['enabled'] else [] + ['rest_auth.authentication.JWTAuthentication', ] ,
     'DEFAULT_RENDERER_CLASSES': DEFAULT_RENDERER_CLASSES,
     'EXCEPTION_HANDLER': 'rest.exception_handler.custom_exception_handler',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',

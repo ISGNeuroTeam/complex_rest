@@ -1,0 +1,43 @@
+{
+  "realm" : "wdcplatform",
+  "users" : [ {
+    "id" : "a7cdf58f-7791-4c53-90d8-f10a995578fc",
+    "createdTimestamp" : 1693205466549,
+    "username" : "service-account-complex_rest",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "serviceAccountClientId" : "complex_rest",
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-wdcplatform" ],
+    "clientRoles" : {
+      "realm-management" : [ "manage-users", "view-realm" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "2e4656fc-6ee0-4d46-a500-60d150f97cd2",
+    "createdTimestamp" : 1693205498649,
+    "username" : "test_user",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "firstName" : "first_test_name",
+    "lastName" : "las_test_name",
+    "email" : "test@gmail.com",
+    "credentials" : [ {
+      "id" : "1e1f10b7-5b12-469e-a356-cb16f4295ffc",
+      "type" : "password",
+      "createdDate" : 1693205848343,
+      "secretData" : "{\"value\":\"fncZfzSBljJ9TlsQjGVR+zYffwzV71kZxSla9lVdRGc=\",\"salt\":\"rvh+sD65m72yzIQ2DUZjWA==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "role1", "default-roles-wdcplatform" ],
+    "notBefore" : 0,
+    "groups" : [ "/test_group" ]
+  } ]
+}

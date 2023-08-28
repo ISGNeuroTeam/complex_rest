@@ -49,6 +49,13 @@ default_config = {
     },
     'message_broker_consumer': {
         'bootstrap_servers': 'localhost:9092'
+    },
+    'keycloak': {
+        'enabled': False,
+        'server_url': 'http://localhost:8090',
+        'client_id': 'complex_rest',
+        'client_secret_key': '',
+        'realm_name': 'wdcplatform',
     }
 }
 

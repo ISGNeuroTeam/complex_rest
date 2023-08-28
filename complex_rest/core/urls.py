@@ -18,12 +18,14 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 from core.load_plugins import get_plugin_base_url
+from rest.views import HelloView
 
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path(r'hello/', HelloView.as_view()),
     path('auth/', include(('rest_auth.urls', 'rest_auth'), namespace='auth')),
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
     path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
