@@ -14,4 +14,4 @@ class HelloView(generics.GenericAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
-        return Response(data={'message': 'secret message '})
+        return Response(data={'message': 'secret message'})

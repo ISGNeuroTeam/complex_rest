@@ -23,6 +23,16 @@ services:
     depends_on:
       - zookeeper
 
+  keycloak:
+    build:
+      context: ./
+      dockerfile: ./docs/docker_dev/keycloak/Dockerfile
+    image: "keycloak:22.0.1"
+
+    user: ${CURRENT_UID}
+    volumes:
+      - ./:/complex_rest
+
   celery-worker:
     build:
       context: ./
@@ -68,3 +78,4 @@ services:
       - postgres
       - redis
       - kafka
+      - keycloak

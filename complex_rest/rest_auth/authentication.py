@@ -1,4 +1,5 @@
 import json
+from jose.exceptions import JOSEError
 
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
@@ -56,8 +57,11 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
         token_type, access_token = auth_header.split()
 
         keycloak_public_key = "-----BEGIN PUBLIC KEY-----\n" + self.keycloak_client.public_key() + "\n-----END PUBLIC KEY-----"
-        keycloak_token = self.keycloak_client.decode_token(access_token, key=keycloak_public_key, options=self.keycloak_token_options)
-        print(keycloak_token)
+        try:
+            keycloak_token = self.keycloak_client.decode_token(access_token, key=keycloak_public_key, options=self.keycloak_token_options)
+        except JOSEError:
+            return None
+
         user = self._fetch_user(user_info=keycloak_token)
         return user, None # authentication successful
 
