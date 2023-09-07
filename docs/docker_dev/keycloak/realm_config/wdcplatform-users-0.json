@@ -41,7 +41,7 @@
     "requiredActions" : [ ],
     "realmRoles" : [ "default-roles-wdcplatform" ],
     "notBefore" : 0,
-    "groups" : [ "/ship_crew" ]
+    "groups" : [ "/ship_crew", "/ship_crew" ]
   }, {
     "id" : "abdefe54-cb77-4363-9e9d-b0531f89ed79",
     "createdTimestamp" : 1693347935002,
@@ -62,7 +62,7 @@
     "requiredActions" : [ ],
     "realmRoles" : [ "default-roles-wdcplatform" ],
     "notBefore" : 0,
-    "groups" : [ "/ship_crew" ]
+    "groups" : [ "/ship_crew", "/ship_crew" ]
   }, {
     "id" : "15df9600-6709-4b97-a12e-833705364d97",
     "createdTimestamp" : 1693347935011,
@@ -83,7 +83,7 @@
     "requiredActions" : [ ],
     "realmRoles" : [ "default-roles-wdcplatform" ],
     "notBefore" : 0,
-    "groups" : [ "/admin_staff" ]
+    "groups" : [ "/admin_staff", "/admin_staff" ]
   }, {
     "id" : "9eda1db6-ea6a-427f-be02-072570499710",
     "createdTimestamp" : 1693347935020,
@@ -104,7 +104,7 @@
     "requiredActions" : [ ],
     "realmRoles" : [ "default-roles-wdcplatform" ],
     "notBefore" : 0,
-    "groups" : [ "/ship_crew" ]
+    "groups" : [ "/ship_crew", "/ship_crew" ]
   }, {
     "id" : "9e35c7f1-bd54-4da5-9cde-727d7286c84d",
     "createdTimestamp" : 1693347935028,
@@ -125,7 +125,7 @@
     "requiredActions" : [ ],
     "realmRoles" : [ "default-roles-wdcplatform" ],
     "notBefore" : 0,
-    "groups" : [ "/admin_staff" ]
+    "groups" : [ "/admin_staff", "/admin_staff" ]
   }, {
     "id" : "a7cdf58f-7791-4c53-90d8-f10a995578fc",
     "createdTimestamp" : 1693205466549,
@@ -139,7 +139,8 @@
     "requiredActions" : [ ],
     "realmRoles" : [ "default-roles-wdcplatform" ],
     "clientRoles" : {
-      "realm-management" : [ "manage-users", "view-realm" ]
+      "realm-management" : [ "manage-users", "view-realm" ],
+      "complex_rest" : [ "uma_protection" ]
     },
     "notBefore" : 0,
     "groups" : [ ]

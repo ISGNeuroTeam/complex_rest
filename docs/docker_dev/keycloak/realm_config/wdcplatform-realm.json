@@ -348,7 +348,14 @@
         "attributes" : { }
       } ],
       "dtcd" : [ ],
-      "complex_rest" : [ ]
+      "complex_rest" : [ {
+        "id" : "00f503a7-b67d-421b-a84b-55d821672b25",
+        "name" : "uma_protection",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "266009a3-de11-4bab-bed1-f1d9f4010750",
+        "attributes" : { }
+      } ]
     }
   },
   "groups" : [ {
@@ -392,7 +399,7 @@
   "otpPolicyLookAheadWindow" : 1,
   "otpPolicyPeriod" : 30,
   "otpPolicyCodeReusable" : false,
-  "otpSupportedApplications" : [ "totpAppFreeOTPName", "totpAppMicrosoftAuthenticatorName", "totpAppGoogleName" ],
+  "otpSupportedApplications" : [ "totpAppGoogleName", "totpAppFreeOTPName", "totpAppMicrosoftAuthenticatorName" ],
   "webAuthnPolicyRpEntityName" : "keycloak",
   "webAuthnPolicySignatureAlgorithms" : [ "ES256" ],
   "webAuthnPolicyRpId" : "",
@@ -451,6 +458,14 @@
     "authenticationFlowBindingOverrides" : { },
     "fullScopeAllowed" : false,
     "nodeReRegistrationTimeout" : 0,
+    "protocolMappers" : [ {
+      "id" : "eeb280ff-00ec-43d9-97e1-12525e28842e",
+      "name" : "docker-v2-allow-all-mapper",
+      "protocol" : "docker-v2",
+      "protocolMapper" : "docker-v2-allow-all-mapper",
+      "consentRequired" : false,
+      "config" : { }
+    } ],
     "defaultClientScopes" : [ "web-origins", "acr", "profile", "roles", "email" ],
     "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
   }, {
@@ -518,6 +533,14 @@
     "authenticationFlowBindingOverrides" : { },
     "fullScopeAllowed" : false,
     "nodeReRegistrationTimeout" : 0,
+    "protocolMappers" : [ {
+      "id" : "d89b411f-6963-439e-8f8b-7dc0d30000f0",
+      "name" : "docker-v2-allow-all-mapper",
+      "protocol" : "docker-v2",
+      "protocolMapper" : "docker-v2-allow-all-mapper",
+      "consentRequired" : false,
+      "config" : { }
+    } ],
     "defaultClientScopes" : [ "web-origins", "acr", "profile", "roles", "email" ],
     "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
   }, {
@@ -546,6 +569,14 @@
     "authenticationFlowBindingOverrides" : { },
     "fullScopeAllowed" : false,
     "nodeReRegistrationTimeout" : 0,
+    "protocolMappers" : [ {
+      "id" : "0c1f8b01-b951-4bcc-afa1-ddb57390c635",
+      "name" : "docker-v2-allow-all-mapper",
+      "protocol" : "docker-v2",
+      "protocolMapper" : "docker-v2-allow-all-mapper",
+      "consentRequired" : false,
+      "config" : { }
+    } ],
     "defaultClientScopes" : [ "web-origins", "acr", "profile", "roles", "email" ],
     "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
   }, {
@@ -570,6 +601,7 @@
     "implicitFlowEnabled" : false,
     "directAccessGrantsEnabled" : true,
     "serviceAccountsEnabled" : true,
+    "authorizationServicesEnabled" : true,
     "publicClient" : false,
     "frontchannelLogout" : true,
     "protocol" : "openid-connect",
@@ -579,6 +611,7 @@
       "backchannel.logout.session.required" : "true",
       "post.logout.redirect.uris" : "+",
       "oauth2.device.authorization.grant.enabled" : "false",
+      "display.on.consent.screen" : "false",
       "backchannel.logout.revoke.offline.tokens" : "false"
     },
     "authenticationFlowBindingOverrides" : { },
@@ -628,7 +661,38 @@
       }
     } ],
     "defaultClientScopes" : [ "web-origins", "acr", "profile", "roles", "email" ],
-    "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
+    "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ],
+    "authorizationSettings" : {
+      "allowRemoteResourceManagement" : true,
+      "policyEnforcementMode" : "ENFORCING",
+      "resources" : [ {
+        "name" : "Default Resource",
+        "type" : "urn:complex_rest:resources:default",
+        "ownerManagedAccess" : false,
+        "attributes" : { },
+        "_id" : "443fc6bc-efbe-4ddd-98c8-6e257675b69d",
+        "uris" : [ "/*" ]
+      } ],
+      "policies" : [ {
+        "id" : "3ed71016-b562-4915-97c7-2b9f847ca303",
+        "name" : "Only owner",
+        "description" : "",
+        "type" : "script-only-owner-policy.js",
+        "logic" : "POSITIVE",
+        "decisionStrategy" : "UNANIMOUS",
+        "config" : { }
+      }, {
+        "id" : "957727ba-3b4c-4744-ad4b-a9e7125f4206",
+        "name" : "Always allow",
+        "description" : "",
+        "type" : "script-always-allow-policy.js",
+        "logic" : "POSITIVE",
+        "decisionStrategy" : "UNANIMOUS",
+        "config" : { }
+      } ],
+      "scopes" : [ ],
+      "decisionStrategy" : "UNANIMOUS"
+    }
   }, {
     "id" : "c07f6240-fdc7-402f-8d4d-104cf59c7b0a",
     "clientId" : "dtcd",
@@ -663,6 +727,14 @@
     "authenticationFlowBindingOverrides" : { },
     "fullScopeAllowed" : true,
     "nodeReRegistrationTimeout" : -1,
+    "protocolMappers" : [ {
+      "id" : "77c815d9-148a-4d04-ad39-690c5d5047b1",
+      "name" : "docker-v2-allow-all-mapper",
+      "protocol" : "docker-v2",
+      "protocolMapper" : "docker-v2-allow-all-mapper",
+      "consentRequired" : false,
+      "config" : { }
+    } ],
     "defaultClientScopes" : [ "web-origins", "acr", "profile", "roles", "email" ],
     "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
   }, {
@@ -691,6 +763,14 @@
     "authenticationFlowBindingOverrides" : { },
     "fullScopeAllowed" : false,
     "nodeReRegistrationTimeout" : 0,
+    "protocolMappers" : [ {
+      "id" : "ec66f0b9-ef36-4891-b39f-5177c497db4a",
+      "name" : "docker-v2-allow-all-mapper",
+      "protocol" : "docker-v2",
+      "protocolMapper" : "docker-v2-allow-all-mapper",
+      "consentRequired" : false,
+      "config" : { }
+    } ],
     "defaultClientScopes" : [ "web-origins", "acr", "profile", "roles", "email" ],
     "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
   }, {
@@ -1264,7 +1344,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "saml-user-property-mapper", "oidc-address-mapper", "oidc-full-name-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "saml-role-list-mapper", "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper" ]
       }
     }, {
       "id" : "62952a7f-77c9-4164-a952-ad144e178170",
@@ -1291,7 +1371,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "saml-role-list-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-full-name-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-address-mapper", "saml-user-property-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-attribute-mapper" ]
       }
     } ],
     "org.keycloak.storage.UserStorageProvider" : [ {
@@ -1344,8 +1424,8 @@
             "user.roles.retrieve.strategy" : [ "LOAD_GROUPS_BY_MEMBER_ATTRIBUTE" ],
             "ignore.missing.groups" : [ "false" ],
             "membership.ldap.attribute" : [ "member" ],
-            "group.object.classes" : [ "Group" ],
             "memberof.ldap.attribute" : [ "memberOf" ],
+            "group.object.classes" : [ "Group" ],
             "groups.path" : [ "/" ],
             "drop.non.existing.groups.during.sync" : [ "false" ]
           }
@@ -1391,8 +1471,8 @@
           "config" : {
             "ldap.attribute" : [ "mail" ],
             "is.mandatory.in.ldap" : [ "false" ],
-            "read.only" : [ "true" ],
             "always.read.value.from.ldap" : [ "false" ],
+            "read.only" : [ "true" ],
             "user.model.attribute" : [ "email" ]
           }
         } ]
@@ -1401,21 +1481,21 @@
         "pagination" : [ "false" ],
         "fullSyncPeriod" : [ "-1" ],
         "startTls" : [ "false" ],
-        "connectionPooling" : [ "false" ],
         "usersDn" : [ "ou=people,dc=planetexpress,dc=com" ],
+        "connectionPooling" : [ "false" ],
         "cachePolicy" : [ "DEFAULT" ],
         "useKerberosForPasswordAuthentication" : [ "false" ],
         "importEnabled" : [ "true" ],
         "enabled" : [ "true" ],
-        "bindDn" : [ "cn=admin,dc=planetexpress,dc=com" ],
         "usernameLDAPAttribute" : [ "uid" ],
-        "bindCredential" : [ "GoodNewsEveryone" ],
+        "bindDn" : [ "cn=admin,dc=planetexpress,dc=com" ],
         "changedSyncPeriod" : [ "-1" ],
+        "bindCredential" : [ "GoodNewsEveryone" ],
         "lastSync" : [ "1693349879" ],
         "vendor" : [ "ad" ],
         "uuidLDAPAttribute" : [ "uid" ],
-        "connectionUrl" : [ "ldap://ldap:10389" ],
         "allowKerberosAuthentication" : [ "false" ],
+        "connectionUrl" : [ "ldap://ldap:10389" ],
         "syncRegistrations" : [ "true" ],
         "authType" : [ "simple" ],
         "searchScope" : [ "2" ],
