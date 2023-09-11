@@ -81,6 +81,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.GlobalSetMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -376,6 +377,8 @@ TOKEN_SETTINGS = {
         ('login', 'username'),
     ],
 }
+
+ROLE_MODEL_AUTH_COVERED_CLASSES = load_plugins.get_plugins_auth_covered_classes(PLUGINS)
 
 # Celery Configuration Options
 CELERY_TIMEZONE = 'Europe/Moscow'

@@ -51,7 +51,7 @@ services:
       - KC_HTTP_PORT=8090
       - KC_FEATURES=account-api,account2,authorization,client-policies,impersonation,docker,scripts
     entrypoint: /complex_rest/docs/docker_dev/keycloak/entrypoint.sh
-    command: /opt/keycloak/bin/kc.sh start-dev --features scripts
+    command: /opt/keycloak/bin/kc.sh start-dev
 
   celery-worker:
     build:

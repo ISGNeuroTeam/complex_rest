@@ -51,7 +51,7 @@ default_config = {
         'bootstrap_servers': 'localhost:9092'
     },
     'keycloak': {
-        'enabled': False,
+        'enabled': 'False',
         'server_url': 'http://localhost:8090',
         'client_id': 'complex_rest',
         'client_secret_key': '',

@@ -19,8 +19,9 @@ from django.contrib import admin
 from django.urls import path, include
 from core.load_plugins import get_plugin_base_url
 from rest.views import HelloView
+from core.views import SpectacularAPIView
+from drf_spectacular.views import SpectacularRedocView, SpectacularSwaggerView
 
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 
 urlpatterns = [

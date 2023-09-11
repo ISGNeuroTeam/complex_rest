@@ -10,6 +10,8 @@ from rest_auth.models import Group, Role, User, KeycloakUser
 from rest_framework import HTTP_HEADER_ENCODING, authentication
 from keycloak.keycloak_openid import KeycloakOpenID
 
+from core.globals import global_vars
+
 from .exceptions import AuthenticationFailed, InvalidToken, TokenError
 from .settings import api_settings
 
@@ -115,7 +117,9 @@ class JWTAuthentication(authentication.BaseAuthentication):
             if raw_token is None:
                 return None
         validated_token = self.get_validated_token(raw_token)
-        return self.get_user(validated_token), validated_token
+        user = self.get_user(validated_token)
+        global_vars.set_current_user(user)
+        return user, validated_token
 
     def authenticate_header(self, request):
         return '{0} realm="{1}"'.format(

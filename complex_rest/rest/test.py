@@ -31,7 +31,7 @@ def create_test_users(ordinary_users: int = 1) -> (User, List[User]):
         ordinary_users: number of ordinary users
     """
 
-    admin_user = User(username='admin', is_staff=True, is_active=True)
+    admin_user = User.objects.create_superuser('admin', '', 'admin')
     admin_user.set_password('admin')
     admin_user.save()
     test_users = []

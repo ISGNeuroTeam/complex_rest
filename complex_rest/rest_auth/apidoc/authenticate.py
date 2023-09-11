@@ -1,5 +1,5 @@
-from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
-from . import serializers
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse, OpenApiParameter
+from .. import serializers
 
 
 login_api_doc = extend_schema(

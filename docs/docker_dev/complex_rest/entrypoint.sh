@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo "Waiting for postgres and kafka and keycloak..."
-sleep 40
+sleep 60
 
 
 python ./complex_rest/manage.py flush --no-input

@@ -13,8 +13,6 @@ class KeycloakTestCase(APITestCase):
         return keycloak_url + token_urn
 
     def test_keycloak_token_auth(self):
-        # r = requests.get('http://keycloak:8090/realms/wdcplatform/.well-known/openid-configuration')
-        # print(r.text)
         resp = self.client.get('/hello/')
         self.assertEqual(resp.status_code, 403)
         data = urlencode({
@@ -30,6 +28,7 @@ class KeycloakTestCase(APITestCase):
             headers={'Content-Type': 'application/x-www-form-urlencoded'},
         )
         resp_data = response.json()
+        print(resp_data)
         access_token = resp_data['access_token']
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + str(access_token))
         resp = self.client.get('/hello/')

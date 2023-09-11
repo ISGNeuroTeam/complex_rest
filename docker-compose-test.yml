@@ -23,15 +23,23 @@ services:
     depends_on:
       - zookeeper
 
-  keycloak:
-    build:
-      context: ./
-      dockerfile: ./docs/docker_dev/keycloak/Dockerfile
-    image: "keycloak:22.0.1"
+  ldap:
+    image: 'rroemhild/test-openldap'
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.1
     user: ${CURRENT_UID}
     volumes:
       - ./:/complex_rest
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_HTTP_PORT=8090
+      - KC_FEATURES=account-api,account2,authorization,client-policies,impersonation,docker,scripts
+    entrypoint: /complex_rest/docs/docker_dev/keycloak/entrypoint.sh
+    command: /opt/keycloak/bin/kc.sh start-dev
+    depends_on:
+      - ldap
 
   celery-worker:
     build:
@@ -47,6 +55,8 @@ services:
       - redis
       - kafka
     command: "celery --app core.celeryapp:app worker --loglevel=INFO --concurrency 8"
+    environment:
+      - REST_CONF=/complex_rest/docs/docker_dev/complex_rest/rest_test.conf
 
   celery-beat:
     build:
@@ -62,6 +72,8 @@ services:
       - redis
       - kafka
     command: "celery --app core.celeryapp:app beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+    environment:
+      - REST_CONF=/complex_rest/docs/docker_dev/complex_rest/rest_test.conf
 
   complex_rest:
     build:
@@ -73,6 +85,8 @@ services:
       - ./:/complex_rest
     user: ${CURRENT_UID}
     command: "python /complex_rest/complex_rest/manage.py runserver [::]:8080"
+    environment:
+      - REST_CONF=/complex_rest/docs/docker_dev/complex_rest/rest_test.conf
 
     depends_on:
       - postgres

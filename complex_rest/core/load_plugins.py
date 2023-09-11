@@ -205,3 +205,12 @@ def get_plugin_base_url(plugin_name):
     return f'{get_plugin_name_from_full_plugin_name(plugin_name).lower()}/v{get_plugin_api_version(plugin_name)}/'
 
 
+def get_plugins_auth_covered_classes(plugin_names):
+    auth_covered_classes = []
+    for plugin_name in plugin_names:
+        try:
+            plugin_auth_covered_classes = import_string(f'{plugin_name}.settings.ROLE_MODEL_AUTH_COVERED_CLASSES')
+            auth_covered_classes += plugin_auth_covered_classes
+        except ImportError:
+            pass
+    return auth_covered_classes

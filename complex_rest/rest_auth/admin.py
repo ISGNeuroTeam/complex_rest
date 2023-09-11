@@ -2,12 +2,13 @@ from django import forms
 from django.contrib import admin
 from django.contrib.auth.models import Group as DjangoGroup
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin, GroupAdmin
-
-from .models import Group, Permission, Role, Plugin, KeyChain, Action, Permit, SecurityZone, User, AccessRule, ProtectedResource
+from mptt.admin import MPTTModelAdmin
+from .models import Group, Role, Plugin, Action, Permit, SecurityZone, User, AccessRule
 
 
 class BaseAdmin(admin.ModelAdmin):
-    exclude = ('created_at', 'deleted_at', 'updated_at')
+    exclude = ('created_time', 'modified_time')
+
 
 class UserAdmin(DjangoUserAdmin):
     list_display = ('username', 'guid', 'email', 'first_name', 'last_name', 'is_staff', 'phone', 'photo')
@@ -97,6 +98,15 @@ class PermitAdmin(BaseAdmin):
     list_display = ('__str__',)
 
 
+class SecurityZoneAdmin(MPTTModelAdmin):
+    list_display = ['name', 'parent', ]
+    search_fields = ['name', ]
+
+
+class KeyChainAdmin(BaseAdmin):
+    list_filter = (('plugin', admin.RelatedOnlyFieldListFilter),)
+
+
 admin.site.unregister(DjangoGroup)
 admin.site.register(User, UserAdmin)
 admin.site.register(Group, GroupAdmin)
@@ -104,10 +114,7 @@ admin.site.register(Group, GroupAdmin)
 
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Plugin, BaseAdmin)
-admin.site.register(KeyChain, BaseAdmin)
 admin.site.register(Action, BaseAdmin)
 admin.site.register(Permit, PermitAdmin)
-admin.site.register(SecurityZone, BaseAdmin)
+admin.site.register(SecurityZone, SecurityZoneAdmin)
 admin.site.register(AccessRule, BaseAdmin)
-
-admin.site.register(ProtectedResource, BaseAdmin)

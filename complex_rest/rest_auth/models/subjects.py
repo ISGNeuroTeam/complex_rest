@@ -2,7 +2,8 @@ import uuid
 
 from typing import Set
 from django.db import models
-from django.contrib.auth.models import AbstractUser, Group as DjangoGroup, Permission as DjangoPermission
+from django.contrib.auth.models import AbstractUser, Group as DjangoGroup,\
+    Permission as DjangoPermission, AnonymousUser as DjangoAnonymousUser
 from django.utils.translation import gettext_lazy as _
 from mixins.models import TimeStampedModel, NamedModel
 
@@ -33,7 +34,7 @@ class User(AbstractUser):
     def roles(self) -> Set['Roles']:
         roles_set = set()
         for group in self.groups.all():
-            roles_set.add(group.roles())
+            roles_set.update(set(group.roles.all()))
         return roles_set
 
     def save(self, *args, **kwargs):
@@ -66,6 +67,15 @@ class KeycloakUser(User):
             role, created = Role.objects.get_or_create(name=role_name)
             roles.add(role)
         return roles
+
+    class Meta:
+        proxy = True
+
+class AnonymousUser(DjangoAnonymousUser):
+    guid = uuid.UUID('00000000-0000-0000-0000-000000000000')
+    email = ''
+    phone = ''
+    photo = ''
 
 
 class Permission(DjangoPermission):
