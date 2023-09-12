@@ -350,7 +350,6 @@ LOGGING = {
 }
 
 KEYCLOAK_SETTINGS = ini_config['keycloak']
-KEYCLOAK_SETTINGS['enabled'] = KEYCLOAK_SETTINGS['enabled'].lower() == 'true'
 
 DEFAULT_RENDERER_CLASSES = (
     'rest_framework.renderers.JSONRenderer',

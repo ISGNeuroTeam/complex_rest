@@ -14,15 +14,11 @@ from core.globals import global_vars
 
 from .exceptions import AuthenticationFailed, InvalidToken, TokenError
 from .settings import api_settings
+from .keycloak_client import KeycloakClient
 
 User = get_user_model()
 
 AUTH_HEADER_TYPES = api_settings.AUTH_HEADER_TYPES
-
-SERVER_URL = settings.KEYCLOAK_SETTINGS['server_url']
-CLIENT_ID = settings.KEYCLOAK_SETTINGS['client_id']
-CLIENT_SECRET_KEY = settings.KEYCLOAK_SETTINGS['client_secret_key']
-REALM_NAME = settings.KEYCLOAK_SETTINGS['realm_name']
 
 
 if not isinstance(api_settings.AUTH_HEADER_TYPES, (list, tuple)):
@@ -37,19 +33,13 @@ AUTH_HEADER_TYPE_BYTES = set(
 class KeycloakAuthentication(authentication.BaseAuthentication):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.keycloak_client = KeycloakOpenID(
-            server_url=SERVER_URL,
-            client_id=CLIENT_ID,
-            client_secret_key=CLIENT_SECRET_KEY,
-            realm_name=REALM_NAME
-        )
+        self.keycloak_client = KeycloakClient()
         self.keycloak_token_options = {
             "verify_signature": True, "verify_aud": False, "verify_exp": True
         }
 
     def authenticate(self, request):
-
-        auth_header = request.META.get('HTTP_AUTHORIZATION', b'')
+        auth_header = request.META.get(api_settings.AUTH_HEADER_NAME)
         if isinstance(auth_header, str):
             # Work around django test client oddness
             auth_header = auth_header.encode(HTTP_HEADER_ENCODING)
@@ -61,7 +51,7 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
         keycloak_public_key = "-----BEGIN PUBLIC KEY-----\n" + self.keycloak_client.public_key() + "\n-----END PUBLIC KEY-----"
         try:
             keycloak_token = self.keycloak_client.decode_token(access_token, key=keycloak_public_key, options=self.keycloak_token_options)
-        except JOSEError:
+        except JOSEError as err:
             return None
 
         user = self._fetch_user(user_info=keycloak_token)

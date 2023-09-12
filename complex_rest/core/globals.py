@@ -10,6 +10,12 @@ class GlobalVars:
     """
     _threadmap = defaultdict(dict)
 
+    def __getitem__(self, item):
+        return GlobalVars._threadmap[threading.get_ident()][item]
+
+    def __setitem__(self, key, value):
+        GlobalVars._threadmap[threading.get_ident()][key] = value
+
     @staticmethod
     def get_current_user() -> User:
         """

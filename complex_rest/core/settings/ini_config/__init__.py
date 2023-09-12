@@ -74,6 +74,20 @@ def make_abs_paths(config_dict, dict_keys_list, base_dir: Path = None):
         config_dict[section][option] = str(dir_path)
 
 
+def make_boolean(config_dict):
+    """
+    Finds strings in the dictionary like 'true' of 'False' and replaces it with boolean value
+    """
+    for section in config_dict:
+        for option in config_dict[section]:
+            if isinstance(config_dict[section][option], str):
+                lower_case_value = config_dict[section][option].lower()
+                if lower_case_value == 'false':
+                    config_dict[section][option] = False
+                if lower_case_value == 'true':
+                    config_dict[section][option] = True
+
+
 def get_ini_config():
     """
     Read config passed in REST_CONF environment variable
@@ -108,6 +122,7 @@ def get_ini_config():
             ['caches', 'file_cache_dir']
         ]
     )
+    make_boolean(merged_with_defaults)
     return merged_with_defaults
 
 

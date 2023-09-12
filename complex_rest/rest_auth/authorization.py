@@ -3,8 +3,10 @@ import logging
 from typing import Any, List
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.conf import settings
 from core.globals import global_vars
 from rest_auth.models.abc import IKeyChain
+from rest_auth.keycloak_client import KeycloakClient, KeycloakError
 from .exceptions import AccessDeniedError
 from .models import User, Action, Role, Permit, Plugin, AccessRule
 from .models.abc import IAuthCovered
@@ -74,6 +76,20 @@ def has_perm(user: User, action: Action, obj: IAuthCovered) -> bool:
         return action.default_rule
 
 
+def has_perm_on_keycloak(auth_header, action_name: str, object_auth_id: str) -> bool:
+    """
+    Sends request to keycloak
+    Returns True if user has right to do action on object
+    Raises AccessDeniedError if some error occurred with keycloak
+    """
+    keycloak_client = KeycloakClient()
+    try:
+        return keycloak_client.authorization_request(auth_header, action_name, object_auth_id)
+    except KeycloakError as err:
+        log.error(f'Error with keycloak: {str(err)}')
+        raise AccessDeniedError(f'Error with keycloak {str(err)}')
+
+
 def get_allowed_object_ids_list(user: User, action: Action, obj_class):
     """
     Return list of objects id allowed for User to do action
@@ -111,6 +127,8 @@ def check_authorization(obj: IAuthCovered, action_name: str):
     Checks if action can be done with object
     If not allowed raises AccessDeniedError
     """
+    if settings.KEYCLOAK_SETTINGS['authorization']:
+        return has_perm_on_keycloak(global_vars['auth_header'], action_name, obj.auth_id)
     user = global_vars.get_current_user()
     plugin_name = _plugin_name(obj)
 

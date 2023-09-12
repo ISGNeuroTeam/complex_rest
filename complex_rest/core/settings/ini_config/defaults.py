@@ -56,6 +56,7 @@ default_config = {
         'client_id': 'complex_rest',
         'client_secret_key': '',
         'realm_name': 'wdcplatform',
+        'authorization': 'False',
     }
 }
 
