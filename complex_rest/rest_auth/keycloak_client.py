@@ -40,7 +40,10 @@ class KeycloakClient(KeycloakOpenID):
         payload = self._add_secret_key(payload)
         self.connection.headers.update({'Authorization': auth_header})
         data_raw = self.connection.raw_post(URL_TOKEN.format(**params_path), data=payload)
-        data = raise_error_from_response(data_raw, KeycloakPostError)
+        try:
+            data = raise_error_from_response(data_raw, KeycloakPostError)
+        except KeycloakPostError:
+            return False
         if 'result' in data and data['result'] is True:
             return True
         else:

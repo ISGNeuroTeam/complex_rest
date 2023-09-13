@@ -399,7 +399,7 @@
   "otpPolicyLookAheadWindow" : 1,
   "otpPolicyPeriod" : 30,
   "otpPolicyCodeReusable" : false,
-  "otpSupportedApplications" : [ "totpAppGoogleName", "totpAppFreeOTPName", "totpAppMicrosoftAuthenticatorName" ],
+  "otpSupportedApplications" : [ "totpAppGoogleName", "totpAppMicrosoftAuthenticatorName", "totpAppFreeOTPName" ],
   "webAuthnPolicyRpEntityName" : "keycloak",
   "webAuthnPolicySignatureAlgorithms" : [ "ES256" ],
   "webAuthnPolicyRpId" : "",
@@ -672,6 +672,30 @@
         "attributes" : { },
         "_id" : "443fc6bc-efbe-4ddd-98c8-6e257675b69d",
         "uris" : [ "/*" ]
+      }, {
+        "name" : "00000000-0000-0000-0000-000000000002",
+        "type" : "test",
+        "ownerManagedAccess" : false,
+        "displayName" : "",
+        "attributes" : { },
+        "_id" : "518e3e43-29cb-4d46-b7a4-51511e1a8287",
+        "uris" : [ ],
+        "scopes" : [ {
+          "name" : "test.protected_action1"
+        } ],
+        "icon_uri" : ""
+      }, {
+        "name" : "00000000-0000-0000-0000-000000000001",
+        "type" : "test",
+        "ownerManagedAccess" : false,
+        "displayName" : "",
+        "attributes" : { },
+        "_id" : "ae1e0dc7-a278-4544-8321-6523a7adee22",
+        "uris" : [ ],
+        "scopes" : [ {
+          "name" : "test.protected_action1"
+        } ],
+        "icon_uri" : ""
       } ],
       "policies" : [ {
         "id" : "3ed71016-b562-4915-97c7-2b9f847ca303",
@@ -689,8 +713,34 @@
         "logic" : "POSITIVE",
         "decisionStrategy" : "UNANIMOUS",
         "config" : { }
+      }, {
+        "id" : "d92af580-0c93-4756-b5d9-049ff43eb5bf",
+        "name" : "Allow for role1",
+        "description" : "",
+        "type" : "role",
+        "logic" : "POSITIVE",
+        "decisionStrategy" : "UNANIMOUS",
+        "config" : {
+          "roles" : "[{\"id\":\"role1\",\"required\":true}]"
+        }
+      }, {
+        "id" : "603309a8-8ab9-47e5-8ca8-465779161a21",
+        "name" : "Allow test.protected_acteion1 for role1",
+        "description" : "",
+        "type" : "resource",
+        "logic" : "POSITIVE",
+        "decisionStrategy" : "AFFIRMATIVE",
+        "config" : {
+          "resources" : "[\"00000000-0000-0000-0000-000000000002\"]",
+          "applyPolicies" : "[\"Allow for role1\"]"
+        }
       } ],
-      "scopes" : [ ],
+      "scopes" : [ {
+        "id" : "43b6f366-4d7e-4773-9474-5fd175bd5a9f",
+        "name" : "test.protected_action1",
+        "iconUri" : "",
+        "displayName" : "test.protected_action1"
+      } ],
       "decisionStrategy" : "UNANIMOUS"
     }
   }, {
@@ -1344,7 +1394,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "saml-role-list-mapper", "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-address-mapper", "saml-user-attribute-mapper", "oidc-sha256-pairwise-sub-mapper" ]
       }
     }, {
       "id" : "62952a7f-77c9-4164-a952-ad144e178170",
@@ -1371,7 +1421,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-address-mapper", "saml-user-property-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "saml-user-property-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "oidc-full-name-mapper" ]
       }
     } ],
     "org.keycloak.storage.UserStorageProvider" : [ {
@@ -1426,8 +1476,8 @@
             "membership.ldap.attribute" : [ "member" ],
             "memberof.ldap.attribute" : [ "memberOf" ],
             "group.object.classes" : [ "Group" ],
-            "groups.path" : [ "/" ],
-            "drop.non.existing.groups.during.sync" : [ "false" ]
+            "drop.non.existing.groups.during.sync" : [ "false" ],
+            "groups.path" : [ "/" ]
           }
         }, {
           "id" : "5b0c4813-5419-4391-8662-854b2202aa2b",
@@ -1437,8 +1487,8 @@
           "config" : {
             "ldap.attribute" : [ "whenChanged" ],
             "is.mandatory.in.ldap" : [ "false" ],
-            "always.read.value.from.ldap" : [ "true" ],
             "read.only" : [ "true" ],
+            "always.read.value.from.ldap" : [ "true" ],
             "user.model.attribute" : [ "modifyTimestamp" ]
           }
         }, {
@@ -1481,8 +1531,8 @@
         "pagination" : [ "false" ],
         "fullSyncPeriod" : [ "-1" ],
         "startTls" : [ "false" ],
-        "usersDn" : [ "ou=people,dc=planetexpress,dc=com" ],
         "connectionPooling" : [ "false" ],
+        "usersDn" : [ "ou=people,dc=planetexpress,dc=com" ],
         "cachePolicy" : [ "DEFAULT" ],
         "useKerberosForPasswordAuthentication" : [ "false" ],
         "importEnabled" : [ "true" ],
@@ -1494,8 +1544,8 @@
         "lastSync" : [ "1693349879" ],
         "vendor" : [ "ad" ],
         "uuidLDAPAttribute" : [ "uid" ],
-        "allowKerberosAuthentication" : [ "false" ],
         "connectionUrl" : [ "ldap://ldap:10389" ],
+        "allowKerberosAuthentication" : [ "false" ],
         "syncRegistrations" : [ "true" ],
         "authType" : [ "simple" ],
         "searchScope" : [ "2" ],

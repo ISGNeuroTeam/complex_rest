@@ -1,9 +1,14 @@
+from uuid import UUID
 from rest_framework.test import APIClient
 from django.test import TestCase
 from django.test import override_settings
 from django.conf import settings
 from urllib.parse import urlencode
 from importlib import reload, import_module
+from rolemodel_test.models import SomePluginAuthCoveredModelUUID
+from rest_auth.authorization import has_perm_on_keycloak
+from rest_auth.exceptions import AccessDeniedError
+
 import requests
 
 
@@ -47,9 +52,7 @@ with override_settings(REST_FRAMEWORK=REST_FRAMEWORK, KEYCLOAK_SETTINGS=KEYCLOAK
             keycloak_url = settings.KEYCLOAK_SETTINGS['server_url']
             return keycloak_url + token_urn
 
-        def test_keycloak_token_auth(self):
-            resp = self.client.get('/hello/')
-            self.assertEqual(resp.status_code, 403)
+        def _get_keycloak_access_token(self):
             data = urlencode({
                 'grant_type': 'password',
                 'client_id': 'dtcd',
@@ -64,6 +67,12 @@ with override_settings(REST_FRAMEWORK=REST_FRAMEWORK, KEYCLOAK_SETTINGS=KEYCLOAK
             )
             resp_data = response.json()
             access_token = resp_data['access_token']
+            return access_token
+
+        def test_keycloak_token_auth(self):
+            resp = self.client.get('/hello/')
+            self.assertEqual(resp.status_code, 403)
+            access_token = self._get_keycloak_access_token()
             self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + str(access_token))
             resp = self.client.get('/hello/')
 
@@ -71,3 +80,20 @@ with override_settings(REST_FRAMEWORK=REST_FRAMEWORK, KEYCLOAK_SETTINGS=KEYCLOAK
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(resp.data['message'], 'secret message')
 
+        def test_keycloak_authorization(self):
+            # create 10 plugin objects
+            objs = []
+            for i in range(3):
+                obj = SomePluginAuthCoveredModelUUID(id=UUID(f'00000000-0000-0000-0000-00000000000{i}'))
+                obj.save()
+                objs.append(obj)
+            access_token = self._get_keycloak_access_token()
+            self.assertFalse(
+                has_perm_on_keycloak(f'Bearer {access_token}', 'test.protected_action1', objs[0].auth_id)
+            )
+            self.assertFalse(
+                has_perm_on_keycloak(f'Bearer {access_token}', 'test.protected_action1', objs[1].auth_id)
+            )
+            self.assertTrue(
+                has_perm_on_keycloak(f'Bearer {access_token}', 'test.protected_action1', objs[2].auth_id)
+            )
