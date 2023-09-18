@@ -56,6 +56,12 @@ def has_perm(user: User, action: Action, obj: IAuthCovered = None) -> bool:
     """
     Returns True if user has right to do action on object with specified keychain, otherwise return False
     """
+    if global_vars['disable_authorization']:
+        return True
+
+    if settings.KEYCLOAK_SETTINGS['authorization']:
+        return has_perm_on_keycloak(global_vars['auth_header'], action.name, obj.auth_id if obj else '')
+
     is_owner = user == obj.owner if obj.owner else None
 
     if obj is not None and obj.keychain:
@@ -129,8 +135,7 @@ def check_authorization(obj: IAuthCovered, action_name: str):
     Checks if action can be done with object
     If not allowed raises AccessDeniedError
     """
-    if settings.KEYCLOAK_SETTINGS['authorization']:
-        return has_perm_on_keycloak(global_vars['auth_header'], action_name, obj.auth_id)
+
     user = global_vars.get_current_user()
     plugin_name = _plugin_name(obj)
 
