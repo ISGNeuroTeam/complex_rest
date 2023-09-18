@@ -1,5 +1,6 @@
 from core.globals import global_vars
 from rest_auth.settings import api_settings
+from rest_framework import HTTP_HEADER_ENCODING
 
 
 class GlobalSetMiddleware(object):

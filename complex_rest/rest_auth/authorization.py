@@ -52,13 +52,13 @@ def _user_allowed_to_do_action(permits, action, user):
         return True
 
 
-def has_perm(user: User, action: Action, obj: IAuthCovered) -> bool:
+def has_perm(user: User, action: Action, obj: IAuthCovered = None) -> bool:
     """
     Returns True if user has right to do action on object with specified keychain, otherwise return False
     """
     is_owner = user == obj.owner if obj.owner else None
 
-    if obj.keychain:
+    if obj is not None and obj.keychain:
         permits = _get_keychain_permissions(obj.keychain)
     else:
         permits = _get_permissions_for_user_and_action(user, action)
@@ -76,7 +76,7 @@ def has_perm(user: User, action: Action, obj: IAuthCovered) -> bool:
         return action.default_rule
 
 
-def has_perm_on_keycloak(auth_header, action_name: str, object_auth_id: str) -> bool:
+def has_perm_on_keycloak(auth_header, action_name: str, object_auth_id: str = None) -> bool:
     """
     Sends request to keycloak
     Returns True if user has right to do action on object
@@ -84,7 +84,9 @@ def has_perm_on_keycloak(auth_header, action_name: str, object_auth_id: str) -> 
     """
     keycloak_client = KeycloakClient()
     try:
-        return keycloak_client.authorization_request(auth_header, action_name, object_auth_id)
+        return keycloak_client.authorization_request(
+            auth_header, action_name, object_auth_id if object_auth_id else ''
+        )
     except KeycloakError as err:
         log.error(f'Error with keycloak: {str(err)}')
         raise AccessDeniedError(f'Error with keycloak {str(err)}')
@@ -183,6 +185,7 @@ def auth_covered_func(action_name: str):
         def wrapper(*args, **kwargs):
             func.owner = None
             func.keychain = None
+            func.auth_id = None
             check_authorization(func, action_name)
             return func(*args, **kwargs)
 

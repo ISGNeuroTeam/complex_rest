@@ -55,6 +55,7 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
             return None
 
         user = self._fetch_user(user_info=keycloak_token)
+        global_vars.set_current_user(user)
         return user, None # authentication successful
 
     def _keycloak_integration(self, user_info: dict) -> User:

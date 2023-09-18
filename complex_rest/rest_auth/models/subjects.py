@@ -53,9 +53,9 @@ class KeycloakUser(User):
         self._user_info = user_info
 
         self.username = user_info['preferred_username']
-        self.first_name = user_info['given_name']
-        self.last_name = user_info['family_name']
-        self.email = user_info['email']
+        self.first_name = user_info.get('given_name')
+        self.last_name = user_info.get('family_name')
+        self.email = user_info.get('email')
         self.guid = uuid.UUID(user_info['sub'])
 
     def roles(self) -> Set['Role']:

@@ -1,3 +1,4 @@
+import requests
 from uuid import UUID
 from rest_framework.test import APIClient
 from django.test import TestCase
@@ -9,7 +10,6 @@ from rolemodel_test.models import SomePluginAuthCoveredModelUUID
 from rest_auth.authorization import has_perm_on_keycloak
 from rest_auth.exceptions import AccessDeniedError
 
-import requests
 
 
 KEYCLOAK_SETTINGS = {

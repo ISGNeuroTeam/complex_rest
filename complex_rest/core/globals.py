@@ -11,7 +11,7 @@ class GlobalVars:
     _threadmap = defaultdict(dict)
 
     def __getitem__(self, item):
-        return GlobalVars._threadmap[threading.get_ident()][item]
+        return GlobalVars._threadmap[threading.get_ident()].get(item)
 
     def __setitem__(self, key, value):
         GlobalVars._threadmap[threading.get_ident()][key] = value

@@ -57,6 +57,7 @@ default_config = {
         'client_secret_key': '',
         'realm_name': 'wdcplatform',
         'authorization': 'False',
+        'host_header_for_authorization_request': 'localhost:8090'
     }
 }
 
