@@ -8,12 +8,17 @@ from typing import Dict, List
 log = logging.getLogger('root')
 
 
-def _create_auth_covered_classes_in_db(plugin: 'Plugin', classes_import_str: List[str]):
+def _create_auth_covered_classes_in_db(plugin: 'Plugin', classes_import_str: Dict[str, list[str]]):
     from rest_auth.models import AuthCoveredClass
-    for class_import_str in classes_import_str:
+    from rest_auth.models import Action
+    for class_import_str in classes_import_str.keys():
         auth_covered_class, created = AuthCoveredClass.objects.get_or_create(
             class_import_str=class_import_str, plugin=plugin
         )
+        # suppose that actions already created
+        for action_name in classes_import_str[class_import_str]:
+            action = Action.objects.get(name=action_name, plugin=plugin)
+            auth_covered_class.actions.add(action)
 
 
 def _create_plugin_in_db(plugin_name: str):

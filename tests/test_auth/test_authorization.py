@@ -193,9 +193,20 @@ class TestPluginAuthCoveredModelClass(APITestCase):
         self.assertEqual(SomePluginAuthCoveredModel.objects.all().count(), 10)
 
     def test_role_model_init(self):
-        self.assertListEqual(
+        self.assertDictEqual(
             settings.ROLE_MODEL_AUTH_COVERED_CLASSES,
-            ['rolemodel_test.models.SomePluginAuthCoveredModel', 'rolemodel_test.models.SomePluginAuthCoveredModelUUID']
+            {
+                'rolemodel_test.models.SomePluginAuthCoveredModel': [
+                    'test.create',
+                    'test.protected_action1',
+                    'test.protected_action2'
+                ],
+                'rolemodel_test.models.SomePluginAuthCoveredModelUUID': [
+                    'test.create',
+                    'test.protected_action1',
+                    'test.protected_action2'
+                ]
+             }
         )
 
         self.assertListEqual(

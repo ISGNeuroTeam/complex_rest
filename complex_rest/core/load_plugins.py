@@ -206,11 +206,11 @@ def get_plugin_base_url(plugin_name):
 
 
 def get_plugins_auth_covered_classes(plugin_names):
-    auth_covered_classes = []
+    auth_covered_classes = dict()
     for plugin_name in plugin_names:
         try:
             plugin_auth_covered_classes = import_string(f'{plugin_name}.settings.ROLE_MODEL_AUTH_COVERED_CLASSES')
-            auth_covered_classes += plugin_auth_covered_classes
+            auth_covered_classes.update(plugin_auth_covered_classes)
         except ImportError:
             pass
     return auth_covered_classes

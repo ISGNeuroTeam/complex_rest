@@ -16,14 +16,6 @@ class Plugin(TimeStampedModel):
         return self.name
 
 
-class AuthCoveredClass(TimeStampedModel):
-    class_import_str = models.CharField(max_length=1024)  # dotted path for import
-    plugin = models.ForeignKey(Plugin, on_delete=models.CASCADE, related_name='auth_covered_classes')
-
-    def __str__(self):
-        return self.class_import_str
-
-
 class Action(TimeStampedModel, NamedModel):
     default_rule = models.BooleanField(choices=ALLOW_OR_DENY, default=True)
     plugin = models.ForeignKey(Plugin, related_name='actions', on_delete=models.CASCADE)
@@ -31,6 +23,14 @@ class Action(TimeStampedModel, NamedModel):
     class Meta:
         unique_together = ('plugin', 'name')
 
+
+class AuthCoveredClass(TimeStampedModel):
+    actions = models.ManyToManyField(Action, related_name='auth_covered_classes')
+    class_import_str = models.CharField(max_length=1024)  # dotted path for import
+    plugin = models.ForeignKey(Plugin, on_delete=models.CASCADE, related_name='auth_covered_classes')
+
+    def __str__(self):
+        return self.class_import_str
 
 class AccessRule(models.Model):
     action = models.ForeignKey(Action, on_delete=models.CASCADE, related_name='access_rules')
