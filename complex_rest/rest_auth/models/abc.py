@@ -107,6 +107,13 @@ class IAuthCovered:
         raise NotImplementedError
 
     @property
+    def auth_name(self) -> str:
+        """
+        Returns unique name  for auth covered object
+        """
+        return self.auth_id
+
+    @property
     @abstractmethod
     def owner(self) -> Optional['User']:
         """

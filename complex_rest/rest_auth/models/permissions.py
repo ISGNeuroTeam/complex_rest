@@ -26,11 +26,12 @@ class Action(TimeStampedModel, NamedModel):
 
 class AuthCoveredClass(TimeStampedModel):
     actions = models.ManyToManyField(Action, related_name='auth_covered_classes')
-    class_import_str = models.CharField(max_length=1024)  # dotted path for import
+    class_import_str = models.CharField(max_length=1024, unique=True)  # dotted path for import
     plugin = models.ForeignKey(Plugin, on_delete=models.CASCADE, related_name='auth_covered_classes')
 
     def __str__(self):
         return self.class_import_str
+
 
 class AccessRule(models.Model):
     action = models.ForeignKey(Action, on_delete=models.CASCADE, related_name='access_rules')

@@ -1,4 +1,5 @@
 import requests
+from typing import List, Dict
 from django.conf import settings
 from keycloak.keycloak_openid import KeycloakOpenID
 from keycloak.connection import ConnectionManager
@@ -7,6 +8,8 @@ from keycloak.urls_patterns import (
 )
 from urllib.parse import urlencode
 from keycloak.exceptions import raise_error_from_response, KeycloakPostError, KeycloakError
+from keycloak.openid_connection import KeycloakOpenIDConnection
+from keycloak.keycloak_uma import KeycloakUMA
 from urllib.parse import urljoin
 
 
@@ -55,5 +58,43 @@ class KeycloakClient(KeycloakOpenID):
         except KeycloakPostError:
             return False
         return data.get("result", False)
+
+
+class KeycloakResources:
+    def __init__(self):
+        openid_connection = KeycloakOpenIDConnection(
+            server_url=settings.KEYCLOAK_SETTINGS['server_url'],
+            client_id=settings.KEYCLOAK_SETTINGS['client_id'],
+            client_secret_key=settings.KEYCLOAK_SETTINGS['client_secret_key'],
+            realm_name=settings.KEYCLOAK_SETTINGS['realm_name']
+        )
+        self.keycloak_uma = KeycloakUMA(openid_connection)
+
+    def create(
+            self, unique_resource_name: str, resource_type: str, owner_name: str,
+            scopes: List[str] = None,
+            additional_attrs: Dict[str, List[str]] = None
+    ):
+        payload = {
+            'name': unique_resource_name,
+            'type': resource_type,
+            'owner': owner_name,
+            'ownerManagedAccess': True,
+        }
+        if additional_attrs:
+            payload['attributes'] = additional_attrs
+
+        if scopes:
+            payload['resource_scopes'] = scopes
+
+        resource = self.keycloak_uma.resource_set_create(payload)
+        return resource
+
+    def get_by_name(self, unique_resource_name: str):
+        ids_list = self.keycloak_uma.resource_set_list_ids(exact_name=True, name=unique_resource_name)
+        resource_id = ids_list[0]
+        resource = self.keycloak_uma.resource_set_read(resource_id=resource_id)
+        return resource
+
 
 

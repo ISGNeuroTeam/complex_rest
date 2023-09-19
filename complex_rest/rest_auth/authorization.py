@@ -6,9 +6,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from core.globals import global_vars
 from rest_auth.models.abc import IKeyChain
-from rest_auth.keycloak_client import KeycloakClient, KeycloakError
+from rest_auth.keycloak_client import KeycloakClient, KeycloakError, KeycloakResources
 from .exceptions import AccessDeniedError
-from .models import User, Action, Role, Permit, Plugin, AccessRule
+from .models import User, Action, Role, Permit, Plugin, AccessRule, AuthCoveredClass
 from .models.abc import IAuthCovered
 
 
@@ -60,7 +60,10 @@ def has_perm(user: User, action: Action, obj: IAuthCovered = None) -> bool:
         return True
 
     if settings.KEYCLOAK_SETTINGS['authorization']:
-        return has_perm_on_keycloak(global_vars['auth_header'], action.name, obj.auth_id if obj else '')
+        return has_perm_on_keycloak(
+            global_vars['auth_header'], action.name,
+            _get_unique_resource_name_for_keycloak(obj) if obj else ''
+        )
 
     is_owner = user == obj.owner if obj.owner else None
 
@@ -154,11 +157,58 @@ def check_authorization(obj: IAuthCovered, action_name: str):
         )
 
 
+def authz_integration(authz_action: str):
+    """
+    Create, update, delete records in keycloak
+    """
+    def decorator(class_method):
+        # if keycloak authorization disabled do nothing
+        if not settings.KEYCLOAK_SETTINGS['authorization']:
+            return class_method
+        keycloak_resources = KeycloakResources()
+
+        def wrapper(*args, **kwargs):
+            # make assumption that create method returns instance
+            if authz_action == 'create':
+                instance: IAuthCovered = class_method(*args, **kwargs)
+                instance_type = f'{_plugin_name(instance)}.{type(instance).__name__}'
+                instance_unique_name = f'{instance_type}.{instance.auth_name}'
+                keycloak_record = keycloak_resources.create(
+                    instance_unique_name,
+                    instance_type,
+                    # instance.owner.username,
+                    global_vars.get_current_user().username,  # todo, this is wrong current user not always owner
+                    _get_actions_for_auth_obj(instance)
+                )
+            return instance
+
+        return wrapper
+    return decorator
+
+
 def _plugin_name(obj):
     """
     Returns plugin name for object
     """
     return obj.__module__.split('.')[0]
+
+
+def _get_actions_for_auth_obj(auth_obj: IAuthCovered) -> List[str]:
+    """
+    Returns list of action names for auth instance
+    """
+    # find class that inherits IAuthCovered
+    auth_cls = type(auth_obj)
+    auth_covered_class = auth_cls.__mro__[auth_cls.__mro__.index(IAuthCovered)-1]
+    cls_import_str = f'{auth_covered_class.__module__}.{auth_covered_class.__name__}'
+    auth_covered_class = AuthCoveredClass.objects.get(class_import_str=cls_import_str)
+    return list(auth_covered_class.actions.all().values_list('name', flat=True))
+
+
+def _get_unique_resource_name_for_keycloak(obj: IAuthCovered):
+    obj_type = f'{_plugin_name(obj)}.{type(obj).__name__}'
+    instance_unique_name = f'{obj_type}.{obj.auth_name}'
+    return instance_unique_name
 
 
 def auth_covered_method(action_name: str):

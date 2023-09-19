@@ -8,6 +8,7 @@ from urllib.parse import urlencode
 from importlib import reload, import_module
 from rolemodel_test.models import SomePluginAuthCoveredModelUUID
 from rest_auth.authorization import has_perm_on_keycloak
+from rest_auth.keycloak_client import KeycloakResources
 from rest_auth.exceptions import AccessDeniedError
 
 
@@ -97,3 +98,11 @@ with override_settings(REST_FRAMEWORK=REST_FRAMEWORK, KEYCLOAK_SETTINGS=KEYCLOAK
             self.assertTrue(
                 has_perm_on_keycloak(f'Bearer {access_token}', 'test.protected_action1', objs[2].auth_id)
             )
+
+        def test_create_resource(self):
+            keycloak_resources = KeycloakResources()
+            resource = keycloak_resources.create('test_name', 'test_type', 'test_user', ['read', 'write'], {'some_attr': 4})
+            resource2 = keycloak_resources.create('test_name2', 'test_type', 'test_user', ['read', 'write'], {'some_attr': 4})
+            resource_get = keycloak_resources.get_by_name('test_name')
+            self.assertEqual(resource['name'], resource_get['name'])
+            self.assertListEqual(resource['resource_scopes'], resource2['resource_scopes'])
