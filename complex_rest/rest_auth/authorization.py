@@ -206,6 +206,8 @@ def _get_actions_for_auth_obj(auth_obj: IAuthCovered) -> List[str]:
 
 
 def _get_unique_resource_name_for_keycloak(obj: IAuthCovered):
+    if not isinstance(obj, IAuthCovered):
+        return ''
     obj_type = f'{_plugin_name(obj)}.{type(obj).__name__}'
     instance_unique_name = f'{obj_type}.{obj.auth_name}'
     return instance_unique_name
@@ -241,6 +243,7 @@ def auth_covered_func(action_name: str):
             func.owner = None
             func.keychain = None
             func.auth_id = None
+            func.auth_name = None
             check_authorization(func, action_name)
             return func(*args, **kwargs)
 

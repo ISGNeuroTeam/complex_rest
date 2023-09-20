@@ -36,9 +36,14 @@ class KeycloakClient(KeycloakOpenID):
         self.host_header_authz_req = settings.KEYCLOAK_SETTINGS['host_header_for_authorization_request']
 
     def authorization_request(self, auth_header, action: str, resource_unique_name: str = ''):
+        if resource_unique_name:
+            keycloak_resources = KeycloakResources()
+            resource_id = keycloak_resources.get_resource_id(resource_unique_name)
+        else:
+            resource_id = ''
         payload = {
             "grant_type": "urn:ietf:params:oauth:grant-type:uma-ticket",
-            "permission": f'{resource_unique_name}#{action}',
+            "permission": f'{resource_id}#{action}',
             "response_mode": "decision",
             "audience": self.client_id,
         }
@@ -47,12 +52,13 @@ class KeycloakClient(KeycloakOpenID):
         # However keycloak cannot evaluate the null set
         if len(payload["permission"]) == 0:
             return True
-
+        print(payload)
         connection = ConnectionManager(self.connection.base_url)
         connection.add_param_headers("Authorization", auth_header)
         connection.add_param_headers("Content-Type", "application/x-www-form-urlencoded")
         connection.add_param_headers("Host", self.host_header_authz_req)
         data_raw = connection.raw_post(URL_TOKEN.format(**{"realm-name": self.realm_name}), data=payload)
+        print(data_raw.content)
         try:
             data = raise_error_from_response(data_raw, KeycloakPostError)
         except KeycloakPostError:
@@ -90,9 +96,12 @@ class KeycloakResources:
         resource = self.keycloak_uma.resource_set_create(payload)
         return resource
 
-    def get_by_name(self, unique_resource_name: str):
+    def get_resource_id(self, unique_resource_name: str):
         ids_list = self.keycloak_uma.resource_set_list_ids(exact_name=True, name=unique_resource_name)
-        resource_id = ids_list[0]
+        return ids_list[0]
+
+    def get_by_name(self, unique_resource_name: str):
+        resource_id = self.get_resource_id(unique_resource_name)
         resource = self.keycloak_uma.resource_set_read(resource_id=resource_id)
         return resource
 
