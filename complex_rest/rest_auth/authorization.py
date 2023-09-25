@@ -1,6 +1,6 @@
 import logging
 
-from typing import Any, List
+from typing import Any, List, Callable
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
@@ -157,10 +157,39 @@ def check_authorization(obj: IAuthCovered, action_name: str):
         )
 
 
-def authz_integration(authz_action: str):
+def authz_integration(
+        authz_action: str, id_attr: str = None,
+        type_name_func: Callable = None, unique_name_func: Callable = None
+):
     """
-    Create, update, delete records in keycloak
+    Decorator for Create, update, delete records in keycloak.
+    Args:
+        authz_action (str): action in authorization model which requires integration
+            - create
+            - update
+            - delete
+        id_attr (str): attribute name for id, default is 'id'
+        type_name_func (Callable): function to generate type for object
+            Default function is f'{_plugin_name(instance)}.{type(instance).__name__}'
+        unique_name_func (Callable): function to generate unique name for object.
+            Default function is  f'{instance_type}.{instance.auth_name}
     """
+    if not id_attr:
+        id_attr = 'id'
+
+    def default_type_name_func(obj: IAuthCovered):
+        return f'{_plugin_name(obj)}.{type(obj).__name__}'
+
+    def default_unique_name_func(obj: IAuthCovered):
+        obj_type = default_type_name_func(obj)
+        return f'{obj_type}.{obj.auth_name}'
+
+    if not unique_name_func:
+        unique_name_func = default_unique_name_func
+
+    if not type_name_func:
+        type_name_func = default_type_name_func
+
     def decorator(class_method):
         # if keycloak authorization disabled do nothing
         if not settings.KEYCLOAK_SETTINGS['authorization']:
@@ -171,14 +200,33 @@ def authz_integration(authz_action: str):
             # make assumption that create method returns instance
             if authz_action == 'create':
                 instance: IAuthCovered = class_method(*args, **kwargs)
-                instance_type = f'{_plugin_name(instance)}.{type(instance).__name__}'
-                instance_unique_name = f'{instance_type}.{instance.auth_name}'
+                instance_type = type_name_func(instance)
+                instance_unique_name = unique_name_func(instance)
                 keycloak_record = keycloak_resources.create(
+                    str(getattr(instance, id_attr)),
+                    instance_unique_name,
+                    instance_type,
+                    instance.owner.username,
+                    _get_actions_for_auth_obj(instance)
+                )
+            if authz_action == 'update':
+                # first argument in class method is self
+                instance = args[0]
+                instance_type = type_name_func(instance)
+                instance_unique_name = unique_name_func(instance)
+                keycloak_record = keycloak_resources.update(
+                    getattr(instance, id_attr),
                     instance_unique_name,
                     instance_type,
                     # instance.owner.username,
-                    global_vars.get_current_user().username,  # todo, this is wrong current user not always owner
+                    instance.owner.username,
                     _get_actions_for_auth_obj(instance)
+                )
+            if authz_action == 'delete':
+                # first argument in class method is self
+                instance = args[0]
+                keycloak_resources.delete(
+                    getattr(instance, id_attr),
                 )
             return instance
 

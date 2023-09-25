@@ -1,4 +1,5 @@
 import requests
+import uuid
 from typing import List, Dict
 from django.conf import settings
 from keycloak.keycloak_openid import KeycloakOpenID
@@ -52,13 +53,11 @@ class KeycloakClient(KeycloakOpenID):
         # However keycloak cannot evaluate the null set
         if len(payload["permission"]) == 0:
             return True
-        print(payload)
         connection = ConnectionManager(self.connection.base_url)
         connection.add_param_headers("Authorization", auth_header)
         connection.add_param_headers("Content-Type", "application/x-www-form-urlencoded")
         connection.add_param_headers("Host", self.host_header_authz_req)
         data_raw = connection.raw_post(URL_TOKEN.format(**{"realm-name": self.realm_name}), data=payload)
-        print(data_raw.content)
         try:
             data = raise_error_from_response(data_raw, KeycloakPostError)
         except KeycloakPostError:
@@ -67,21 +66,88 @@ class KeycloakClient(KeycloakOpenID):
 
 
 class KeycloakResources:
+    user_url = '/admin/realms/{realm_name}/users/{user_uuid}'
+    user_roles_url = '/admin/realms/{realm_name}/users/{user_uuid}/role-mappings/realm'
+
     def __init__(self):
-        openid_connection = KeycloakOpenIDConnection(
+        self.openid_connection = KeycloakOpenIDConnection(
             server_url=settings.KEYCLOAK_SETTINGS['server_url'],
             client_id=settings.KEYCLOAK_SETTINGS['client_id'],
             client_secret_key=settings.KEYCLOAK_SETTINGS['client_secret_key'],
             realm_name=settings.KEYCLOAK_SETTINGS['realm_name']
         )
-        self.keycloak_uma = KeycloakUMA(openid_connection)
+        self.keycloak_uma = KeycloakUMA(self.openid_connection)
+
+    def get_user(self, user_uuid: uuid.UUID) -> dict:
+        data_raw = self.openid_connection.raw_get(
+            self.user_url.format(user_uuid=user_uuid, realm_name=self.openid_connection.realm_name)
+        )
+        data = raise_error_from_response(data_raw, KeycloakError)
+        return data
+
+    def get_user_roles_names(self, user_uuid) -> List[str]:
+        data_raw = self.openid_connection.raw_get(
+            self.user_roles_url.format(user_uuid=user_uuid, realm_name=self.openid_connection.realm_name)
+        )
+        data = raise_error_from_response(data_raw, KeycloakError)
+        return list(map(lambda role: role['name'], data))
 
     def create(
-            self, unique_resource_name: str, resource_type: str, owner_name: str,
+            self, _id: str, unique_resource_name: str, resource_type: str, owner_name: str,
             scopes: List[str] = None,
             additional_attrs: Dict[str, List[str]] = None
     ):
+        """
+        Args:
+            _id (str): unique id, max length is 36
+            unique_resource_name (str): unique resource name
+            resource_type (str): resource type
+            owner_name (str): owner_name
+            scopes (str): list of strings (action names)
+            additional_attrs (dict): any additional attributes
+        """
+        payload = self._form_payload(_id, unique_resource_name, resource_type, owner_name, scopes, additional_attrs)
+        resource = self.keycloak_uma.resource_set_create(payload)
+        return resource
+
+    def update(
+            self, _id: str, unique_resource_name: str, resource_type: str, owner_name: str,
+            scopes: List[str] = None,
+            additional_attrs: Dict[str, List[str]] = None
+    ):
+        """
+        Args:
+            _id (str): unique id, max length is 36
+            unique_resource_name (str): unique resource name
+            resource_type (str): resource type
+            owner_name (str): owner_name
+            scopes (str): list of strings (action names)
+            additional_attrs (dict): any additional attributes
+        """
+        payload = self._form_payload(_id, unique_resource_name, resource_type, owner_name, scopes, additional_attrs)
+        resource = self.keycloak_uma.resource_set_update(_id, payload)
+        return resource
+
+    def delete(self, _id: str):
+        return self.keycloak_uma.resource_set_delete(_id)
+
+    @staticmethod
+    def _form_payload(
+            _id: str, unique_resource_name: str, resource_type: str, owner_name: str,
+            scopes: List[str] = None,
+            additional_attrs: Dict[str, List[str]] = None
+    ):
+        """
+        Args:
+            _id (str): unique id, max length is 36
+            unique_resource_name (str): unique resource name
+            resource_type (str): resource type
+            owner_name (str): owner_name
+            scopes (str): list of strings (action names)
+            additional_attrs (dict): any additional attributes
+        """
         payload = {
+            '_id': _id,
             'name': unique_resource_name,
             'type': resource_type,
             'owner': owner_name,
@@ -93,8 +159,7 @@ class KeycloakResources:
         if scopes:
             payload['resource_scopes'] = scopes
 
-        resource = self.keycloak_uma.resource_set_create(payload)
-        return resource
+        return payload
 
     def get_resource_id(self, unique_resource_name: str):
         ids_list = self.keycloak_uma.resource_set_list_ids(exact_name=True, name=unique_resource_name)

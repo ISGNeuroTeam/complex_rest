@@ -1,4 +1,5 @@
 import json
+import uuid
 from jose.exceptions import JOSEError
 
 from django.contrib.auth import get_user_model
@@ -71,8 +72,13 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
         """
         Create user from keycloak
         """
+        username = user_info['preferred_username']
+        first_name = user_info.get('given_name')
+        last_name = user_info.get('family_name')
+        email = user_info.get('email')
+        guid = uuid.UUID(user_info['sub'])
+        return KeycloakUser(guid, username, first_name, last_name, email, user_info['realm_access']['roles'])
 
-        return KeycloakUser(user_info)
 
     def _fetch_groups(self, user_group_info: dict):
         """

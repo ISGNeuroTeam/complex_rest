@@ -1,10 +1,12 @@
 import uuid
 
-from typing import Set
+from typing import Set, List
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group as DjangoGroup,\
     Permission as DjangoPermission, AnonymousUser as DjangoAnonymousUser
 from django.utils.translation import gettext_lazy as _
+from keycloak.exceptions import KeycloakError
+from rest_auth.keycloak_client import KeycloakResources
 from mixins.models import TimeStampedModel, NamedModel
 
 
@@ -31,6 +33,17 @@ class User(AbstractUser):
         related_query_name="user",
     )
 
+    @staticmethod
+    def get_user(user_guid: uuid.UUID) -> 'User':
+        try:
+            user = User.objects.get(guid=user_guid)
+        except User.DoesNotExist:
+            try:
+                user = KeycloakUser.get_user(user_guid)
+            except KeycloakError:
+                raise User.DoesNotExist
+        return user
+
     def roles(self) -> Set['Roles']:
         roles_set = set()
         for group in self.groups.all():
@@ -44,32 +57,52 @@ class User(AbstractUser):
 
 
 class KeycloakUser(User):
-    def __init__(self, user_info: dict, *args, **kwargs):
+    def __init__(
+            self, guid: uuid.UUID, username: str, first_name: str, last_name: str, email: str,
+            roles_list: List[str],
+            *args, **kwargs
+    ):
         """
         Args:
             user_info (dict): user info from token
         """
         super().__init__(*args, **kwargs)
-        self._user_info = user_info
+        self.roles_list = roles_list
 
-        self.username = user_info['preferred_username']
-        self.first_name = user_info.get('given_name')
-        self.last_name = user_info.get('family_name')
-        self.email = user_info.get('email')
-        self.guid = uuid.UUID(user_info['sub'])
+        self.username = username
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.guid = guid
+
+    @staticmethod
+    def get_user(user_guid):
+        keycloak_client = KeycloakResources()
+        user_data: dict = keycloak_client.get_user(user_guid)
+        user_roles = keycloak_client.get_user_roles_names(user_guid)
+        user = KeycloakUser(
+            user_data['id'],
+            user_data['username'],
+            user_data.get('firstName'),
+            user_data.get('lastName'),
+            user_data.get('email'),
+            user_roles
+        )
+        return user
 
     def roles(self) -> Set['Role']:
         """
         Returns Roles set
         """
         roles = set()
-        for role_name in self._user_info['realm_access']['roles']:
+        for role_name in self.roles_list:
             role, created = Role.objects.get_or_create(name=role_name)
             roles.add(role)
         return roles
 
     class Meta:
         proxy = True
+
 
 class AnonymousUser(DjangoAnonymousUser):
     guid = uuid.UUID('00000000-0000-0000-0000-000000000000')

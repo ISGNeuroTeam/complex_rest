@@ -82,7 +82,6 @@ with override_settings(REST_FRAMEWORK=REST_FRAMEWORK, KEYCLOAK_SETTINGS=KEYCLOAK
             self.assertEqual(resp.data['message'], 'secret message')
 
         def test_keycloak_authorization(self):
-            # create 10 plugin objects
             objs = []
             for i in range(3):
                 obj = SomePluginAuthCoveredModelUUID(id=UUID(f'00000000-0000-0000-0000-00000000000{i}'))
