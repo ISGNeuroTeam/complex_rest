@@ -5,6 +5,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, Group as DjangoGroup,\
     Permission as DjangoPermission, AnonymousUser as DjangoAnonymousUser
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
 from keycloak.exceptions import KeycloakError
 from rest_auth.keycloak_client import KeycloakResources
 from mixins.models import TimeStampedModel, NamedModel
@@ -37,11 +38,14 @@ class User(AbstractUser):
     def get_user(user_guid: uuid.UUID) -> 'User':
         try:
             user = User.objects.get(guid=user_guid)
-        except User.DoesNotExist:
-            try:
-                user = KeycloakUser.get_user(user_guid)
-            except KeycloakError:
-                raise User.DoesNotExist
+        except User.DoesNotExist as err:
+            if settings.KEYCLOAK_SETTINGS['enabled']:
+                try:
+                    user = KeycloakUser.get_user(user_guid)
+                except KeycloakError:
+                    raise User.DoesNotExist
+            else:
+                raise err
         return user
 
     def roles(self) -> Set['Roles']:
