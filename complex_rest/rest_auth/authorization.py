@@ -197,6 +197,13 @@ def authz_integration(
         keycloak_resources = KeycloakResources()
 
         def wrapper(*args, **kwargs):
+            print(f'!!!ingtegrating {authz_action}')
+            # authorization disabled by args or global variables
+            if global_vars['disable_authorization']:
+                return class_method(*args, **kwargs)
+            if kwargs.get('ignore_authorization'):
+                return class_method(*args, **kwargs)
+
             # make assumption that create method returns instance
             if authz_action == 'create':
                 instance: IAuthCovered = class_method(*args, **kwargs)
@@ -209,26 +216,32 @@ def authz_integration(
                     instance.owner.username,
                     _get_actions_for_auth_obj(instance)
                 )
+                return instance
+
             if authz_action == 'update':
+                returned = class_method(*args, **kwargs)
                 # first argument in class method is self
                 instance = args[0]
                 instance_type = type_name_func(instance)
                 instance_unique_name = unique_name_func(instance)
                 keycloak_record = keycloak_resources.update(
-                    getattr(instance, id_attr),
+                    str(getattr(instance, id_attr)),
                     instance_unique_name,
                     instance_type,
-                    # instance.owner.username,
                     instance.owner.username,
                     _get_actions_for_auth_obj(instance)
                 )
+                return returned
             if authz_action == 'delete':
+                returned = class_method(*args, **kwargs)
                 # first argument in class method is self
                 instance = args[0]
                 keycloak_resources.delete(
                     getattr(instance, id_attr),
                 )
-            return instance
+                return returned
+
+            return class_method(*args, **kwargs)
 
         return wrapper
     return decorator
