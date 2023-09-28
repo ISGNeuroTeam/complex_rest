@@ -36,12 +36,14 @@ class KeycloakClient(KeycloakOpenID):
         super(KeycloakClient, self).__init__(*args, **kwargs)
         self.host_header_authz_req = settings.KEYCLOAK_SETTINGS['host_header_for_authorization_request']
 
-    def authorization_request(self, auth_header, action: str, resource_unique_name: str = ''):
-        if resource_unique_name:
+    def authorization_request(self, auth_header, action: str, resource_id: str = None, resource_unique_name: str = None):
+        if resource_id is None and resource_unique_name is None:
+            resource_id = ''
+
+        if resource_id is None:
             keycloak_resources = KeycloakResources()
             resource_id = keycloak_resources.get_resource_id(resource_unique_name)
-        else:
-            resource_id = ''
+
         payload = {
             "grant_type": "urn:ietf:params:oauth:grant-type:uma-ticket",
             "permission": f'{resource_id}#{action}',
@@ -129,6 +131,7 @@ class KeycloakResources:
         return resource
 
     def delete(self, _id: str):
+        print(f'Deleting {_id}')
         return self.keycloak_uma.resource_set_delete(_id)
 
     @staticmethod
@@ -163,6 +166,7 @@ class KeycloakResources:
 
     def get_resource_id(self, unique_resource_name: str):
         ids_list = self.keycloak_uma.resource_set_list_ids(exact_name=True, name=unique_resource_name)
+        print(ids_list)
         return ids_list[0]
 
     def get_by_name(self, unique_resource_name: str):

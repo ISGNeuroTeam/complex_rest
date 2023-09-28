@@ -2,7 +2,7 @@ import uuid
 from typing import Optional, Iterable
 from django.db import models
 
-from rest_auth.authorization import auth_covered_method
+from rest_auth.authorization import auth_covered_method, authz_integration
 from rest_auth.models import KeyChainModel, AuthCoveredModel, List
 
 
@@ -57,6 +57,21 @@ class SomePluginAuthCoveredModelUUID(AuthCoveredModel):
     @classmethod
     def get_auth_object(cls, obj_id: str) -> 'IAuthCovered':
         return cls.objects.get(pk=obj_id)
+
+    @authz_integration(authz_action='create', unique_name_func=lambda x: x.auth_name)
+    @classmethod
+    def create(cls, *args, **kwargs):
+        obj = SomePluginAuthCoveredModelUUID(*args, **kwargs)
+        obj.save()
+        return obj
+
+    @property
+    def auth_id(self) -> str:
+        return str(self.id)
+
+    @property
+    def auth_name(self):
+        return self.name
 
     def save(self, *args, **kwargs):
         if not self.id:

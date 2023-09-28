@@ -1,3 +1,5 @@
+import uuid
+
 from django.apps import apps
 from django.conf import settings
 
@@ -77,6 +79,7 @@ class TestSimpleAuthProtection(TestCase):
             @property
             def owner(self):
                 return None
+            auth_id = str(uuid.uuid4())
 
         test_obj = ProtectedObject()
         with self.assertRaises(AccessDeniedError) as err:

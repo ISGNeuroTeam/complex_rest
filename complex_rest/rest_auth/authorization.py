@@ -237,7 +237,7 @@ def authz_integration(
                 # first argument in class method is self
                 instance = args[0]
                 keycloak_resources.delete(
-                    getattr(instance, id_attr),
+                    str(getattr(instance, id_attr)),
                 )
                 return returned
 

@@ -1,3 +1,5 @@
+import uuid
+
 import requests
 from uuid import UUID
 from rest_framework.test import APIClient
@@ -84,8 +86,9 @@ with override_settings(REST_FRAMEWORK=REST_FRAMEWORK, KEYCLOAK_SETTINGS=KEYCLOAK
         def test_keycloak_authorization(self):
             objs = []
             for i in range(3):
-                obj = SomePluginAuthCoveredModelUUID(id=UUID(f'00000000-0000-0000-0000-00000000000{i}'))
-                obj.save()
+                obj = SomePluginAuthCoveredModelUUID.create(
+                    id=UUID(f'00000000-0000-0000-0000-00000000000{i}'), name='test_name' + str(uuid.uuid4())
+                )
                 objs.append(obj)
             access_token = self._get_keycloak_access_token()
             self.assertFalse(
@@ -100,8 +103,8 @@ with override_settings(REST_FRAMEWORK=REST_FRAMEWORK, KEYCLOAK_SETTINGS=KEYCLOAK
 
         def test_create_resource(self):
             keycloak_resources = KeycloakResources()
-            resource = keycloak_resources.create('test_name', 'test_type', 'test_user', ['read', 'write'], {'some_attr': 4})
-            resource2 = keycloak_resources.create('test_name2', 'test_type', 'test_user', ['read', 'write'], {'some_attr': 4})
+            resource = keycloak_resources.create(str(uuid.uuid4()), 'test_name', 'test_type', 'test_user', ['read', 'write'], {'some_attr': 4})
+            resource2 = keycloak_resources.create(str(uuid.uuid4()), 'test_name2', 'test_type', 'test_user', ['read', 'write'], {'some_attr': 4})
             resource_get = keycloak_resources.get_by_name('test_name')
             self.assertEqual(resource['name'], resource_get['name'])
             self.assertListEqual(resource['resource_scopes'], resource2['resource_scopes'])
