@@ -131,7 +131,6 @@ class KeycloakResources:
         return resource
 
     def delete(self, _id: str):
-        print(f'Deleting {_id}')
         return self.keycloak_uma.resource_set_delete(_id)
 
     @staticmethod
@@ -166,7 +165,6 @@ class KeycloakResources:
 
     def get_resource_id(self, unique_resource_name: str):
         ids_list = self.keycloak_uma.resource_set_list_ids(exact_name=True, name=unique_resource_name)
-        print(ids_list)
         return ids_list[0]
 
     def get_by_name(self, unique_resource_name: str):

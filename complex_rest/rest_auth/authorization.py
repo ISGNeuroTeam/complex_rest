@@ -175,20 +175,13 @@ def authz_integration(
             Default function is  f'{instance_type}.{instance.auth_name}
     """
     if not id_attr:
-        id_attr = 'id'
-
-    def default_type_name_func(obj: IAuthCovered):
-        return f'{_plugin_name(obj)}.{type(obj).__name__}'
-
-    def default_unique_name_func(obj: IAuthCovered):
-        obj_type = default_type_name_func(obj)
-        return f'{obj_type}.{obj.auth_name}'
+        id_attr = 'auth_id'
 
     if not unique_name_func:
-        unique_name_func = default_unique_name_func
+        unique_name_func = _get_unique_resource_name_for_keycloak
 
     if not type_name_func:
-        type_name_func = default_type_name_func
+        type_name_func = _get_resource_type_for_keycloak
 
     def decorator(class_method):
         # if keycloak authorization disabled do nothing
@@ -197,7 +190,6 @@ def authz_integration(
         keycloak_resources = KeycloakResources()
 
         def wrapper(*args, **kwargs):
-            print(f'!!!ingtegrating {authz_action}')
             # authorization disabled by args or global variables
             if global_vars['disable_authorization']:
                 return class_method(*args, **kwargs)
@@ -266,11 +258,15 @@ def _get_actions_for_auth_obj(auth_obj: IAuthCovered) -> List[str]:
     return list(auth_covered_class.actions.all().values_list('name', flat=True))
 
 
+def _get_resource_type_for_keycloak(obj: IAuthCovered):
+    return f'{_plugin_name(obj)}.{type(obj).__name__}'
+
+
 def _get_unique_resource_name_for_keycloak(obj: IAuthCovered):
     if not isinstance(obj, IAuthCovered):
         return ''
     obj_type = f'{_plugin_name(obj)}.{type(obj).__name__}'
-    instance_unique_name = f'{obj_type}.{obj.auth_name}'
+    instance_unique_name = f'{obj_type}:{obj.auth_name}'
     return instance_unique_name
 
 
