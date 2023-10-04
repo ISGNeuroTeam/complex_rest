@@ -1,3 +1,4 @@
+import uuid
 from typing import List
 from rest_auth.models import User
 from django.test import TransactionTestCase as DjangoTransactionTestCase, TestCase as DjangoTestCase
@@ -33,11 +34,13 @@ def create_test_users(ordinary_users: int = 1) -> (User, List[User]):
 
     admin_user = User.objects.create_superuser('admin', '', 'admin')
     admin_user.set_password('admin')
+    admin_user.guid = uuid.uuid4()
     admin_user.save()
     test_users = []
     for i in range(ordinary_users):
         test_user = User(username=f'test_user{i+1}')
         test_user.set_password(TEST_USER_PASSWORD)
+        test_user.guid = uuid.uuid4()
         test_user.save()
         test_users.append(test_user)
     return admin_user, test_users

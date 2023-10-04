@@ -58,10 +58,13 @@ class SomePluginAuthCoveredModelUUID(AuthCoveredModel):
     def get_auth_object(cls, obj_id: str) -> 'IAuthCovered':
         return cls.objects.get(pk=obj_id)
 
-    @authz_integration(authz_action='create', unique_name_func=lambda x: x.auth_name)
     @classmethod
+    @authz_integration(authz_action='create', unique_name_func=lambda x: x.auth_name)
     def create(cls, *args, **kwargs):
+        owner = kwargs.pop('owner', None)
         obj = SomePluginAuthCoveredModelUUID(*args, **kwargs)
+        obj.id = uuid.uuid4()
+        obj.owner = owner
         obj.save()
         return obj
 

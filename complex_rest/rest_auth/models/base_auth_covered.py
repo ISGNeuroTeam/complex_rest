@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from typing import Optional, List
 
@@ -14,7 +15,8 @@ log = logging.getLogger('root.rest_auth')
 
 
 class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
-    _owner_id = models.PositiveIntegerField(blank=True, null=True)
+    _owner_id = models.UUIDField(unique=True, default=uuid.uuid4, editable=False, null=True)
+
     _keychain_id = models.PositiveIntegerField(blank=True, null=True)
 
     # must be set by child class
@@ -46,7 +48,7 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
     def owner(self) -> User:
         try:
             if self._owner_id:
-                return User.objects.get(id=self._owner_id)
+                return User.get_user(self._owner_id)
         except User.DoesNotExist:
             log.error(f'Not found owner with id = {self._owner_id}')
         return None
@@ -54,7 +56,7 @@ class AuthCoveredModel(IAuthCovered, NamedModel, TimeStampedModel):
     @owner.setter
     def owner(self, user: Optional[User]):
         if user:
-            self._owner_id = user.id
+            self._owner_id = user.guid
         else:
             self._owner_id = None
         super(TimeStampedModel, self).save()

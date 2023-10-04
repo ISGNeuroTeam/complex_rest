@@ -205,7 +205,7 @@ def authz_integration(
                     str(getattr(instance, id_attr)),
                     instance_unique_name,
                     instance_type,
-                    instance.owner.username,
+                    instance.owner.username if instance.owner else None,
                     _get_actions_for_auth_obj(instance)
                 )
                 return instance
@@ -252,10 +252,22 @@ def _get_actions_for_auth_obj(auth_obj: IAuthCovered) -> List[str]:
     """
     # find class that inherits IAuthCovered
     auth_cls = type(auth_obj)
-    auth_covered_class = auth_cls.__mro__[auth_cls.__mro__.index(IAuthCovered)-1]
-    cls_import_str = f'{auth_covered_class.__module__}.{auth_covered_class.__name__}'
-    auth_covered_class = AuthCoveredClass.objects.get(class_import_str=cls_import_str)
-    return list(auth_covered_class.actions.all().values_list('name', flat=True))
+    auth_covered_class_mro_index = auth_cls.__mro__.index(IAuthCovered)-1
+    auth_covered_class_instance = None
+
+    for i in range(auth_covered_class_mro_index, -1, -1):
+        auth_covered_class = auth_cls.__mro__[i]
+        cls_import_str = f'{auth_covered_class.__module__}.{auth_covered_class.__name__}'
+        try:
+            auth_covered_class_instance = AuthCoveredClass.objects.get(class_import_str=cls_import_str)
+        except AuthCoveredClass.DoesNotExist:
+            continue
+        break
+
+    if auth_covered_class_instance is None:
+        raise ValueError(f'Auth covered class for object {auth_obj.auth_name} is not found')
+
+    return list(auth_covered_class_instance.actions.all().values_list('name', flat=True))
 
 
 def _get_resource_type_for_keycloak(obj: IAuthCovered):

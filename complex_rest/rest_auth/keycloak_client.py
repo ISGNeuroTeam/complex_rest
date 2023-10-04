@@ -95,7 +95,7 @@ class KeycloakResources:
         return list(map(lambda role: role['name'], data))
 
     def create(
-            self, _id: str, unique_resource_name: str, resource_type: str, owner_name: str,
+            self, _id: str, unique_resource_name: str, resource_type: str, owner_name: str=None,
             scopes: List[str] = None,
             additional_attrs: Dict[str, List[str]] = None
     ):
@@ -113,7 +113,7 @@ class KeycloakResources:
         return resource
 
     def update(
-            self, _id: str, unique_resource_name: str, resource_type: str, owner_name: str,
+            self, _id: str, unique_resource_name: str, resource_type: str, owner_name: str=None,
             scopes: List[str] = None,
             additional_attrs: Dict[str, List[str]] = None
     ):
@@ -169,6 +169,10 @@ class KeycloakResources:
 
     def get_by_name(self, unique_resource_name: str):
         resource_id = self.get_resource_id(unique_resource_name)
+        resource = self.keycloak_uma.resource_set_read(resource_id=resource_id)
+        return resource
+
+    def get(self, resource_id: str):
         resource = self.keycloak_uma.resource_set_read(resource_id=resource_id)
         return resource
 
