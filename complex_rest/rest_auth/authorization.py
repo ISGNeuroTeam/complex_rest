@@ -212,7 +212,7 @@ def authz_integration(
 
             if authz_action == 'update':
                 returned = class_method(*args, **kwargs)
-                # first argument in class method is self
+                # first argument in method is self
                 instance = args[0]
                 instance_type = type_name_func(instance)
                 instance_unique_name = unique_name_func(instance)
@@ -225,11 +225,12 @@ def authz_integration(
                 )
                 return returned
             if authz_action == 'delete':
-                returned = class_method(*args, **kwargs)
-                # first argument in class method is self
+                # first argument in  method is self
                 instance = args[0]
+                instance_id = getattr(instance, id_attr)
+                returned = class_method(*args, **kwargs)
                 keycloak_resources.delete(
-                    str(getattr(instance, id_attr)),
+                    str(instance_id),
                 )
                 return returned
 

@@ -68,6 +68,12 @@ class SomePluginAuthCoveredModelUUID(AuthCoveredModel):
         obj.save()
         return obj
 
+    @authz_integration(authz_action='update', unique_name_func=lambda x: x.auth_name)
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        self.save()
+
     @property
     def auth_id(self) -> str:
         return str(self.id)
@@ -80,3 +86,7 @@ class SomePluginAuthCoveredModelUUID(AuthCoveredModel):
         if not self.id:
             self.id = uuid.uuid4()
         super().save(*args, **kwargs)
+
+    @authz_integration(authz_action='delete')
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)

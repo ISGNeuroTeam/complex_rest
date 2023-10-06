@@ -7,6 +7,7 @@ from rest_framework.test import APIClient
 from django.test import TestCase
 from django.test import override_settings
 from django.conf import settings
+from keycloak.exceptions import KeycloakGetError
 from urllib.parse import urlencode
 from importlib import reload, import_module
 from rest_auth.authorization import has_perm_on_keycloak
@@ -94,14 +95,20 @@ class KeycloakTestCase(TestCase):
         self.assertListEqual(resource['resource_scopes'], resource2['resource_scopes'])
 
     @skipIf(settings.KEYCLOAK_SETTINGS['authorization'] is False, 'Skip keycloak test because of settings')
-    def test_create_sync(self):
+    def test_crud_sync(self):
         rest_authorization = import_module('rest_auth.authorization')
         reload(rest_authorization)
         test_model = import_module('rolemodel_test.models')
         reload(test_model)
         test_user = User.get_user(test_user_guid)
         obj = SomePluginAuthCoveredModelUUID.create(owner=test_user)
-        print(obj.owner)
         keycloak_resources = KeycloakResources()
         resource = keycloak_resources.get(obj.auth_id)
         self.assertEqual(str(obj.auth_id), resource['_id'])
+        obj.update(name='new_name')
+        resource = keycloak_resources.get(obj.auth_id)
+        self.assertEqual('new_name', resource['name'])
+        obj.delete()
+        with self.assertRaises(KeycloakGetError):
+            resource = keycloak_resources.get(obj.auth_id)
+
