@@ -60,6 +60,11 @@ class KeycloakClient(KeycloakOpenID):
         connection.add_param_headers("Content-Type", "application/x-www-form-urlencoded")
         connection.add_param_headers("Host", self.host_header_authz_req)
         data_raw = connection.raw_post(URL_TOKEN.format(**{"realm-name": self.realm_name}), data=payload)
+        response_content = data_raw.json()
+        # if resource doesn't exist make query only with action
+        if 'error' in response_content and response_content['error'] == 'invalid_resource':
+            payload["permission"] = f'#{payload["permission"].split("#")[1]}'
+            data_raw = connection.raw_post(URL_TOKEN.format(**{"realm-name": self.realm_name}), data=payload)
         try:
             data = raise_error_from_response(data_raw, KeycloakPostError)
         except KeycloakPostError:

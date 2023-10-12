@@ -5,6 +5,7 @@ from jose.exceptions import JOSEError
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
+from logging import getLogger
 from django.conf import settings
 from rest_auth.models import Group, Role, User, KeycloakUser
 
@@ -16,6 +17,8 @@ from core.globals import global_vars
 from .exceptions import AuthenticationFailed, InvalidToken, TokenError
 from .settings import api_settings
 from .keycloak_client import KeycloakClient
+
+log = getLogger('')
 
 User = get_user_model()
 
@@ -47,7 +50,14 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
 
         if not auth_header:
             return None
-        token_type, access_token = auth_header.split()
+        try:
+            token_type, access_token = auth_header.split()
+        except ValueError:
+            log.error('Got invalid authorization header')
+            raise AuthenticationFailed(
+                _('Authorization header must contain two space-delimited values'),
+                code='bad_authorization_header',
+            )
 
         keycloak_public_key = "-----BEGIN PUBLIC KEY-----\n" + self.keycloak_client.public_key() + "\n-----END PUBLIC KEY-----"
         try:
