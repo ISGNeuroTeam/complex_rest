@@ -62,7 +62,8 @@ def has_perm(user: User, action: Action, obj: IAuthCovered = None) -> bool:
     if settings.KEYCLOAK_SETTINGS['authorization']:
         return has_perm_on_keycloak(
             global_vars['auth_header'], action.name,
-            _get_unique_resource_name_for_keycloak(obj) if obj else ''
+            _get_unique_resource_name_for_keycloak(obj) if obj else '',
+            f'{_get_resource_type_for_keycloak(obj)}:default_resource',
         )
 
     is_owner = user == obj.owner if obj.owner else None
@@ -85,7 +86,7 @@ def has_perm(user: User, action: Action, obj: IAuthCovered = None) -> bool:
         return action.default_rule
 
 
-def has_perm_on_keycloak(auth_header, action_name: str, object_auth_id: str = None) -> bool:
+def has_perm_on_keycloak(auth_header, action_name: str, object_auth_id: str, default_resource_name=None) -> bool:
     """
     Sends request to keycloak
     Returns True if user has right to do action on object
@@ -94,7 +95,8 @@ def has_perm_on_keycloak(auth_header, action_name: str, object_auth_id: str = No
     keycloak_client = KeycloakClient()
     try:
         return keycloak_client.authorization_request(
-            auth_header, action_name, object_auth_id if object_auth_id else ''
+            auth_header, action_name, object_auth_id if object_auth_id else '',
+            default_resource_name=default_resource_name
         )
     except KeycloakError as err:
         log.error(f'Error with keycloak: {str(err)}')
@@ -206,7 +208,7 @@ def authz_integration(
                     instance_unique_name,
                     instance_type,
                     instance.owner.username if instance.owner else None,
-                    _get_actions_for_auth_obj(instance)
+                    instance.get_actions_for_auth_obj()
                 )
                 return instance
 
@@ -221,7 +223,7 @@ def authz_integration(
                     instance_unique_name,
                     instance_type,
                     instance.owner.username,
-                    _get_actions_for_auth_obj(instance)
+                    instance.get_actions_for_auth_obj()
                 )
                 return returned
             if authz_action == 'delete':
@@ -247,30 +249,6 @@ def _plugin_name(obj):
     return obj.__module__.split('.')[0]
 
 
-def _get_actions_for_auth_obj(auth_obj: IAuthCovered) -> List[str]:
-    """
-    Returns list of action names for auth instance
-    """
-    # find class that inherits IAuthCovered
-    auth_cls = type(auth_obj)
-    auth_covered_class_mro_index = auth_cls.__mro__.index(IAuthCovered)-1
-    auth_covered_class_instance = None
-
-    for i in range(auth_covered_class_mro_index, -1, -1):
-        auth_covered_class = auth_cls.__mro__[i]
-        cls_import_str = f'{auth_covered_class.__module__}.{auth_covered_class.__name__}'
-        try:
-            auth_covered_class_instance = AuthCoveredClass.objects.get(class_import_str=cls_import_str)
-        except AuthCoveredClass.DoesNotExist:
-            continue
-        break
-
-    if auth_covered_class_instance is None:
-        raise ValueError(f'Auth covered class for object {auth_obj.auth_name} is not found')
-
-    return list(auth_covered_class_instance.actions.all().values_list('name', flat=True))
-
-
 def _get_resource_type_for_keycloak(obj: IAuthCovered):
     return f'{_plugin_name(obj)}.{type(obj).__name__}'
 
@@ -278,7 +256,7 @@ def _get_resource_type_for_keycloak(obj: IAuthCovered):
 def _get_unique_resource_name_for_keycloak(obj: IAuthCovered):
     if not isinstance(obj, IAuthCovered):
         return ''
-    obj_type = f'{_plugin_name(obj)}.{type(obj).__name__}'
+    obj_type = _get_resource_type_for_keycloak(obj)
     instance_unique_name = f'{obj_type}:{obj.auth_name}'
     return instance_unique_name
 

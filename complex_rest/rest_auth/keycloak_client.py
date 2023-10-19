@@ -36,7 +36,18 @@ class KeycloakClient(KeycloakOpenID):
         super(KeycloakClient, self).__init__(*args, **kwargs)
         self.host_header_authz_req = settings.KEYCLOAK_SETTINGS['host_header_for_authorization_request']
 
-    def authorization_request(self, auth_header, action: str, resource_id: str = None, resource_unique_name: str = None):
+    def authorization_request(
+            self, auth_header, action: str, resource_id: str = None, resource_unique_name: str = None,
+            default_resource_name:str = None,
+    ):
+        """
+        Checks permissions on keycloak. Returns True or False. resource_unique_name or resource_id must be provided
+        Args:
+            auth_header (str): Authorization header
+            resource_id (str): resource id in keycloak
+            resource_unique_name (str): resource unique name
+            default_resource_name (str): if resource in keycloak don't exist try this one
+        """
         if resource_id is None and resource_unique_name is None:
             resource_id = ''
 
@@ -62,8 +73,11 @@ class KeycloakClient(KeycloakOpenID):
         data_raw = connection.raw_post(URL_TOKEN.format(**{"realm-name": self.realm_name}), data=payload)
         response_content = data_raw.json()
         # if resource doesn't exist make query only with action
-        if 'error' in response_content and response_content['error'] == 'invalid_resource':
-            payload["permission"] = f'#{payload["permission"].split("#")[1]}'
+        if ('error' in response_content and
+                response_content['error'] == 'invalid_resource' and
+                default_resource_name is not None
+        ):
+            payload["permission"] = f'{default_resource_name}#{payload["permission"].split("#")[1]}'
             data_raw = connection.raw_post(URL_TOKEN.format(**{"realm-name": self.realm_name}), data=payload)
         try:
             data = raise_error_from_response(data_raw, KeycloakPostError)
