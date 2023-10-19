@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from typing import Union, List, Optional, TYPE_CHECKING, Iterable, Union
+from .permissions import AuthCoveredClass as AuthCoveredClassModel
 from django.db.models import QuerySet
 from .permissions import PermitKeychain
 from core.load_plugins import import_string
@@ -153,6 +154,29 @@ class IAuthCovered:
         Returns object with id or None
         """
         raise NotImplementedError
+
+    def get_actions_for_auth_obj(self) -> List[str]:
+        """
+        Returns list of action names for auth instance
+        """
+        # find class that inherits IAuthCovered
+        auth_cls = type(self)
+        auth_covered_class_mro_index = auth_cls.__mro__.index(IAuthCovered) - 1
+        auth_covered_class_instance = None
+
+        for i in range(auth_covered_class_mro_index, -1, -1):
+            auth_covered_class = auth_cls.__mro__[i]
+            cls_import_str = f'{auth_covered_class.__module__}.{auth_covered_class.__name__}'
+            try:
+                auth_covered_class_instance = AuthCoveredClassModel.objects.get(class_import_str=cls_import_str)
+            except AuthCoveredClassModel.DoesNotExist:
+                continue
+            break
+
+        if auth_covered_class_instance is None:
+            raise ValueError(f'Auth covered class for object {self.auth_name} is not found')
+
+        return list(auth_covered_class_instance.actions.all().values_list('name', flat=True))
 
     def __str__(self):
         return f'{self.__class__.__name__}.{self.auth_name}'
