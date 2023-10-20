@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.contrib.auth.models import Group as DjangoGroup
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin, GroupAdmin
 from mptt.admin import MPTTModelAdmin
-from .models import Group, Role, Plugin, Action, Permit, SecurityZone, User, AccessRule
+from .models import Group, Role, Plugin, Action, Permit, SecurityZone, User, AccessRule, AuthCoveredClass
 
 
 class BaseAdmin(admin.ModelAdmin):
@@ -106,6 +106,8 @@ class SecurityZoneAdmin(MPTTModelAdmin):
 class KeyChainAdmin(BaseAdmin):
     list_filter = (('plugin', admin.RelatedOnlyFieldListFilter),)
 
+class AuthCoveredClassAdmin(BaseAdmin):
+    list_display = ['plugin', 'class_import_str']
 
 admin.site.unregister(DjangoGroup)
 admin.site.register(User, UserAdmin)
@@ -118,3 +120,4 @@ admin.site.register(Action, BaseAdmin)
 admin.site.register(Permit, PermitAdmin)
 admin.site.register(SecurityZone, SecurityZoneAdmin)
 admin.site.register(AccessRule, BaseAdmin)
+admin.site.register(AuthCoveredClass, AuthCoveredClassAdmin)
