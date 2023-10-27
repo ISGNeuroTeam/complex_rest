@@ -98,6 +98,7 @@ class IKeyChain:
 
 class IAuthCovered:
     keychain_model: IKeyChain = None
+    check_permissions_in_auth_covered_methods = True
 
     @property
     @abstractmethod

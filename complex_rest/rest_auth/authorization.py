@@ -272,7 +272,7 @@ def auth_covered_method(action_name: str):
                 del kwargs['ignore_authorization']
             else:
                 ignore_authorization = False
-            if not ignore_authorization:
+            if not ignore_authorization and args[0].check_permissions_in_auth_covered_methods:
                 # args[0] = self
                 check_authorization(args[0], action_name)
 
