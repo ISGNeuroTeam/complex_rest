@@ -193,7 +193,7 @@ def authz_integration(
 
         def wrapper(*args, **kwargs):
             # authorization disabled by args or global variables
-            if global_vars['disable_authorization']:
+            if global_vars['disable_authorization_integration']:
                 return class_method(*args, **kwargs)
             if kwargs.get('ignore_authorization'):
                 return class_method(*args, **kwargs)
@@ -272,6 +272,7 @@ def auth_covered_method(action_name: str):
                 del kwargs['ignore_authorization']
             else:
                 ignore_authorization = False
+            # check_permissions_in_auth_covered_methods - flag on class args[0] - instance of class
             if not ignore_authorization and args[0].check_permissions_in_auth_covered_methods:
                 # args[0] = self
                 check_authorization(args[0], action_name)
@@ -297,3 +298,15 @@ def auth_covered_func(action_name: str):
 
         return wrapper
     return decorator
+
+
+def ignore_authorization_decorator(f):
+
+    def wrapper(*args, **kwargs):
+        ignore_auth_state = global_vars['disable_authorization']
+        global_vars['disable_authorization'] = True
+        result = f(*args, **kwargs)
+        global_vars['disable_authorization'] = ignore_auth_state
+        return result
+
+    return wrapper
