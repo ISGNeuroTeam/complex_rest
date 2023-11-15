@@ -37,6 +37,11 @@ complex_rest.tar.gz: build
 
 build: make_build
 
+unit/venv/lib/jvm/jdk-17.0.2:
+	./docs/scripts/install_java.sh ./unit/venv/lib/jvm
+
+unit/venv/apps/keycloak-22.0.5:  unit/venv/lib/jvm/jdk-17.0.2
+	./docs/scripts/install_keycloak.sh ./unit/venv/apps
 
 make_build: venv.tar.gz
 	# required section
@@ -77,7 +82,7 @@ make_build: venv.tar.gz
 	mkdir make_build/complex_rest/venv
 	tar -xzf ./venv.tar.gz -C make_build/complex_rest/venv
 
-venv.tar.gz: unit/venv
+venv.tar.gz: unit/venv unit/venv/apps/keycloak-22.0.5
 	conda pack -p ./unit/venv -o ./venv.tar.gz
 
 unit/venv: unit kafka.tar.gz
@@ -102,6 +107,7 @@ clean_build:
 	rm -rf make_build
 
 clean: clean_build clean_venv.tar.gz clean_pack clean_kafka clean_unit clean_docker_test clean_dev
+	rm -rf *.tar.gz
 
 test: docker_test
 
