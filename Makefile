@@ -42,6 +42,10 @@ unit/venv/lib/jvm/jdk-17.0.2:
 
 unit/venv/apps/keycloak-22.0.5:  unit/venv/lib/jvm/jdk-17.0.2
 	./docs/scripts/install_keycloak.sh ./unit/venv/apps
+	cp ./docs/deploy/keycloak.conf ./unit/venv/apps/keycloak-22.0.5/conf/keycloak.conf
+	cp ./docs/docker_dev/keycloak/policies/policies.jar ./unit/venv/apps/keycloak-22.0.5/providers/
+	cp -R ./docs/deploy/keycloak_initial_realm_config ./unit/venv/apps/keycloak-22.0.5/keycloak_initial_realm_config
+
 
 make_build: venv.tar.gz
 	# required section
@@ -78,7 +82,10 @@ make_build: venv.tar.gz
 	cp ./docs/deploy/supervisord_base.conf make_build/complex_rest/supervisord_base.conf
 	cp -R ./docs/deploy/postgres_config make_build/complex_rest/postgres_config
 	cp ./docs/deploy/database_init.sh make_build/complex_rest/database_init.sh
+	cp ./docs/deploy/keycloak_database_init.sh make_build/complex_rest/keycloak_database_init.sh
 	cp ./docs/deploy/collectstatic.sh make_build/complex_rest/collectstatic.sh
+
+
 	mkdir make_build/complex_rest/venv
 	tar -xzf ./venv.tar.gz -C make_build/complex_rest/venv
 
