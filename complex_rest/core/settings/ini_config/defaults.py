@@ -51,13 +51,14 @@ default_config = {
         'bootstrap_servers': 'localhost:9092'
     },
     'keycloak': {
-        'enabled': 'False',
-        'server_url': 'http://localhost:8090',
+        'enabled': 'True',
+        'server_url': 'https://localhost:8447',
         'client_id': 'complex_rest',
         'client_secret_key': '',
         'realm_name': 'wdcplatform',
-        'authorization': 'False',
-        'host_header_for_authorization_request': 'localhost:8090'
+        'authorization': 'True',
+        'host_header_for_authorization_request': 'localhost:8447',
+        'verify_ssl': False
     }
 }
 

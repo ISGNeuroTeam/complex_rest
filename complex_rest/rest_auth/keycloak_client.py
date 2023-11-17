@@ -31,7 +31,8 @@ class KeycloakClient(KeycloakOpenID):
             'server_url': settings.KEYCLOAK_SETTINGS['server_url'],
             'client_id': settings.KEYCLOAK_SETTINGS['client_id'],
             'client_secret_key': settings.KEYCLOAK_SETTINGS['client_secret_key'],
-            'realm_name': settings.KEYCLOAK_SETTINGS['realm_name']
+            'realm_name': settings.KEYCLOAK_SETTINGS['realm_name'],
+            'verify': settings.KEYCLOAK_SETTINGS['verify_ssl'],
         })
         super(KeycloakClient, self).__init__(*args, **kwargs)
         self.host_header_authz_req = settings.KEYCLOAK_SETTINGS['host_header_for_authorization_request']
@@ -95,7 +96,8 @@ class KeycloakResources:
             server_url=settings.KEYCLOAK_SETTINGS['server_url'],
             client_id=settings.KEYCLOAK_SETTINGS['client_id'],
             client_secret_key=settings.KEYCLOAK_SETTINGS['client_secret_key'],
-            realm_name=settings.KEYCLOAK_SETTINGS['realm_name']
+            realm_name=settings.KEYCLOAK_SETTINGS['realm_name'],
+            verify=settings.KEYCLOAK_SETTINGS['verify_ssl'],
         )
         self.keycloak_uma = KeycloakUMA(self.openid_connection)
 
