@@ -69,6 +69,7 @@ make_build: venv.tar.gz
 	mkdir -p make_build/complex_rest/logs/zookeeper
 	mkdir -p make_build/complex_rest/logs/kafka
 	mkdir -p make_build/complex_rest/logs/postgres
+	mkdir -p make_build/complex_rest/logs/keycloak
 
 	mkdir -p make_build/complex_rest/plugins
 
