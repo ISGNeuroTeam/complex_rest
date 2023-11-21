@@ -139,6 +139,8 @@ dev: venv logs
 	cp ./docs/deploy/rest_dev.conf ./complex_rest/rest.conf
 
 	./docs/deploy/database_init_dev.sh
+	./venv/apps/keycloak-22.0.5/bin/kc.sh build
+	./venv/apps/keycloak-22.0.5/bin/kc.sh import --optimized --dir ./venv/apps/keycloak-22.0.5/keycloak_initial_realm_config
 	touch dev
 
 
@@ -158,22 +160,27 @@ logs:
 	mkdir -p ./logs/kafka
 	mkdir -p ./logs/postgres
 
-venv: venv_dev_pack.tar.gz
+venv: venv_dev_pack.tar.gz kafka.tar.gz
 	mkdir -p ./venv
 	tar -xzf ./venv_dev_pack.tar.gz -C ./venv
+	mkdir ./venv/apps
+	tar zxf ./kafka.tar.gz -C ./venv/apps/
+	./docs/scripts/install_java.sh ./venv/lib/jvm
+	./docs/scripts/install_keycloak.sh ./venv/apps
+	cp ./docs/docker_dev/keycloak/policies/policies.jar ./venv/apps/keycloak-22.0.5/providers/
+	cp -R ./docs/deploy/keycloak_initial_realm_config ./venv/apps/keycloak-22.0.5/keycloak_initial_realm_config
+
 
 venv_dev_pack.tar.gz: venv_dev
 	conda pack -p ./venv_dev -o ./venv_dev_pack.tar.gz
 
 
-venv_dev: kafka.tar.gz
+venv_dev:
 	conda create --copy -p ./venv_dev -y
 	conda install -p ./venv_dev python==3.9.7 -y
 	conda install -p ./venv_dev redis -y
 	conda install -p ./venv_dev postgresql==12.9 -y
 	./venv_dev/bin/pip install --no-input  -r ./requirements.txt
-	mkdir ./venv_dev/apps
-	tar zxf ./kafka.tar.gz -C ./venv_dev/apps/
 
 
 clean_venv:

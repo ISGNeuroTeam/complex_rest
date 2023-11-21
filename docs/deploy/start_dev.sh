@@ -19,6 +19,7 @@ mkdir -p ./logs/celery
 mkdir -p ./logs/zookeeper
 mkdir -p ./logs/kafka
 mkdir -p ./logs/postgres
+mkdir -p ./logs/keycloak
 
 mkdir -p ./deploy_state
 
