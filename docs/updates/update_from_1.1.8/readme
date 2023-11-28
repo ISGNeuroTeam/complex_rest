@@ -1,0 +1,78 @@
+# Update from 1.1.8 to 2.0.0
+
+## 0 Backup `complex_rest` directory
+## 1  Stop complex_rest
+```bash
+stop.sh
+```
+## 2 Unpack new version. Example:
+```bash
+tar -xzf complex_rest-2.0.0-master.tar.gz -C /opt/otp
+```
+## 3 Configure keycloak
+### 3.1 Edit Keycloak configuration `venv/apps/keycloak-22.0.5/conf/keycloak.conf`. Configure `hostname` option
+### 3.2 Put certificate (`cert.pem`) and private key (`key.pem`) for ssl in root of `complex_rest` directory.
+For testing purposes only you can generate self signed certificate:
+```
+openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
+```
+### 3.3 Configure complex_rest for working with keycloak `./complex_rest/rest.conf`. Example:
+```ini
+[keycloak]
+enabled=True
+server_url = https://localhost:8447
+client_id = complex_rest
+client_secret_key = MeD8Vyu1I44XvGeI7C9hIJQEhx87aETD
+realm_name = wdcplatform
+authorization=True
+host_header_for_authorization_request=localhost:8447
+verify_ssl=False
+```
+Change `server_url` and `host_header_for_authorization_request` with actual hostname
+#### 3.3.1 Keycloak options:
+`enabled` - enable authentication through keycloak
+`server_url` - keycloak server url
+`client_id` - client id in keycloak for complex_rest. Must be configured in keyclaok.
+`client_secret_key` - client secret key for complext rest.
+`realm_name` - realm name
+`authorization` - enable authorization checks through keycloak.
+`host_header_for_authorization_request`. *complex_rest and frontend can access different addresses for keycloak. This header must be the same as keycloak address for frontend*
+`verify_ssl` - verify ssl certificate
+### 3.4 Initialize keycloak database
+```bash
+./keycloak_database_init.sh
+```
+## 4. Apply complex_rest migrations:
+```bash
+. ./venv/bin/activate
+python ./complex_rest/manage.py migrate
+python ./complex_rest/manage.py migrate --database=auth_db
+```
+## 5. Start:
+```bash
+./start.sh
+```
+## 6  Generate secret key for complex_rest client in keycloak admin. Go to keycloak admin `https://localhost:8447/admin`
+```
+wdcplatform->clients->complex_rest->credentials->regenerate
+```
+Put new secret key in `rest.conf`
+## 7. Stop and start complex_rest
+```bash
+./stop.sh
+./start.sh
+```
+##  8. Check that every service is running:
+```bash
+. ./venv/bin/activate
+supervisorctl status
+celery-beat                      RUNNING   pid 27669, uptime 0:09:33
+celery-worker                    RUNNING   pid 27678, uptime 0:09:33
+kafka                            RUNNING   pid 28926, uptime 0:09:15
+keycloak                         RUNNING   pid 27665, uptime 0:09:33
+nginx-unit                       RUNNING   pid 27686, uptime 0:09:33
+postgres                         RUNNING   pid 27666, uptime 0:09:33
+redis                            RUNNING   pid 27667, uptime 0:09:33
+zookeeper                        RUNNING   pid 27671, uptime 0:09:33
+```
+
