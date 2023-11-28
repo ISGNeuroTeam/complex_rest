@@ -7,7 +7,7 @@ stop.sh
 ```
 ## 2 Unpack new version. Example:
 ```bash
-tar -xzf complex_rest-2.0.0-master.tar.gz -C /opt/otp
+tar -xzf complex_rest.tar.gz -C /opt/otp/ --exclude=complex_rest/complex_rest/nginx_unit.json
 ```
 ## 3 Configure keycloak
 ### 3.1 Edit Keycloak configuration `venv/apps/keycloak-22.0.5/conf/keycloak.conf`. Configure `hostname` option

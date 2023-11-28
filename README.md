@@ -143,6 +143,7 @@ docker-compose -f docker-compose-dev.yml run --rm  complex_rest python ./complex
 4. Run `start.sh`
 
 ## Updating
+See [update from 1.1.8](docs/updates/update_from_1.1.8/readme)
 1. Stop complex_rest
 ```bash
 ./stop.sh
