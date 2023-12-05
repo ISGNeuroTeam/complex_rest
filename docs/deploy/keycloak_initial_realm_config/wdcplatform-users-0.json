@@ -9,7 +9,14 @@
     "emailVerified" : true,
     "firstName" : "",
     "lastName" : "",
-    "credentials" : [ ],
+    "credentials" : [ {
+      "id" : "a5929048-35d4-4b0e-a5f5-a8f6e7ffa290",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1701787679116,
+      "secretData" : "{\"value\":\"DzqDasiUoxuDE8jU1L/Nl7/gY9xU9+0UmNy8j6gLBeI=\",\"salt\":\"ybztU8jo1Vvh1o2f+hZ4mg==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
     "realmRoles" : [ "default-roles-wdcplatform" ],
