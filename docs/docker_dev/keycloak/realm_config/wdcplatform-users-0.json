@@ -1,6 +1,28 @@
 {
   "realm" : "wdcplatform",
   "users" : [ {
+    "id" : "0d91b850-0146-44ea-8f7b-13d3469d1f9f",
+    "createdTimestamp" : 1701763554711,
+    "username" : "admin",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : true,
+    "firstName" : "admin",
+    "lastName" : "admin",
+    "credentials" : [ {
+      "id" : "1f61f107-6886-49b1-b696-3ff734b59fba",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1701763618689,
+      "secretData" : "{\"value\":\"0r0TMrKr2StZXX1ehCqbwngEOkyh4L93ZZGwP3TNH+M=\",\"salt\":\"IFJip+JzK9XQeYOETkBeLQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-wdcplatform" ],
+    "notBefore" : 0,
+    "groups" : [ "/admin" ]
+  }, {
     "id" : "419f04b7-6283-4cfb-bd6d-26c65e3e6514",
     "createdTimestamp" : 1693347934991,
     "username" : "amy",

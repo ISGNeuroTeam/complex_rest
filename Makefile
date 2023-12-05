@@ -85,7 +85,7 @@ make_build: venv.tar.gz
 	cp ./docs/deploy/database_init.sh make_build/complex_rest/database_init.sh
 	cp ./docs/deploy/keycloak_database_init.sh make_build/complex_rest/keycloak_database_init.sh
 	cp ./docs/deploy/collectstatic.sh make_build/complex_rest/collectstatic.sh
-    cp -R ./docs/updates make_build/complex_rest/updates
+	cp -R ./docs/updates make_build/complex_rest/updates
 
 	mkdir make_build/complex_rest/venv
 	tar -xzf ./venv.tar.gz -C make_build/complex_rest/venv

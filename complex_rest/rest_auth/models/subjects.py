@@ -64,6 +64,7 @@ class KeycloakUser(User):
     def __init__(
             self, guid: uuid.UUID, username: str, first_name: str, last_name: str, email: str,
             roles_list: List[str],
+            group_list: List[str],
             *args, **kwargs
     ):
         """
@@ -78,6 +79,9 @@ class KeycloakUser(User):
         self.last_name = last_name
         self.email = email
         self.guid = guid
+        self.group_list = group_list or list()
+        self.is_superuser = '/admin' in self.group_list
+        self.is_staff = self.is_superuser
 
     @staticmethod
     def get_user(user_guid):
@@ -90,7 +94,8 @@ class KeycloakUser(User):
             user_data.get('firstName'),
             user_data.get('lastName'),
             user_data.get('email'),
-            user_roles
+            user_roles,
+            user_data.get('groups', list())
         )
         return user
 

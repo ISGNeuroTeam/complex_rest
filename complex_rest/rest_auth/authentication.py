@@ -87,20 +87,10 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
         last_name = user_info.get('family_name')
         email = user_info.get('email')
         guid = uuid.UUID(user_info['sub'])
-        return KeycloakUser(guid, username, first_name, last_name, email, user_info['realm_access']['roles'])
-
-
-    def _fetch_groups(self, user_group_info: dict):
-        """
-        Get user groups from keycloak if they don't exist locally
-        """
-        pass
-
-    def _fetch_roles(self):
-        """
-        Get roles from keycloak if they don't exist locally
-        """
-        pass
+        return KeycloakUser(
+            guid, username, first_name, last_name, email, user_info['realm_access']['roles'],
+            user_info.get('groups', list())
+        )
 
 
 class JWTAuthentication(authentication.BaseAuthentication):
