@@ -18,7 +18,7 @@ from .exceptions import AuthenticationFailed, InvalidToken, TokenError
 from .settings import api_settings
 from .keycloak_client import KeycloakClient
 
-log = getLogger('')
+log = getLogger('main')
 
 User = get_user_model()
 
@@ -63,10 +63,12 @@ class KeycloakAuthentication(authentication.BaseAuthentication):
         try:
             keycloak_token = self.keycloak_client.decode_token(access_token, key=keycloak_public_key, options=self.keycloak_token_options)
         except JOSEError as err:
+            log.error(f"Can't decode token\n{str(err)}")
             return None
 
         user = self._fetch_user(user_info=keycloak_token)
         global_vars.set_current_user(user)
+        log.debug(f'User {user.username} authenticated through keycloak')
         return user, None # authentication successful
 
     def _keycloak_integration(self, user_info: dict) -> User:

@@ -1,4 +1,5 @@
-import requests
+import logging
+
 import uuid
 from typing import List, Dict
 from django.conf import settings
@@ -7,11 +8,11 @@ from keycloak.connection import ConnectionManager
 from keycloak.urls_patterns import (
     URL_TOKEN,
 )
-from urllib.parse import urlencode
 from keycloak.exceptions import raise_error_from_response, KeycloakPostError, KeycloakError
 from keycloak.openid_connection import KeycloakOpenIDConnection
 from keycloak.keycloak_uma import KeycloakUMA
-from urllib.parse import urljoin
+
+log = logging.getLogger('main')
 
 
 class KeycloakClient(KeycloakOpenID):
@@ -39,16 +40,18 @@ class KeycloakClient(KeycloakOpenID):
 
     def authorization_request(
             self, auth_header, action: str, resource_id: str = None, resource_unique_name: str = None,
-            default_resource_name:str = None,
+            default_resource_name: str = None,
     ):
         """
         Checks permissions on keycloak. Returns True or False. resource_unique_name or resource_id must be provided
         Args:
             auth_header (str): Authorization header
+            action (str): action name
             resource_id (str): resource id in keycloak
             resource_unique_name (str): resource unique name
             default_resource_name (str): if resource in keycloak don't exist try this one
         """
+        log.debug(f'Make authorization request in keycloak: {resource_id=}, {action=}, {resource_unique_name=}, ')
         if resource_id is None and resource_unique_name is None:
             resource_id = ''
 
@@ -67,6 +70,7 @@ class KeycloakClient(KeycloakOpenID):
         # However keycloak cannot evaluate the null set
         if len(payload["permission"]) == 0:
             return True
+
         connection = ConnectionManager(self.connection.base_url)
         connection.add_param_headers("Authorization", auth_header)
         connection.add_param_headers("Content-Type", "application/x-www-form-urlencoded")
@@ -76,8 +80,10 @@ class KeycloakClient(KeycloakOpenID):
         # if resource doesn't exist make query only with action
         if ('error' in response_content and
                 response_content['error'] == 'invalid_resource' and
-                default_resource_name is not None
-        ):
+                default_resource_name is not None):
+            log.debug(f'Resource {resource_id}:{resource_unique_name} not found.\
+            Try authorization request for default resource {default_resource_name}')
+
             payload["permission"] = f'{default_resource_name}#{payload["permission"].split("#")[1]}'
             data_raw = connection.raw_post(URL_TOKEN.format(**{"realm-name": self.realm_name}), data=payload)
         try:

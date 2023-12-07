@@ -12,7 +12,7 @@ from .models import User, Action, Role, Permit, Plugin, AccessRule, AuthCoveredC
 from .models.abc import IAuthCovered
 
 
-log = logging.getLogger('root')
+log = logging.getLogger('main')
 
 
 def _get_permissions_for_user_and_action(user: User, action: Action):
@@ -56,6 +56,7 @@ def has_perm(user: User, action: Action, obj: IAuthCovered = None) -> bool:
     """
     Returns True if user has right to do action on object with specified keychain, otherwise return False
     """
+    log.debug(f'Check permissions for user: {user.username}, action: {action.name}, object: {obj.auth_name}')
     if global_vars['disable_authorization']:
         return True
 

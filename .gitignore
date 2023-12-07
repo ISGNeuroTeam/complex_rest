@@ -11,6 +11,7 @@ media
 # PyCharm #
 .idea/
 *.iws /out/
+.vscode/
 
 # Python #
 *.py[cod]
@@ -137,3 +138,5 @@ docker-compose-local.yml
 complex_rest_db
 
 schema.yml
+
+unit/

@@ -241,7 +241,7 @@ LOG_DIR.mkdir(exist_ok=True)
 
 LOG_LEVEL = ini_config['logging']['level']
 
-LOG_ROTATION = ini_config['logging']['rotate'] == 'True'
+LOG_ROTATION = ini_config['logging']['rotate']
 
 
 """
@@ -300,7 +300,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'default': {
-            'format': '%(asctime)s %(levelname)s %(name)s %(message)s'
+            'format': '%(asctime)s %(levelname)-s PID=%(process)d %(module)s:%(lineno)d  %(name)s %(message)s'
         },
         'simple': {
             'format': '%(message)s'
@@ -311,16 +311,29 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'level': LOG_LEVEL
         },
-        'file': {
+        'file_rest_warning': {
             'class': 'logging.FileHandler',
             'level': logging.WARNING,
             'filename': str(LOG_DIR / 'rest.log'),
             'formatter': 'default',
-
         },
-        'rotate': {
+        'rotate_rest_warning': {
             'class': 'logging.handlers.RotatingFileHandler',
             'level': logging.WARNING,
+            'filename': str(LOG_DIR / 'rest.log'),
+            'maxBytes': 1024 * 1024 * int(ini_config['logging']['rotation_size']),
+            'backupCount': int(ini_config['logging']['keep_files']),
+            'formatter': 'default',
+        },
+        'main': {
+            'class': 'logging.FileHandler',
+            'level': LOG_LEVEL,
+            'filename': str(LOG_DIR / 'rest.log'),
+            'formatter': 'default',
+        },
+        'rotate_main': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': LOG_LEVEL,
             'filename': str(LOG_DIR / 'rest.log'),
             'maxBytes': 1024 * 1024 * int(ini_config['logging']['rotation_size']),
             'backupCount': int(ini_config['logging']['keep_files']),
@@ -337,14 +350,20 @@ LOGGING = {
         **plugins_log_handlers,
     },
     'root': {
-        'handlers': ['rotate', ] if LOG_ROTATION else ['file', ],
+        'handlers': ['rotate_rest_warning', ] if LOG_ROTATION else ['file_rest_warning', ],
         'level': logging.WARNING,  # rest.log contains warning and errors
     },
+
     'loggers': {
         'kafka': {
             'handlers': ['kafka', ],
             'level': ini_config['message_broker']['log_level'],
         },
+        'main': {
+            'handlers': ['rotate_main', ] if LOG_ROTATION else ['main', ],
+            'propagate': False,
+            'level': LOG_LEVEL, 
+         },
         **plugins_loggers,
     },
 }
