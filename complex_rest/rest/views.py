@@ -14,7 +14,7 @@ class HelloViewAdmin(generics.GenericAPIView):
     permission_classes = (IsAdminUser,)
 
     def get(self, request, *args, **kwargs):
-        return Response(data={'message': 'Hellow admin user'})
+        return Response(data={'message': 'Hello admin user'})
 
 
 class HelloViewAuthenticated(generics.GenericAPIView):

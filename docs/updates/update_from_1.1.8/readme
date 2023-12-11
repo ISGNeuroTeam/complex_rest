@@ -42,16 +42,18 @@ Change `server_url` and `host_header_for_authorization_request` with actual host
 ```bash
 ./keycloak_database_init.sh
 ```
-## 4. Apply complex_rest migrations:
+
+## 4. Start:
+```bash
+./start.sh
+```
+## 5. Apply complex_rest migrations:
 ```bash
 . ./venv/bin/activate
 python ./complex_rest/manage.py migrate
 python ./complex_rest/manage.py migrate --database=auth_db
 ```
-## 5. Start:
-```bash
-./start.sh
-```
+
 ## 6  Generate secret key for complex_rest client in keycloak admin. Go to keycloak admin `https://localhost:8447/admin`
 ```
 wdcplatform->clients->complex_rest->credentials->regenerate

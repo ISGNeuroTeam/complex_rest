@@ -1,0 +1,844 @@
+{
+	"info": {
+		"_postman_id": "fa2cddd3-ce5d-4165-a101-bbf69a706c6c",
+		"name": "keycloak_auth",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "15020297"
+	},
+	"item": [
+		{
+			"name": "get_auth_code",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8090/realms/wdcplatform/protocol/openid-connect/auth?scope=openid&response_type=code&client_id=dtcd&redirect_uri=http://localhost:8080/auth&state=qswarweasd",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"realms",
+						"wdcplatform",
+						"protocol",
+						"openid-connect",
+						"auth"
+					],
+					"query": [
+						{
+							"key": "scope",
+							"value": "openid"
+						},
+						{
+							"key": "response_type",
+							"value": "code"
+						},
+						{
+							"key": "client_id",
+							"value": "dtcd"
+						},
+						{
+							"key": "redirect_uri",
+							"value": "http://localhost:8080/auth"
+						},
+						{
+							"key": "state",
+							"value": "qswarweasd"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parsing the response returned by the request.",
+							"var jsonData = pm.response.json();",
+							"",
+							"// Extracting the token from the response and setting it as a global variable.",
+							"pm.globals.set(\"access_token\", jsonData['access_token']);",
+							"pm.globals.set(\"refresh_token\", jsonData['refresh_token']);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "authorization_code",
+							"type": "text"
+						},
+						{
+							"key": "code",
+							"value": "7f85582b-2bb3-4aaf-9dcc-c98fb43c5546.4786e23a-be99-4582-8f0d-8741ac0aec2a.c07f6240-fdc7-402f-8d4d-104cf59c7b0a",
+							"type": "text"
+						},
+						{
+							"key": "redirect_uri",
+							"value": "http://localhost:8080/auth",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "dtcd",
+							"type": "text"
+						},
+						{
+							"key": "state",
+							"value": "qswarweasd123",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8090/realms/wdcplatform/protocol/openid-connect/token?grant_type=authorization_code",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"realms",
+						"wdcplatform",
+						"protocol",
+						"openid-connect",
+						"token"
+					],
+					"query": [
+						{
+							"key": "grant_type",
+							"value": "authorization_code"
+						},
+						{
+							"key": "code",
+							"value": "589fedc7-3097-4e09-ac0b-7a5de38dcfc2.952757e0-6073-483b-bf09-0435bc423f4d.1ccd14d4-0454-400a-856b-151188c49640",
+							"disabled": true
+						},
+						{
+							"key": "redirect_uri",
+							"value": "http://localhost:8080/admin",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_token_direct",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parsing the response returned by the request.",
+							"var jsonData = pm.response.json();",
+							"",
+							"// Extracting the token from the response and setting it as a global variable.",
+							"pm.globals.set(\"access_token\", jsonData['access_token']);",
+							"pm.globals.set(\"refresh_token\", jsonData['refresh_token']);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "dtcd",
+							"type": "text"
+						},
+						{
+							"key": "username",
+							"value": "test_user",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "1q2w3e4r5t",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8090/realms/wdcplatform/protocol/openid-connect/token",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"realms",
+						"wdcplatform",
+						"protocol",
+						"openid-connect",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_token_direct_ldap",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parsing the response returned by the request.",
+							"var jsonData = pm.response.json();",
+							"",
+							"// Extracting the token from the response and setting it as a global variable.",
+							"pm.globals.set(\"access_token\", jsonData['access_token']);",
+							"pm.globals.set(\"refresh_token\", jsonData['refresh_token']);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "dtcd",
+							"type": "text"
+						},
+						{
+							"key": "username",
+							"value": "test_user",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "1q2w3e4r5t",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8090/realms/wdcplatform/protocol/openid-connect/token",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"realms",
+						"wdcplatform",
+						"protocol",
+						"openid-connect",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "refresh_token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parsing the response returned by the request.",
+							"var jsonData = pm.response.json();",
+							"",
+							"// Extracting the token from the response and setting it as a global variable.",
+							"pm.globals.set(\"access_token\", jsonData['access_token']);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "refresh_token",
+							"type": "text"
+						},
+						{
+							"key": "code",
+							"value": "d8f0319f-17ff-49ef-b3aa-4281ccf89c84.6af01053-850c-44fb-b1c0-df7a912330cf.1ccd14d4-0454-400a-856b-151188c49640",
+							"type": "text"
+						},
+						{
+							"key": "refresh_token",
+							"value": "{{refresh_token}}",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "dtcd",
+							"type": "text"
+						},
+						{
+							"key": "scope",
+							"value": "openid",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8090/realms/wdcplatform/protocol/openid-connect/token",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"realms",
+						"wdcplatform",
+						"protocol",
+						"openid-connect",
+						"token"
+					],
+					"query": [
+						{
+							"key": "regresh_token",
+							"value": "589fedc7-3097-4e09-ac0b-7a5de38dcfc2.952757e0-6073-483b-bf09-0435bc423f4d.1ccd14d4-0454-400a-856b-151188c49640",
+							"disabled": true
+						},
+						{
+							"key": "client_id",
+							"value": "d",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_protected_resource",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/hello/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"hello",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "token_for_complex_rest",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parsing the response returned by the request.",
+							"var jsonData = pm.response.json();",
+							"",
+							"// Extracting the token from the response and setting it as a global variable.",
+							"pm.globals.set(\"access_token\", jsonData['access_token']);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "client_id",
+							"value": "complex_rest",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "MeD8Vyu1I44XvGeI7C9hIJQEhx87aETD",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8090/realms/wdcplatform/protocol/openid-connect/token",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"realms",
+						"wdcplatform",
+						"protocol",
+						"openid-connect",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_groups",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8090/admin/realms/wdcplatform/groups",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"admin",
+						"realms",
+						"wdcplatform",
+						"groups"
+					],
+					"query": [
+						{
+							"key": "client_secret",
+							"value": "ii0VtRpbMRsNI3qWoljw2XrJ4qX3bhr3",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_roles",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8090/admin/realms/wdcplatform/roles",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"admin",
+						"realms",
+						"wdcplatform",
+						"roles"
+					],
+					"query": [
+						{
+							"key": "client_secret",
+							"value": "ii0VtRpbMRsNI3qWoljw2XrJ4qX3bhr3",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_users",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8090/admin/realms/wdcplatform/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"admin",
+						"realms",
+						"wdcplatform",
+						"users"
+					],
+					"query": [
+						{
+							"key": "client_secret",
+							"value": "ii0VtRpbMRsNI3qWoljw2XrJ4qX3bhr3",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_user_roles",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8090/admin/realms/wdcplatform/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"admin",
+						"realms",
+						"wdcplatform",
+						"users"
+					],
+					"query": [
+						{
+							"key": "client_secret",
+							"value": "ii0VtRpbMRsNI3qWoljw2XrJ4qX3bhr3",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_info",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8090/realms/wdcplatform/.well-known/openid-configuration",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"realms",
+						"wdcplatform",
+						".well-known",
+						"openid-configuration"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "inrospect token",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "complex_rest",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "MeD8Vyu1I44XvGeI7C9hIJQEhx87aETD",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8090/realms/wdcplatform/protocol/openid-connect/token/introspect",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"realms",
+						"wdcplatform",
+						"protocol",
+						"openid-connect",
+						"token",
+						"introspect"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "userinfo",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"host": true,
+					"user-agent": true,
+					"accept": true,
+					"accept-encoding": true,
+					"connection": true
+				}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8090/realms/wdcplatform/protocol/openid-connect/userinfo",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"realms",
+						"wdcplatform",
+						"protocol",
+						"openid-connect",
+						"userinfo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "realminfo",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8090/realms/wdcplatform",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"realms",
+						"wdcplatform"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "authorization_request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "urn:ietf:params:oauth:grant-type:uma-ticket",
+							"type": "text"
+						},
+						{
+							"key": "response_mode",
+							"value": "decision",
+							"type": "text"
+						},
+						{
+							"key": "permission",
+							"value": "#write_index",
+							"type": "text"
+						},
+						{
+							"key": "audience",
+							"value": "complex_rest",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8090/realms/wdcplatform/protocol/openid-connect/token",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"realms",
+						"wdcplatform",
+						"protocol",
+						"openid-connect",
+						"token"
+					],
+					"query": [
+						{
+							"key": "grant_type",
+							"value": "urn:ietf:params:oauth:grant-type:uma-ticket",
+							"disabled": true
+						},
+						{
+							"key": "redirect_uri",
+							"value": "http://localhost:8080/admin",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_resources",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8090/realms/wdcplatform/authz/protection/resource_set/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"realms",
+						"wdcplatform",
+						"authz",
+						"protection",
+						"resource_set",
+						""
+					],
+					"query": [
+						{
+							"key": "client_secret",
+							"value": "ii0VtRpbMRsNI3qWoljw2XrJ4qX3bhr3",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
