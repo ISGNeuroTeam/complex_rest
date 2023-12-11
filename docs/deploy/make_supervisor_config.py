@@ -4,7 +4,7 @@ import re
 import os
 
 from pathlib import Path
-from core.settings import BASE_DIR, LOG_DIR, PLUGINS_DIR
+from core.settings import BASE_DIR, LOG_DIR, PLUGINS_DIR, ini_config
 from core.load_plugins import get_plugins_names
 
 # first argument is supervisor_base.conf location
@@ -42,6 +42,9 @@ def main():
     with open(supervisor_base_conf_path, 'r') as f:
         config.read_file(f)
 
+    if not ini_config['keycloak']['enabled']:
+        del config['program:keycloak']
+        
     # create section for every plugin process
     for plugin_dir in plugin_dirs_with_conf_files:
         plugin_name = plugin_dir.name
