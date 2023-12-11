@@ -1,13 +1,17 @@
 import logging
-from core import load_plugins
 
 from redis import Redis
 from pottery import Redlock
+
+from core import load_plugins
 from core.settings import REDIS_CONNECTION_STRING
 from importlib import import_module
 from django.apps import AppConfig
 from typing import Dict, List
 from core.load_plugins import get_plugin_version, import_string
+
+
+log = logging.getLogger('main')
 
 
 def _create_auth_covered_classes_in_db(plugin: 'Plugin', classes_import_str: Dict[str, list[str]]):
@@ -40,7 +44,6 @@ def _create_actions_in_db(plugin, actions: List[Dict]):
             log.error(f'Improperly configured ROLE_MODEL_ACTION in plugin settings.py: {err}')
 
 def _log_complex_rest_version():
-    log = logging.getLogger('main')
     # try to get version from setup.py
     try:
         complex_rest_version = import_string(f'setup.__version__')
@@ -50,12 +53,11 @@ def _log_complex_rest_version():
 
 
 def on_ready_actions():
-    log = logging.getLogger('main')
+    from django.conf import settings
     redis = Redis.from_url(REDIS_CONNECTION_STRING)
     lock = Redlock(key='on_ready_actions_lock', masters={redis}, auto_release_time=10000)
-    if lock.acquire(blocking=False):
+    if lock.acquire(blocking=False) or settings.TEST_SETTINGS:
         log = logging.getLogger('main')
-        from django.conf import settings
         plugin_names = settings.PLUGINS
 
         for plugin_name in plugin_names:

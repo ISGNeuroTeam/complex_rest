@@ -42,3 +42,4 @@ if 'plugin_example1' in INSTALLED_APPS:
 if 'plugin_example2' in INSTALLED_APPS:
     INSTALLED_APPS.remove('plugin_example2')
 
+TEST_SETTINGS=True
