@@ -55,15 +55,16 @@ class KeycloakTestCase(TestCase):
 
     @skipIf(settings.KEYCLOAK_SETTINGS['authorization'] is False, 'Skip keycloak test because of settings')
     def test_keycloak_token_auth(self):
-        resp = self.client.get('/hello/')
+        authenticated_message_uri = '/hello_authenticated/'
+        resp = self.client.get(authenticated_message_uri)
         self.assertEqual(resp.status_code, 403)
         access_token = self._get_keycloak_access_token()
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + str(access_token))
-        resp = self.client.get('/hello/')
+        resp = self.client.get(authenticated_message_uri)
 
         # Access to authentication required view
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.data['message'], 'secret message')
+        self.assertEqual(resp.data['message'], 'Hello authenticated user')
 
     @skipIf(settings.KEYCLOAK_SETTINGS['authorization'] is False, 'Skip keycloak test because of settings')
     def test_keycloak_authorization(self):

@@ -48,7 +48,7 @@ class User(AbstractUser):
                 raise err
         return user
 
-    def roles(self) -> Set['Roles']:
+    def roles(self) -> Set['Role']:
         roles_set = set()
         for group in self.groups.all():
             roles_set.update(set(group.roles.all()))
