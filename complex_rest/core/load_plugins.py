@@ -2,10 +2,13 @@ import os
 import sys
 import re
 import traceback
+import logging
+
 
 from importlib import import_module
 from pathlib import Path
 
+log = logging.getLogger('main')
 
 def handle_plugin_load_error(plugin_name: str, err: Exception):
     print(f'Plugin {plugin_name} loading failed: {err}', file=sys.stderr)
@@ -161,7 +164,7 @@ def get_plugins_loggers(plugins_names, logger_config):
 
 def get_plugin_api_version(plugin_name):
     """
-    Returns plugin version from plugin name or from setup.py
+    Returns plugin api version from plugin name or from setup.py
     """
     # try to get plugin version from name
     # plugin name may include version <some_name_v2.3>
@@ -176,6 +179,20 @@ def get_plugin_api_version(plugin_name):
     except Exception as err:
         handle_plugin_load_error(plugin_name, err)
     return '1'
+
+def get_plugin_version(plugin_name):
+    """
+    Returns plugin version from setup.py
+    """
+    # try to get version from setup.py
+    try:
+        return import_string(f'{plugin_name}.setup.__version__')
+    except Exception as err:
+        log.error(f'Unable to define plugin version for plugin {plugin_name}')
+        log.error(str(err))
+        return 'unknown'
+    
+    
 
 PLUGIN_VERSION_PATTERN = re.compile(r'_v(\d+(\.\d)*)$')
 

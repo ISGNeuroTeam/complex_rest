@@ -1,11 +1,13 @@
 import logging
+from core import load_plugins
 
+from redis import Redis
+from pottery import Redlock
+from core.settings import REDIS_CONNECTION_STRING
 from importlib import import_module
 from django.apps import AppConfig
 from typing import Dict, List
-
-
-log = logging.getLogger('root')
+from core.load_plugins import get_plugin_version, import_string
 
 
 def _create_auth_covered_classes_in_db(plugin: 'Plugin', classes_import_str: Dict[str, list[str]]):
@@ -37,21 +39,39 @@ def _create_actions_in_db(plugin, actions: List[Dict]):
         except TypeError as err:
             log.error(f'Improperly configured ROLE_MODEL_ACTION in plugin settings.py: {err}')
 
+def _log_complex_rest_version():
+    log = logging.getLogger('main')
+    # try to get version from setup.py
+    try:
+        complex_rest_version = import_string(f'setup.__version__')
+        log.info(f'Complex rest are ready. Version is {complex_rest_version}')     
+    except ImportError:
+        log.info(f'Complex_rest are ready. setup.py not found version is unknown.')
+
 
 def on_ready_actions():
-    from django.conf import settings
-    plugin_names = settings.PLUGINS
-    for plugin_name in plugin_names:
-        try:
-            plugin = _create_plugin_in_db(plugin_name)
-            plugin_settings = import_module(f'{plugin_name}.settings')
-            plugin_actions = getattr(plugin_settings, 'ROLE_MODEL_ACTIONS', None)
-            if plugin_actions is not None:
-                _create_actions_in_db(plugin, plugin_actions)
-            auth_covered_classes = getattr(plugin_settings, 'ROLE_MODEL_AUTH_COVERED_CLASSES')
-            _create_auth_covered_classes_in_db(plugin, auth_covered_classes)
-        except Exception as err:  # ignore all other errors. Otherwise, it is not possible to do migrations
-            log.error(str(err))
+    log = logging.getLogger('main')
+    redis = Redis.from_url(REDIS_CONNECTION_STRING)
+    lock = Redlock(key='on_ready_actions_lock', masters={redis}, auto_release_time=10000)
+    if lock.acquire(blocking=False):
+        log = logging.getLogger('main')
+        from django.conf import settings
+        plugin_names = settings.PLUGINS
+
+        for plugin_name in plugin_names:
+            try:
+                log.info(f'Found plugin {plugin_name}. Version is {load_plugins.get_plugin_version(plugin_name)}') 
+                plugin = _create_plugin_in_db(plugin_name)
+                plugin_settings = import_module(f'{plugin_name}.settings')
+                plugin_actions = getattr(plugin_settings, 'ROLE_MODEL_ACTIONS', None)
+                if plugin_actions is not None:
+                    _create_actions_in_db(plugin, plugin_actions)
+                auth_covered_classes = getattr(plugin_settings, 'ROLE_MODEL_AUTH_COVERED_CLASSES', None)
+                if auth_covered_classes:
+                    _create_auth_covered_classes_in_db(plugin, auth_covered_classes)
+            except Exception as err:  # ignore all other errors. Otherwise, it is not possible to do migrations
+                log.error(str(err))
+        _log_complex_rest_version()
 
 
 class RestAuthConfig(AppConfig):

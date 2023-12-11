@@ -55,10 +55,12 @@ make_build: venv.tar.gz
 
 	cp ./*.md make_build/complex_rest/
 
+
 	echo $(BRANCH) > make_build/complex_rest/.commit
 	git rev-parse --verify HEAD >> make_build/complex_rest/.commit
 
 	cp -R ./complex_rest make_build/complex_rest
+	cp setup.py make_build/complex_rest/
 	cp ./docs/deploy/rest.conf make_build/complex_rest/complex_rest/rest.conf.example
 	rm -rf make_build/complex_rest/complex_rest/plugins/plugin_example*
 	cp ./docs/deploy/django_settings/production.py make_build/complex_rest/complex_rest/core/settings/production.py
