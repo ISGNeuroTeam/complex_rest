@@ -19,6 +19,7 @@ define clean_docker_containers
 	@echo "Stopping and removing docker containers"
 	docker-compose -f docker-compose-test.yml stop
 	if [[ $$(docker ps -aq -f name=complex_rest) ]]; then docker rm $$(docker ps -aq -f name=complex_rest);  fi;
+	docker network prune -f
 endef
 
 pack: make_build
