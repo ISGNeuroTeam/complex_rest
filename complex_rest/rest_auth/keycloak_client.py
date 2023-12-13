@@ -135,6 +135,7 @@ class KeycloakResources:
             scopes (str): list of strings (action names)
             additional_attrs (dict): any additional attributes
         """
+        log.debug(f'Create keycloak resource {unique_resource_name=} {_id=} {scopes=}')
         payload = self._form_payload(_id, unique_resource_name, resource_type, owner_name, scopes, additional_attrs)
         resource = self.keycloak_uma.resource_set_create(payload)
         return resource
@@ -153,11 +154,13 @@ class KeycloakResources:
             scopes (str): list of strings (action names)
             additional_attrs (dict): any additional attributes
         """
+        log.debug(f'Update keycloak resource {unique_resource_name=} {_id=} {scopes=}')
         payload = self._form_payload(_id, unique_resource_name, resource_type, owner_name, scopes, additional_attrs)
         resource = self.keycloak_uma.resource_set_update(_id, payload)
         return resource
 
     def delete(self, _id: str):
+        log.debug(f'Delete keycloak resource {_id=}')
         return self.keycloak_uma.resource_set_delete(_id)
 
     @staticmethod
