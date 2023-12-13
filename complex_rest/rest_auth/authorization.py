@@ -1,4 +1,6 @@
 import logging
+import uuid
+import hashlib
 
 from typing import Any, List, Callable
 
@@ -171,7 +173,7 @@ def authz_integration(
             - create
             - update
             - delete
-        id_attr (str): attribute name for id, default is 'id'
+        id_attr (str): attribute name for id in keycloak, default is 'auth_id'. If id_attr is UUID instance then it used. Else md5 hash of type and id_attr is used.
         type_name_func (Callable): function to generate type for object
             Default function is f'{_plugin_name(instance)}.{type(instance).__name__}'
         unique_name_func (Callable): function to generate unique name for object.
@@ -193,51 +195,63 @@ def authz_integration(
         keycloak_resources = KeycloakResources()
 
         def wrapper(*args, **kwargs):
-            # authorization disabled by args or global variables
+            # authorization disabled by global variables
             if global_vars['disable_authorization_integration']:
                 return class_method(*args, **kwargs)
-            if kwargs.get('ignore_authorization'):
-                return class_method(*args, **kwargs)
-
+            
             # make assumption that create method returns instance
             if authz_action == 'create':
                 instance: IAuthCovered = class_method(*args, **kwargs)
-                instance_type = type_name_func(instance)
-                instance_unique_name = unique_name_func(instance)
-                keycloak_record = keycloak_resources.create(
-                    str(getattr(instance, id_attr)),
-                    instance_unique_name,
-                    instance_type,
-                    instance.owner.username if instance.owner else None,
-                    instance.get_actions_for_auth_obj()
-                )
-                return instance
-
-            if authz_action == 'update':
-                returned = class_method(*args, **kwargs)
+                returned = instance
+            else:    
                 # first argument in method is self
                 instance = args[0]
-                instance_type = type_name_func(instance)
-                instance_unique_name = unique_name_func(instance)
-                keycloak_record = keycloak_resources.update(
-                    str(getattr(instance, id_attr)),
-                    instance_unique_name,
-                    instance_type,
-                    instance.owner.username,
-                    instance.get_actions_for_auth_obj()
-                )
-                return returned
-            if authz_action == 'delete':
-                # first argument in  method is self
-                instance = args[0]
-                instance_id = getattr(instance, id_attr)
-                returned = class_method(*args, **kwargs)
-                keycloak_resources.delete(
-                    str(instance_id),
-                )
-                return returned
 
-            return class_method(*args, **kwargs)
+            # after invoke delete method id may be None
+            instance_type = type_name_func(instance)
+            instance_id_for_keycloak = _get_id_for_keycloak(instance, id_attr, instance_type)
+
+            # invoke method for update or delete
+            if authz_action != 'create':
+                returned = class_method(*args, **kwargs)
+
+            # after update unique name may be changed
+            instance_unique_name = unique_name_func(instance)
+
+            # make integration with keycloak    
+            if authz_action == 'create':
+                try:
+                    keycloak_record = keycloak_resources.create(
+                        instance_id_for_keycloak,
+                        instance_unique_name,
+                        instance_type,
+                        instance.owner.username if instance.owner else None,
+                        instance.get_actions_for_auth_obj()
+                    )
+                except KeycloakError as err:
+                    log.error(f'Error occured while creating resource {str(err)}')
+
+            if authz_action == 'update':
+                try:
+                    keycloak_record = keycloak_resources.update(
+                        instance_id_for_keycloak,
+                        instance_unique_name,
+                        instance_type,
+                        instance.owner.username,
+                        instance.get_actions_for_auth_obj()
+                    )
+                except KeycloakError as err:
+                    log.error(f'Error occured while updating resource {str(err)}')
+
+            if authz_action == 'delete':
+                try:
+                    keycloak_resources.delete(
+                        instance_id_for_keycloak,
+                    )
+                except KeycloakError as err:
+                    log.error(f'Error occured while deleting resource {str(err)}')
+
+            return returned
 
         return wrapper
     return decorator
@@ -249,6 +263,16 @@ def _plugin_name(obj):
     """
     return obj.__module__.split('.')[0]
 
+def _get_id_for_keycloak(instance: IAuthCovered, id_attr: str, instance_type):
+    obj_id_attr = getattr(instance, id_attr)
+    if isinstance(obj_id_attr, uuid.UUID):
+        instance_id_for_keycloak = str(obj_id_attr)
+    else:
+        id_hash = hashlib.md5(
+            (instance_type + str(obj_id_attr)).encode()
+        )
+        instance_id_for_keycloak = str(uuid.UUID(id_hash.hexdigest()))
+    return instance_id_for_keycloak
 
 def _get_resource_type_for_keycloak(obj: IAuthCovered):
     return f'{_plugin_name(obj)}.{type(obj).__name__}'

@@ -10,7 +10,7 @@ from django.conf import settings
 from keycloak.exceptions import KeycloakGetError
 from urllib.parse import urlencode
 from importlib import reload, import_module
-from rest_auth.authorization import has_perm_on_keycloak
+from rest_auth.authorization import has_perm_on_keycloak, _get_id_for_keycloak, _get_resource_type_for_keycloak
 from rest_auth.keycloak_client import KeycloakResources
 from rest_auth.apps import on_ready_actions as rest_auth_on_ready_actions
 from unittest import skipIf
@@ -104,12 +104,12 @@ class KeycloakTestCase(TestCase):
         test_user = User.get_user(test_user_guid)
         obj = SomePluginAuthCoveredModelUUID.create(owner=test_user)
         keycloak_resources = KeycloakResources()
-        resource = keycloak_resources.get(obj.auth_id)
-        self.assertEqual(str(obj.auth_id), resource['_id'])
+        id_for_keycloak = _get_id_for_keycloak(obj, 'auth_id', _get_resource_type_for_keycloak(obj))
+        resource = keycloak_resources.get(id_for_keycloak)
+        self.assertEqual(id_for_keycloak, resource['_id'])
         obj.update(name='new_name')
-        resource = keycloak_resources.get(obj.auth_id)
+        resource = keycloak_resources.get(id_for_keycloak)
         self.assertEqual('new_name', resource['name'])
         obj.delete()
         with self.assertRaises(KeycloakGetError):
-            resource = keycloak_resources.get(obj.auth_id)
-
+            resource = keycloak_resources.get(id_for_keycloak)
