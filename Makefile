@@ -14,10 +14,11 @@ all:
 
 VERSION := $(shell cat setup.py | grep version | head -n 1 | sed -re "s/[^\"']+//" | sed -re "s/[\"',]//g")
 BRANCH := $(shell git name-rev $$(git rev-parse HEAD) | cut -d\  -f2 | sed -re 's/^(remotes\/)?origin\///' | tr '/' '_')
+DOCKER_COMPOSE := $(shell docker compose > /dev/null 2>&1; retVal=$$?; if [ $$retVal -ne 0 ]; then  echo "docker-compose"; else echo "docker compose"; fi;)
 
 define clean_docker_containers
 	@echo "Stopping and removing docker containers"
-	docker-compose -f docker-compose-test.yml stop
+	$(DOCKER_COMPOSE) -f docker-compose-test.yml stop
 	if [[ $$(docker ps -aq -f name=complex_rest) ]]; then docker rm $$(docker ps -aq -f name=complex_rest);  fi;
 	docker network prune -f
 endef
@@ -124,8 +125,8 @@ test: docker_test
 
 docker_test:
 	$(call clean_docker_containers)
-	@echo "Testing..."
-	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-test.yml run --rm  complex_rest /complex_rest/docs/scripts/run_tests_in_docker.sh
+	@echo "Testing...Docker compose command is $(DOCKER_COMPOSE)"
+	CURRENT_UID=$$(id -u):$$(id -g) $(DOCKER_COMPOSE) -f docker-compose-test.yml run --rm  complex_rest /complex_rest/docs/scripts/run_tests_in_docker.sh
 	$(call clean_docker_containers)
 
 clean_docker_test:
@@ -135,10 +136,10 @@ docker_dev:
 	$(call clean_docker_containers)
 	@echo "Start develop..."
 	mkdir -p ./logs
-	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-dev.yml up -d
+	CURRENT_UID=$$(id -u):$$(id -g) $(DOCKER_COMPOSE) -f docker-compose-dev.yml up -d
 
 docker_dev_stop:
-	CURRENT_UID=$$(id -u):$$(id -g) docker-compose -f docker-compose-dev.yml stop
+	CURRENT_UID=$$(id -u):$$(id -g) $(DOCKER_COMPOSE) -f docker-compose-dev.yml stop
 
 dev: venv logs
 	mkdir -p ./plugins
