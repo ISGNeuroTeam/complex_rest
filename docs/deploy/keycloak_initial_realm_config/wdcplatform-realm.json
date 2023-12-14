@@ -372,7 +372,7 @@
   "otpPolicyLookAheadWindow" : 1,
   "otpPolicyPeriod" : 30,
   "otpPolicyCodeReusable" : false,
-  "otpSupportedApplications" : [ "totpAppMicrosoftAuthenticatorName", "totpAppGoogleName", "totpAppFreeOTPName" ],
+  "otpSupportedApplications" : [ "totpAppGoogleName", "totpAppMicrosoftAuthenticatorName", "totpAppFreeOTPName" ],
   "webAuthnPolicyRpEntityName" : "keycloak",
   "webAuthnPolicySignatureAlgorithms" : [ "ES256" ],
   "webAuthnPolicyRpId" : "",
@@ -670,10 +670,10 @@
         } ],
         "icon_uri" : ""
       }, {
-        "name" : "dtcd_workspaces.Workspase:default_resource",
-        "type" : "dtcd_workspaces.Workspase",
+        "name" : "dtcd_workspaces.Workspace:default_resource",
+        "type" : "dtcd_workspaces.Workspace",
         "ownerManagedAccess" : false,
-        "displayName" : "dtcd_workspaces.Workspase:default_resource",
+        "displayName" : "dtcd_workspaces.Workspace:default_resource",
         "attributes" : { },
         "_id" : "873cc3f5-2e97-4708-bccb-842d4db12337",
         "uris" : [ ],
@@ -829,6 +829,18 @@
         "config" : {
           "scopes" : "[\"dtcd_workspaces.read\",\"dtcd_workspaces.create\",\"dtcd_workspaces.update\",\"dtcd_workspaces.move\",\"dtcd_workspaces.delete\"]",
           "applyPolicies" : "[\"allow_admin_group\"]"
+        }
+      }, {
+        "id" : "2e30a6ae-1964-492c-b70f-d36b8f50ba9e",
+        "name" : "allow_create_tabs_in_new_workspace",
+        "description" : "Allow create tabs in workspace before workspace is created. Another way it is impossible to create new workspace with tabs ",
+        "type" : "scope",
+        "logic" : "POSITIVE",
+        "decisionStrategy" : "UNANIMOUS",
+        "config" : {
+          "resources" : "[\"dtcd_workspaces.Workspace:default_resource\"]",
+          "scopes" : "[\"dtcd_workspaces.create\"]",
+          "applyPolicies" : "[\"Always allow\"]"
         }
       } ],
       "scopes" : [ {
@@ -1524,7 +1536,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "saml-user-property-mapper", "oidc-full-name-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "oidc-usermodel-property-mapper" ]
       }
     }, {
       "id" : "62952a7f-77c9-4164-a952-ad144e178170",
@@ -1551,7 +1563,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "saml-role-list-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "saml-role-list-mapper", "oidc-full-name-mapper" ]
       }
     } ],
     "org.keycloak.keys.KeyProvider" : [ {
