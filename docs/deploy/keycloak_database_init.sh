@@ -5,7 +5,7 @@ source ./venv/bin/activate
 export PGUSER=postgres
 export PGPASSWORD=$(cat ./postgres_config/postgres_password)
 export PGPORT=5433
-
+export JAVA_HOME=./venv/lib/jvm/jdk-17.0.2
 
 pg_ctl -D complex_rest_db -l ./logs/postgres/stderr.log start
 
