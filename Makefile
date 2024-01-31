@@ -151,8 +151,8 @@ dev: venv logs
 	cp ./docs/deploy/rest_dev.conf ./complex_rest/rest.conf
 
 	./docs/deploy/database_init_dev.sh
-	./venv/apps/keycloak-22.0.5/bin/kc.sh build
-	./venv/apps/keycloak-22.0.5/bin/kc.sh import --optimized --dir ./venv/apps/keycloak-22.0.5/keycloak_initial_realm_config
+	export JAVA_HOME=./venv/lib/jvm/jdk-17.0.2; ./venv/apps/keycloak-22.0.5/bin/kc.sh build
+	export JAVA_HOME=./venv/lib/jvm/jdk-17.0.2; ./venv/apps/keycloak-22.0.5/bin/kc.sh import --optimized --dir ./venv/apps/keycloak-22.0.5/keycloak_initial_realm_config
 	touch dev
 
 
